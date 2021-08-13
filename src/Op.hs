@@ -39,6 +39,7 @@ data Op
   | TXA -- A := X
   -- Output
   | OUT -- Out := A
+  | OUTI -- Out := M[pc]
   | OUTM -- Out := M[X]
   -- Misc
   | HLT

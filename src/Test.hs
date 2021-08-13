@@ -1,8 +1,7 @@
 
 module Test (run) where
 
-import Asm (Asm(..),assemble)
-import Op (Op(..))
+import Asm
 import Testing (test)
 import qualified Examples as X
 import qualified Testing (run)
@@ -98,3 +97,24 @@ run = Testing.run $ do
       Emit [HLT]
   test
     countup10 51 [200,210,220,230,240,250]
+
+  let
+    divides numer denom = assemble $ mdo
+      la numer
+      lb denom
+      loop <- Here
+      sub
+      jz yes
+      jv no
+      jump loop
+      yes <- Here
+      outi 1; halt
+      no <- Here
+      outi 0; halt
+
+  test (divides 8 1) 67 [1]
+  test (divides 8 2) 35 [1]
+  test (divides 8 3) 29 [0]
+  test (divides 8 4) 19 [1]
+  test (divides 8 5) 21 [0]
+  test (divides 8 11) 13 [0]

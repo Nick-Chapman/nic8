@@ -1,7 +1,7 @@
 
 module Asm
   ( Op(..), Asm(..), assemble
-  , add, addx, sub, tab, txa, out, halt
+  , add, addx, sub, tab, txa, out, nop, halt, outi
   , la, lb, lx, jump, jz, jv
   , variable
   , loadA, loadB, loadX, storeA, storeAdd
@@ -13,7 +13,8 @@ import Op (Byte,Op(..))
 
 add,addx,sub :: Asm () -- arithmetic
 tab,txa :: Asm () -- register transfers
-out,halt :: Asm ()
+out,nop,halt :: Asm ()
+outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 jump,jz,jv :: Byte -> Asm () -- jumps
 
@@ -29,6 +30,8 @@ sub = Emit [SUB]
 tab = Emit [TAB]
 txa = Emit [TXA]
 out = Emit [OUT]
+outi b = Emit [OUTI, IMM b]
+nop = Emit [NOP]
 halt = Emit [HLT]
 
 la b = Emit [LIA, IMM b]

@@ -93,6 +93,7 @@ op2cat = \case
   SUBB -> Cat o x FromAlu ToB x
   SUBX -> Cat o x FromAlu ToX x
   OUT -> Cat o o FromA ToOut x
+  OUTI -> Cat o o FromMem ToOut o
   OUTM -> Cat o o FromMem ToOut x
   TAB -> Cat o o FromA ToB x
   TAX -> Cat o o FromA ToX x
