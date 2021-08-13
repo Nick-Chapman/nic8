@@ -43,6 +43,8 @@ variousInstructions =
   , HLT
   ]
 
+-- TODO: recode using Asm
+
 countdown5to0 :: [Op]
 countdown5to0 =
   [ LIB, IMM 1
@@ -96,8 +98,8 @@ fibA =
 -- 6:
   , LIX, IMM 3, LXA, TAB
   , LIX, IMM 4, LXA
-  , ADD, LIX, IMM 5, SXA, OUT
-  , LIB, IMM 55, SUB, JIZ, IMM 2
+  , ADD, LIX, IMM 5, SXA, OUT -- TODO: move OUT to see 1,1,2 (double 1 start)
+  , LIB, IMM 55, SUB, JIZ, IMM 2 -- TODO: stop 233
   , LIX, IMM 4, LXA, LIX, IMM 3, SXA
   , LIX, IMM 5, LXA, LIX, IMM 4, SXA
   , JIU, IMM 6
@@ -118,3 +120,5 @@ fibB =
   , LIX, IMM 3, SXA
   , JIU, IMM 5
   ]
+
+-- TODO: fib using A/B registers alternating way add is done

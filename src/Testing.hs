@@ -2,7 +2,7 @@
 module Testing (test,run) where
 
 import Control.Monad (ap,liftM)
-import Emu (runCollectOutput)
+import Emu (Cycles(..),OutOfGas(..),runCollectOutput)
 import Op (Op,Byte)
 
 test :: [Op] -> [Byte] -> Testing ()
@@ -41,8 +41,13 @@ instance Show Test where
 
 runTest :: Int -> Test -> IO Bool
 runTest n t@(Test prog expected) = do
-  case runCollectOutput prog of
-    actual ->
+  let max = Cycles 500
+  case runCollectOutput max prog of
+    Left OutOfGas -> do
+      putStrLn $ "test #" ++ show n ++ ", " ++ show t
+      putStrLn $ "- *OutOfGas*: (exceeded " ++ show max ++ " cycles)"
+      pure False
+    Right actual ->
       if actual == expected then pure True else do
         putStrLn $ "test #" ++ show n ++ ", " ++ show t
         putStrLn $ "- actual: " ++ show actual

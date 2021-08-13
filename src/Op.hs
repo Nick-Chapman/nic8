@@ -20,7 +20,7 @@ data Op
   -- Jumps
   | JIU -- pc := M[pc]
   | JIZ -- pc := zero(A) ? M[pc] : pc+1
-  | JXU -- pc := M[X]
+  | JXU -- pc := M[X]                           -- TODO: JXU/JXZ not used so kill
   | JXZ -- pc := zero(A) ? M[X] : pc
   | JAU -- pc := A
   -- Arithmetic
@@ -32,7 +32,7 @@ data Op
   -- Register transfers
   | TAB -- B := A
   | TAX -- X := A
---  | TXA -- A := X
+--  | TXA -- A := X -- TODO: TXA
   -- Output
   | OUT -- Out := A
   | OUTM -- Out := M[X]

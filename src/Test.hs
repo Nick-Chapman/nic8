@@ -17,6 +17,9 @@ run = Testing.run $ do
   test X.fibA [  1,2,3,5,8,13,21,34,55] -- fib
   test X.fibB [1,1,2,3,5,8,13,21,34,55,89,144,233] -- fib (smaller code)
   test (assemble asm1) [42]
+  -- TODO: 256 mod arith
+  -- TODO: z-flag is sep from Acc (need imp change)
+  -- TODO: imp/test 4 jump conditions: unconditional, Z, Pos, Neg (using flags: Z/Overflow)
 
 asm1 :: Asm ()
 asm1 = mdo

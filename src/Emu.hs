@@ -1,5 +1,8 @@
 
-module Emu (runIO, runCollectOutput) where
+module Emu
+  ( runIO, runCollectOutput
+  , Cycles(..), OutOfGas(..)
+  ) where
 
 import Data.Bits (testBit,shiftL,shiftR,(.&.))
 import Data.Map (Map)
@@ -31,14 +34,13 @@ runIO prog = do
           pure () --done
         Just s' -> loop (i+1) s'
 
-runCollectOutput :: [Op] -> [Byte]
-runCollectOutput prog = do
+runCollectOutput :: Cycles -> [Op] -> Either OutOfGas [Byte]
+runCollectOutput max prog = do
   let state0 = initState prog
-  loop [] state0
+  loop (Cycles 0) [] state0
   where
-    -- TODO: step count limited to prevent buggy infinite tests
-    loop :: [Byte] -> State -> [Byte]
-    loop acc s = do
+    loop :: Cycles -> [Byte] -> State -> Either OutOfGas [Byte]
+    loop cycles acc s = if cycles > max then Left OutOfGas else do
       let State{ir} = s
       let cat = decodeCat ir
       let con = cat2control cat
@@ -47,8 +49,12 @@ runCollectOutput prog = do
             Nothing -> acc
             Just (Output byte) -> byte:acc
       case s'Maybe of
-        Just s' -> loop acc' s'
-        Nothing -> reverse acc' -- done
+        Nothing -> Right (reverse acc') -- done
+        Just s' -> loop (cycles+1) acc' s'
+
+
+data OutOfGas = OutOfGas
+newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 
 
 ----------------------------------------------------------------------
@@ -57,6 +63,7 @@ runCollectOutput prog = do
 data Cat = Cat -- Control atributes
   { xbit7 :: Bool
   , xbit6 :: Bool -- if-zero bit for jump instruction; sub-bit for alu
+  -- TODO: rename writer/reader as src/dest (of bus)
   , writer :: WriterD -- bit 5,4
   , reader :: ReaderD -- bit 3,2,1
   , indexed :: Bool -- bit 0 (address bus driven from X otherwise PC++)
@@ -124,7 +131,7 @@ encodeWriter = \case
   FromMem -> 0
   FromAcc -> 1
   FromAlu -> 2
-  FromPC -> 3
+  FromPC -> 3 --TODO: FromPC never used? prefer FromX
 
 decodeWriter :: Byte -> WriterD
 decodeWriter = \case
@@ -147,7 +154,7 @@ encodeReader =  \case
   ToM -> 4
   Store -> 5
   Out -> 6
-  Halt -> 7
+  Halt -> 7 -- TODO: dont encode halt this way. save one of the 8 encodings for future
 
 decodeReader :: Byte -> ReaderD
 decodeReader = \case
@@ -165,8 +172,8 @@ decodeReader = \case
 -- Control
 
 data Control = Control
-  { writeAbus :: WriterA
-  , writeDbus :: WriterD
+  { writeAbus :: WriterA --TODO: kill. just use indexed (or negate to immediate)
+  , writeDbus :: WriterD --TODO: Have 4 enables instead of this
   , loadIR :: Bool
   , loadPC :: Bool
   , loadAcc :: Bool
