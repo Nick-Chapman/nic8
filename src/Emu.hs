@@ -96,7 +96,8 @@ op2cat = \case
   TAB -> Cat o o FromA ToB x
   TAX -> Cat o o FromA ToX x
   TXA -> Cat o o FromX ToA x
-  HLT -> Cat o o FromMem Halt x
+  HLT -> Cat o o FromX ToX x -- encode HLT as X->X
+  -- further unwanted source/dest pairs which can encode something else: FromMem/ToMem, FromA/ToA
   IMM b -> Lit b
   where
     o = False
@@ -143,7 +144,7 @@ decodeSource = \case
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut | Halt
+data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
@@ -155,7 +156,7 @@ encodeDest =  \case
   ToX -> 4
   ToMem -> 5
   ToOut -> 6
-  Halt -> 7 -- TODO: dont encode halt this way. save one of the 8 encodings for future
+  -- destination 7 available for future expansions!
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
@@ -166,7 +167,6 @@ decodeDest = \case
   4 -> ToX
   5 -> ToMem
   6 -> ToOut
-  7 -> Halt
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------
@@ -205,7 +205,7 @@ cat2control = \case
     let loadX = (dest == ToX)
     let storeMem = (dest == ToMem)
     let doOut = (dest == ToOut)
-    let halt = (dest == Halt)
+    let halt = (provideX && loadX)
     let immediate = not indexed
     let doSubtract = xbit6
     let unconditionalJump = xbit6
