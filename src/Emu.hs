@@ -34,13 +34,13 @@ runIO prog = do
           pure () --done
         Just s' -> loop (i+1) s'
 
-runCollectOutput :: Cycles -> [Op] -> Either OutOfGas (Cycles,[Byte])
+runCollectOutput :: Cycles -> [Op] -> Either (OutOfGas,[Byte]) (Cycles,[Byte])
 runCollectOutput max prog = do
   let state0 = initState prog
   loop (Cycles 0) [] state0
   where
-    loop :: Cycles -> [Byte] -> State -> Either OutOfGas (Cycles,[Byte])
-    loop cycles acc s = if cycles > max then Left OutOfGas else do
+    loop :: Cycles -> [Byte] -> State -> Either (OutOfGas,[Byte]) (Cycles,[Byte])
+    loop cycles acc s = if cycles > max then Left (OutOfGas, reverse acc) else do
       let State{rIR} = s
       let cat = decodeCat rIR
       let con = cat2control cat
@@ -93,6 +93,7 @@ op2cat = \case
   SUBB -> Cat o x FromAlu ToB x
   SUBX -> Cat o x FromAlu ToX x
   OUT -> Cat o o FromA ToOut x
+  OUTX -> Cat o o FromX ToOut x
   OUTI -> Cat o o FromMem ToOut o
   OUTM -> Cat o o FromMem ToOut x
   TAB -> Cat o o FromA ToB x

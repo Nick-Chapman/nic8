@@ -37,15 +37,16 @@ collect m = loop m $ \_ -> [] where
 data Test = Test [Op] (Cycles,[Byte])
 
 instance Show Test where
-  show (Test is xs) = "input: " ++ show is ++ "\n- expect: " ++ show xs
+  show (Test is xs) = "input (size="++show (length is)++"): " ++ show is ++ "\n- expect: " ++ show xs
 
 runTest :: Int -> Test -> IO Bool
 runTest n t@(Test prog expected) = do
-  let max = Cycles 1000
+  let max = Cycles 500000
   case runCollectOutput max prog of
-    Left OutOfGas -> do
+    Left (OutOfGas,outputSoFar) -> do
       putStrLn $ "test #" ++ show n ++ ", " ++ show t
       putStrLn $ "- *OutOfGas*: (exceeded " ++ show max ++ " cycles)"
+      putStrLn $ "- outputSoFar: " ++ show outputSoFar
       pure False
     Right actual ->
       if actual == expected then pure True else do

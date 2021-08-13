@@ -1,10 +1,12 @@
 
 module Asm
-  ( Op(..), Asm(..), assemble
-  , add, addx, sub, tab, txa, out, nop, halt, outi
+  ( Byte, Op(..), Asm(..), assemble
+  , add, addx, sub, tab, tax, txa, out, outx, nop, halt, outi
   , la, lb, lx, jump, jz, jv
+  , lxa, lxb, lxx
   , variable
-  , loadA, loadB, loadX, storeA, storeAdd
+  , loadA, loadB, loadX, storeA, storeAdd, sxa
+  , increment
   ) where
 
 import Control.Monad (ap,liftM)
@@ -12,24 +14,28 @@ import Control.Monad.Fix (MonadFix,mfix)
 import Op (Byte,Op(..))
 
 add,addx,sub :: Asm () -- arithmetic
-tab,txa :: Asm () -- register transfers
-out,nop,halt :: Asm ()
+tab,tax,txa :: Asm () -- register transfers
+out,outx,nop,halt :: Asm ()
 outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
+lxa,lxb,lxx :: Asm () -- load *x into reg
 jump,jz,jv :: Byte -> Asm () -- jumps
 
 variable :: Byte -> Asm Byte -- allocate space for a variable
 loadA,loadB,loadX :: Byte -> Asm () -- load vars into regs
 storeA :: Byte -> Asm () -- store A into var
 storeAdd :: Byte -> Asm () -- store A+B into var
+sxa :: Asm () -- store A into *X
 
 add = Emit [ADD]
 addx = Emit [ADDX]
 sub = Emit [SUB]
 
 tab = Emit [TAB]
+tax = Emit [TAX]
 txa = Emit [TXA]
 out = Emit [OUT]
+outx = Emit [OUTX]
 outi b = Emit [OUTI, IMM b]
 nop = Emit [NOP]
 halt = Emit [HLT]
@@ -37,6 +43,10 @@ halt = Emit [HLT]
 la b = Emit [LIA, IMM b]
 lb b = Emit [LIB, IMM b]
 lx b = Emit [LIX, IMM b]
+
+lxa = Emit [LXA]
+lxb = Emit [LXB]
+lxx = Emit [LXX]
 
 jump b = Emit [JIU, IMM b]
 jz b = Emit [JIZ, IMM b]
@@ -54,6 +64,14 @@ loadX loc = Emit [LIX, IMM loc, LXX]
 storeA loc = Emit [LIX, IMM loc, SXA]
 storeAdd loc = Emit [LIX, IMM loc, ADDM]
 
+increment :: Byte -> Byte -> Asm ()
+increment var n = do
+  loadA var
+  lb n
+  add
+  storeA var
+
+sxa = Emit [SXA]
 
 instance Functor Asm where fmap = liftM
 instance Applicative Asm where pure = return; (<*>) = ap
