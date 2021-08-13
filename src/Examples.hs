@@ -3,10 +3,11 @@ module Examples
   ( variousInstructions
   , countdown5to0
   , multiply5by7
-  , fibA, fibB
+  , fibA, fibB, fibC,
   ) where
 
 import Op (Op(..))
+import Asm (Asm(..),assemble)
 
 variousInstructions :: [Op]
 variousInstructions =
@@ -32,7 +33,7 @@ variousInstructions =
   , LIA, IMM 50
   , OUTM -- expect 111
   , LIB, IMM 1
-  , ADX
+  , ADDX
   , LXA
   , OUT -- expect 222
   , LIA, IMM 0
@@ -97,28 +98,40 @@ fibA =
   , IMM 0
 -- 6:
   , LIX, IMM 3, LXA, TAB
-  , LIX, IMM 4, LXA
-  , ADD, LIX, IMM 5, SXA, OUT -- TODO: move OUT to see 1,1,2 (double 1 start)
-  , LIB, IMM 55, SUB, JIZ, IMM 2 -- TODO: stop 233
+  , LIX, IMM 4, LXA, OUT
+  , ADD, LIX, IMM 5, SXA
+  , LIB, IMM 144, SUB, JIZ, IMM 2
   , LIX, IMM 4, LXA, LIX, IMM 3, SXA
   , LIX, IMM 5, LXA, LIX, IMM 4, SXA
   , JIU, IMM 6
   ]
 
-fibB :: [Op] -- smaller code
-fibB =
-  [ JIU, IMM 5
--- 2:
-  , HLT
-  , IMM 0
-  , IMM 1
--- 5:
-  , LIX, IMM 4, LXA, OUT
-  , LIB, IMM 233, SUB, JIZ, IMM 2, ADD
-  , LIX, IMM 3, LXB
-  , LIX, IMM 4, ADDM
-  , LIX, IMM 3, SXA
-  , JIU, IMM 5
-  ]
+fibB :: [Op]
+fibB = assemble $ mdo
+  Emit [JIU, IMM loop]
+  done <- Here
+  Emit [HLT]
+  x <- Here; Emit [IMM 0]
+  y <- Here; Emit [IMM 1]
+  loop <- Here
+  Emit [LIX, IMM y, LXA, OUT]
+  Emit [LIB, IMM 89, SUB, JIZ, IMM done, ADD]
+  Emit [LIX, IMM x, LXB]
+  Emit [LIX, IMM y, ADDM]
+  Emit [LIX, IMM x, SXA]
+  Emit [JIU, IMM loop]
 
--- TODO: fib using A/B registers alternating way add is done
+fibC :: [Op]
+fibC = assemble $ mdo
+  Emit [LIB, IMM 0]
+  Emit [LIA, IMM 1, OUT]
+  -- TODO: loop until overflow (when implmented)
+  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [HLT]
+
+
+-- TODO: assembly helpers!

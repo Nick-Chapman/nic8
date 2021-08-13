@@ -5,8 +5,8 @@ import Control.Monad (ap,liftM)
 import Emu (Cycles(..),OutOfGas(..),runCollectOutput)
 import Op (Op,Byte)
 
-test :: [Op] -> [Byte] -> Testing ()
-test prog expected = T1 (Test prog expected)
+test :: [Op] -> Cycles -> [Byte] -> Testing ()
+test prog xcycles expected = T1 (Test prog (xcycles,expected))
 
 run :: Testing () -> IO ()
 run testing = do
@@ -34,14 +34,14 @@ collect m = loop m $ \_ -> [] where
     Bind m f -> loop m $ \a -> loop (f a) k
     T1 x -> x : k ()
 
-data Test = Test [Op] [Byte]
+data Test = Test [Op] (Cycles,[Byte])
 
 instance Show Test where
   show (Test is xs) = "input: " ++ show is ++ "\n- expect: " ++ show xs
 
 runTest :: Int -> Test -> IO Bool
 runTest n t@(Test prog expected) = do
-  let max = Cycles 500
+  let max = Cycles 1000
   case runCollectOutput max prog of
     Left OutOfGas -> do
       putStrLn $ "test #" ++ show n ++ ", " ++ show t

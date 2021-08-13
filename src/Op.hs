@@ -6,7 +6,8 @@ import Data.Word8 (Word8)
 type Byte = Word8
 
 data Op
-  = FETCH -- IR := M[pc], pc++
+  -- nop/fetch -- must be encoded as zero
+  = NOP -- IR := M[pc], pc++
   -- load immediate
   | LIA -- A := M[pc], pc++
   | LIB -- B := M[pc], pc++
@@ -25,10 +26,14 @@ data Op
   | JAU -- pc := A
   -- Arithmetic
   | ADD -- A := A+B
-  | SUB -- A := A-B
-  | ADX -- X := A+B
-  | SUX -- X := A-B
+  | ADDB -- B := A+B
+  | ADDX -- X := A+B
   | ADDM -- M[X] := A+B
+  | ADDOUT -- OUT := A+B
+  | SUB -- A := A-B
+  | SUBB -- B := A-B
+  | SUBX -- X := A-B
+  -- more SUBS possible too
   -- Register transfers
   | TAB -- B := A
   | TAX -- X := A

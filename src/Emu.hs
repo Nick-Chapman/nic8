@@ -34,12 +34,12 @@ runIO prog = do
           pure () --done
         Just s' -> loop (i+1) s'
 
-runCollectOutput :: Cycles -> [Op] -> Either OutOfGas [Byte]
+runCollectOutput :: Cycles -> [Op] -> Either OutOfGas (Cycles,[Byte])
 runCollectOutput max prog = do
   let state0 = initState prog
   loop (Cycles 0) [] state0
   where
-    loop :: Cycles -> [Byte] -> State -> Either OutOfGas [Byte]
+    loop :: Cycles -> [Byte] -> State -> Either OutOfGas (Cycles,[Byte])
     loop cycles acc s = if cycles > max then Left OutOfGas else do
       let State{ir} = s
       let cat = decodeCat ir
@@ -49,7 +49,7 @@ runCollectOutput max prog = do
             Nothing -> acc
             Just (Output byte) -> byte:acc
       case s'Maybe of
-        Nothing -> Right (reverse acc') -- done
+        Nothing -> Right (cycles, reverse acc') -- done
         Just s' -> loop (cycles+1) acc' s'
 
 
@@ -73,7 +73,7 @@ data Cat = Cat -- Control atributes
 
 op2cat :: Op -> Cat
 op2cat = \case
-  FETCH -> Cat o o FromMem ToI o
+  NOP -> Cat o o FromMem ToI o
   LIA -> Cat o o FromMem ToA o
   LIB -> Cat o o FromMem ToB o
   LIX -> Cat o o FromMem ToM o
@@ -87,10 +87,13 @@ op2cat = \case
   JXZ -> Cat o o FromMem ToP  x
   JAU -> Cat o x FromAcc ToP  x
   ADD -> Cat o o FromAlu ToA x
+  ADDB -> Cat o o FromAlu ToB x
+  ADDX -> Cat o o FromAlu ToM x
   ADDM -> Cat o o FromAlu Store x
+  ADDOUT -> Cat o o FromAlu Out x
   SUB -> Cat o x FromAlu ToA x
-  ADX -> Cat o o FromAlu ToM x
-  SUX -> Cat o x FromAlu ToM x
+  SUBB -> Cat o x FromAlu ToB x
+  SUBX -> Cat o x FromAlu ToM x
   OUT -> Cat o o FromAcc Out x
   OUTM -> Cat o o FromMem Out x
   TAB -> Cat o o FromAcc ToB x
@@ -229,7 +232,7 @@ instance Show State where
 initState :: [Op] -> State
 initState prog = State
   { mem = initMem prog
-  , ir = encodeOp FETCH
+  , ir = 0
   , pc = 0
   , acc = 0
   , b = 0
