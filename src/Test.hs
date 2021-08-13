@@ -1,6 +1,7 @@
 
 module Test (run) where
 
+import Asm (Asm(..),assemble)
 import Op (Op(..))
 import Testing (test)
 import qualified Examples as X
@@ -15,3 +16,14 @@ run = Testing.run $ do
   test X.multiply5by7 [35] -- 5*7
   test X.fibA [  1,2,3,5,8,13,21,34,55] -- fib
   test X.fibB [1,1,2,3,5,8,13,21,34,55,89,144,233] -- fib (smaller code)
+  test (assemble asm1) [42]
+
+asm1 :: Asm ()
+asm1 = mdo
+  Emit [LIX, IMM vars]
+  Emit [OUTM]
+  Emit [JIU, IMM done]
+  vars <- Here
+  Emit [IMM 42]
+  done <- Here
+  Emit [HLT]
