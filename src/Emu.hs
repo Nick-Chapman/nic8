@@ -80,8 +80,9 @@ op2cat = \case
   LXB -> Cat o o FromMem ToB x
   LXX -> Cat o o FromMem ToX x
   SXA -> Cat o o FromA ToMem x
-  JIU -> Cat o x FromMem ToP o
-  JIZ -> Cat o o FromMem ToP o
+  JIU -> Cat o o FromMem ToP o
+  JIZ -> Cat o x FromMem ToP o
+  JIV -> Cat x o FromMem ToP o
   JAU -> Cat o x FromA ToP x
   ADD -> Cat o o FromAlu ToA x
   ADDB -> Cat o o FromAlu ToB x
@@ -187,13 +188,15 @@ data Control = Control
   , halt :: Bool
   , immediate :: Bool
   , doSubtract :: Bool
+  , jumpIfZero :: Bool
+  , jumpIfOverflow :: Bool
   , unconditionalJump :: Bool
   } deriving Show
 
 cat2control :: Cat -> Control
 cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
-  Cat{xbit6,dest,source,indexed} -> do
+  Cat{xbit7,xbit6,dest,source,indexed} -> do
     let provideMem = (source == FromMem)
     let provideAlu = (source == FromAlu)
     let provideA = (source == FromA)
@@ -208,10 +211,13 @@ cat2control = \case
     let halt = (provideX && loadX)
     let immediate = not indexed
     let doSubtract = xbit6
-    let unconditionalJump = xbit6
+    let jumpIfZero = xbit6
+    let jumpIfOverflow = xbit7
+    let unconditionalJump = not (xbit6 || xbit7)
     Control {provideMem,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
-            ,doOut,halt,immediate,doSubtract,unconditionalJump}
+            ,doOut,halt,immediate,doSubtract
+            ,jumpIfZero,jumpIfOverflow,unconditionalJump}
 
 ----------------------------------------------------------------------
 -- State
@@ -223,11 +229,12 @@ data State = State
   , rA :: Byte
   , rB :: Byte
   , rX :: Byte
+  , flagOverflow :: Bool
   }
 
 instance Show State where
-  show State{rIR,rPC,rA,rB,rX} =
-    printf "PC=%02X IR=%02X A=%02X B=%02X MAR=%02X" rPC rIR rA rB rX
+  show State{rIR,rPC,rA,rB,rX,flagOverflow} =
+    printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, OVERFLOW=%s" rPC rIR rA rB rX (show flagOverflow)
 
 initState :: [Op] -> State
 initState prog = State
@@ -237,6 +244,7 @@ initState prog = State
   , rA = 0
   , rB = 0
   , rX = 0
+  , flagOverflow = False
   }
 
 initMem :: [Op] -> Map Byte Byte
@@ -249,15 +257,19 @@ data Output = Output Byte
 
 step :: State -> Control -> (Maybe State,Maybe Output)
 step state control = do
-  let State{mem,rIR=_,rPC,rA,rB,rX} = state
+  let State{mem,rIR=_,rPC,rA,rB,rX,flagOverflow} = state
   let Control{provideMem,provideAlu,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
-             ,doOut,halt,immediate,doSubtract,unconditionalJump} = control
+             ,doOut,halt,immediate,doSubtract
+             ,jumpIfZero,jumpIfOverflow,unconditionalJump} = control
   let aIsZero = (rA == 0)
-  let jumpControl = unconditionalJump || aIsZero
+  let jumpControl = (jumpIfZero && aIsZero) || (jumpIfOverflow && flagOverflow) || unconditionalJump
   let abus = if immediate then rPC else rX
-  let alu =
-        if doSubtract then (rA - rB) else (rA + rB)
+  let alu = if doSubtract then (rA - rB) else (rA + rB)
+  let overflow =
+        if doSubtract
+        then rB > rA
+        else fromIntegral rA + fromIntegral rB >= (256::Int)
   let dbus =
         case (provideMem,provideAlu,provideA,provideX) of
           (True,False,False,False) -> maybe 0 id (Map.lookup abus mem)
@@ -269,14 +281,12 @@ step state control = do
   let s' = State
         { mem = if storeMem then Map.insert abus dbus mem else mem
         , rIR = if loadIR then dbus else 0
-        , rPC = if loadPC && jumpControl then dbus else if immediate then incByte rPC else rPC
+        , rPC = if loadPC && jumpControl then dbus else if immediate then rPC + 1 else rPC
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
+        , flagOverflow = if provideAlu then overflow else flagOverflow
         }
   (if halt then Nothing else Just s',
    if doOut then Just (Output dbus) else Nothing
     )
-
-incByte :: Byte -> Byte
-incByte b = if b == 255 then 0 else b + 1

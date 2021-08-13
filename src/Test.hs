@@ -41,14 +41,21 @@ run = Testing.run $ do
     loopAroundPC 260 []
 
   test [LIA,IMM 42,OUT,HLT] 5 [42]
-  test [LIA,IMM 100,LIB,IMM 200,ADD,OUT,HLT] 9 [44]
+  test [LIA,IMM 100,LIB,IMM 200,ADD,OUT,HLT] 9 [44] -- addition wraps mod 256
   test [LIA,IMM 100,LIB,IMM 200,ADDOUT,OUT,HLT] 9 [44,100]
+
+  test [LIA,IMM 2,LIB,IMM 3,ADD,OUT,HLT] 9 [5]
+  test [LIA,IMM 2,LIB,IMM 3,SUB,OUT,HLT] 9 [255] -- subtraction wraps mod 256
+
+  test [LIA,IMM 33,JIZ,IMM 6,OUT,HLT,LIA,IMM 44,OUT,HLT] 7 [33] -- jump taken
+  test [LIA,IMM 0, JIZ,IMM 6,OUT,HLT,LIA,IMM 44,OUT,HLT] 9 [44] -- jump not taken
+
   test X.variousInstructions 61 [75,74,111,111,222,77]
   test X.countdown5to0 45 [5,4,3,2,1,0]
   test X.multiply5by7 145 [35]
   test X.fibA 447 [1,1,2,3,5,8,13,21,34,55,89]
   test X.fibB 295 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibC 47 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibC 155 [1,1,2,3,5,8,13,21,34,55,89,144,233]
 
   let
     -- example with accesses memory sequentially via incrementing X
@@ -68,5 +75,26 @@ run = Testing.run $ do
   test
     dis 81 [2,3,5,7,11,13]
 
-  -- TODO: z-flag is sep from Acc (need imp change)
-  -- TODO: imp/test 4 jump conditions: unconditional, Z, Pos, Neg (using flags: Z/Overflow)
+  let
+    countup = assemble $ mdo
+      Emit [LIB, IMM 1]
+      Emit [LIA, IMM 250]
+      loop <- Here
+      Emit [JIZ, IMM done, OUT, ADD]
+      Emit [JIU, IMM loop]
+      done <- Here
+      Emit [HLT]
+  test
+    countup 55 [250,251,252,253,254,255]
+
+  let
+    countup10 = assemble $ mdo
+      Emit [LIB, IMM 10]
+      Emit [LIA, IMM 200]
+      loop <- Here
+      Emit [OUT, ADD, JIV, IMM done]
+      Emit [JIU, IMM loop]
+      done <- Here
+      Emit [HLT]
+  test
+    countup10 51 [200,210,220,230,240,250]

@@ -124,13 +124,11 @@ fibB = assemble $ mdo
 fibC :: [Op]
 fibC = assemble $ mdo
   Emit [LIB, IMM 0]
-  Emit [LIA, IMM 1, OUT]
-  -- TODO: loop until overflow (when implmented)
-  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
-  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
-  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
-  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
-  Emit [ADDOUT,ADDB]; Emit [ADDOUT,ADD]
+  Emit [LIA, IMM 1]
+  loop <- Here
+  Emit [OUT, ADDX, JIV, IMM done, TAB, TXA]
+  Emit [JIU, IMM loop]
+  done <- Here
   Emit [HLT]
 
 
