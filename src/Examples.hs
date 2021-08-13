@@ -6,8 +6,7 @@ module Examples
   , fibA, fibB, fibC,
   ) where
 
-import Op (Op(..))
-import Asm (Asm(..),assemble)
+import Asm
 
 variousInstructions :: [Op]
 variousInstructions =
@@ -44,7 +43,7 @@ variousInstructions =
   , HLT
   ]
 
--- TODO: recode using Asm
+-- TODO: recode remaining example using Asm
 
 countdown5to0 :: [Op]
 countdown5to0 =
@@ -108,28 +107,28 @@ fibA =
 
 fibB :: [Op]
 fibB = assemble $ mdo
-  Emit [JIU, IMM loop]
+  jump loop
   done <- Here
-  Emit [HLT]
-  x <- Here; Emit [IMM 0]
-  y <- Here; Emit [IMM 1]
+  halt
+  p <- variable 0
+  q <- variable 1
   loop <- Here
-  Emit [LIX, IMM y, LXA, OUT]
-  Emit [LIB, IMM 89, SUB, JIZ, IMM done, ADD]
-  Emit [LIX, IMM x, LXB]
-  Emit [LIX, IMM y, ADDM]
-  Emit [LIX, IMM x, SXA]
-  Emit [JIU, IMM loop]
+  loadA q
+  out
+  lb 89; sub; jz done; add
+  loadB p
+  storeAdd q
+  storeA p
+  jump loop
 
 fibC :: [Op]
 fibC = assemble $ mdo
-  Emit [LIB, IMM 0]
-  Emit [LIA, IMM 1]
+  lb 0
+  la 1
   loop <- Here
-  Emit [OUT, ADDX, JIV, IMM done, TAB, TXA]
-  Emit [JIU, IMM loop]
+  out; addx
+  jv done
+  tab; txa
+  jump loop
   done <- Here
-  Emit [HLT]
-
-
--- TODO: assembly helpers!
+  halt
