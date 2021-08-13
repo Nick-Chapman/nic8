@@ -21,8 +21,6 @@ data Op
   -- Jumps
   | JIU -- pc := M[pc]
   | JIZ -- pc := zero(A) ? M[pc] : pc+1
-  | JXU -- pc := M[X]                           -- TODO: JXU/JXZ not used so kill
-  | JXZ -- pc := zero(A) ? M[X] : pc
   | JAU -- pc := A
   -- Arithmetic
   | ADD -- A := A+B
