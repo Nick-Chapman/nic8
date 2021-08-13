@@ -49,5 +49,24 @@ run = Testing.run $ do
   test X.fibA 447 [1,1,2,3,5,8,13,21,34,55,89]
   test X.fibB 295 [1,1,2,3,5,8,13,21,34,55,89]
   test X.fibC 47 [1,1,2,3,5,8,13,21,34,55,89]
+
+  let
+    -- example with accesses memory sequentially via incrementing X
+    dis = assemble $ mdo
+      Emit [LIB, IMM 1]
+      Emit [LIX, IMM array]
+      loop <- Here
+      Emit [LXA]
+      Emit [JIZ, IMM done]
+      Emit [OUT]
+      Emit [TXA, ADDX]
+      Emit [JIU, IMM loop]
+      done <- Here
+      Emit [HLT]
+      array <- Here
+      Emit (map IMM [2,3,5,7,11,13,0])
+  test
+    dis 81 [2,3,5,7,11,13]
+
   -- TODO: z-flag is sep from Acc (need imp change)
   -- TODO: imp/test 4 jump conditions: unconditional, Z, Pos, Neg (using flags: Z/Overflow)

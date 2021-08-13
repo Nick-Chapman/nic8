@@ -98,6 +98,7 @@ op2cat = \case
   OUTM -> Cat o o FromMem Out x
   TAB -> Cat o o FromAcc ToB x
   TAX -> Cat o o FromAcc ToM x
+  TXA -> Cat o o FromX ToA x
   HLT -> Cat o o FromMem Halt x
   IMM b -> Lit b
   where
@@ -126,7 +127,7 @@ decodeCat b = do
   Cat {xbit7,xbit6,writer,reader,indexed}
 
 
-data WriterD = FromAcc | FromMem | FromAlu | FromPC
+data WriterD = FromAcc | FromMem | FromAlu | FromX
   deriving Show
 
 encodeWriter :: WriterD -> Byte
@@ -134,18 +135,21 @@ encodeWriter = \case
   FromMem -> 0
   FromAcc -> 1
   FromAlu -> 2
-  FromPC -> 3 --TODO: FromPC never used? prefer FromX
+  FromX -> 3
 
 decodeWriter :: Byte -> WriterD
 decodeWriter = \case
   0 -> FromMem
   1 -> FromAcc
   2 -> FromAlu
-  3 -> FromPC
+  3 -> FromX
   x -> error (show ("decodeWriter",x))
 
 
-data ReaderD = ToI | ToP | ToA | ToB | ToM | Store | Out | Halt
+data ReaderD
+  = ToI | ToP | ToA | ToB
+  | ToM -- TODO: rename ToX
+  | Store | Out | Halt
   deriving (Eq,Show)
 
 encodeReader :: ReaderD -> Byte
@@ -222,7 +226,7 @@ data State = State
   , pc :: Byte
   , acc :: Byte
   , b :: Byte
-  , mar :: Byte
+  , mar :: Byte -- TODO: rename x
   }
 
 instance Show State where
@@ -264,7 +268,7 @@ step state control = do
         FromAcc -> acc
         FromMem -> maybe 0 id (Map.lookup abus mem)
         FromAlu -> alu
-        FromPC -> pc
+        FromX -> mar
   let s' = State
         { mem = if storeMem then Map.insert abus dbus mem else mem
         , ir = if loadIR then dbus else 0

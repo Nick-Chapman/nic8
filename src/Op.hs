@@ -37,7 +37,7 @@ data Op
   -- Register transfers
   | TAB -- B := A
   | TAX -- X := A
---  | TXA -- A := X -- TODO: TXA
+  | TXA -- A := X
   -- Output
   | OUT -- Out := A
   | OUTM -- Out := M[X]
