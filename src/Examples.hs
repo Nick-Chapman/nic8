@@ -6,7 +6,7 @@ module Examples
   , fibA, fibB
   ) where
 
-import OpEmu (Op(..))
+import Op (Op(..))
 
 variousInstructions :: [Op]
 variousInstructions =
@@ -30,6 +30,7 @@ variousInstructions =
   , LXA
   , OUT -- expect 111
   , LIA, IMM 50
+  , OUTM -- expect 111
   , LIB, IMM 1
   , ADX
   , LXA

@@ -1,7 +1,7 @@
 module Top (main) where
 
 import Examples
-import qualified OpEmu (runIO)
+import qualified Emu (runIO)
 import qualified Test (run)
 
 main :: IO ()
@@ -13,4 +13,4 @@ main = do
 
   putStrLn "*Running example under dev*"
   let prog = multiply5by7
-  OpEmu.runIO prog
+  Emu.runIO prog

@@ -2,7 +2,8 @@
 module Testing (test,run) where
 
 import Control.Monad (ap,liftM)
-import OpEmu (Op,Byte,runCollectOutput)
+import Emu (runCollectOutput)
+import Op (Op,Byte)
 
 test :: [Op] -> [Byte] -> Testing ()
 test prog expected = T1 (Test prog expected)
@@ -40,7 +41,7 @@ instance Show Test where
 
 runTest :: Int -> Test -> IO Bool
 runTest n t@(Test prog expected) = do
-  case OpEmu.runCollectOutput prog of
+  case runCollectOutput prog of
     actual ->
       if actual == expected then pure True else do
         putStrLn $ "test #" ++ show n ++ ", " ++ show t

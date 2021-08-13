@@ -1,20 +1,15 @@
 
-module OpEmu
-  ( runIO, runCollectOutput
-  , Op(..), Byte,
-  ) where
+module Emu (runIO, runCollectOutput) where
 
 import Data.Bits (testBit,shiftL,shiftR,(.&.))
 import Data.Map (Map)
-import Data.Word8 (Word8)
+import Op (Op(..),Byte)
 import Text.Printf (printf)
 import qualified Data.Map as Map
 
-type Byte = Word8
-
 runIO :: [Op] -> IO ()
 runIO prog = do
-  print prog
+  --print prog
   let state0 = initState prog
   loop 0 state0
   where
@@ -36,7 +31,6 @@ runIO prog = do
           pure () --done
         Just s' -> loop (i+1) s'
 
-
 runCollectOutput :: [Op] -> [Byte]
 runCollectOutput prog = do
   let state0 = initState prog
@@ -55,46 +49,6 @@ runCollectOutput prog = do
       case s'Maybe of
         Just s' -> loop acc' s'
         Nothing -> reverse acc' -- done
-
-
-----------------------------------------------------------------------
--- Op
-
-data Op
-  -- fetch
-  = FETCH -- IR := M[pc], pc++
-  -- load immediate A/X
-  | LIA -- A := M[pc], pc++
-  | LIB -- B := M[pc], pc++
-  | LIX -- X := M[pc], pc++
-  -- load indexed A/X
-  | LXA -- A := M[X]
-  | LXB -- B := M[X]
-  | LXX -- X := M[X]
-  -- Store indexed
-  | SXA -- M[X] := A
-  -- Jumps
-  | JIU -- pc := M[pc]
-  | JIZ -- pc := zero(A) ? M[pc] : pc+1
-  | JXU -- pc := M[X]
-  | JXZ -- pc := zero(A) ? M[X] : pc
-  | JAU -- pc := A
-  -- Arithmetic
-  | ADD -- A := A+B
-  | SUB -- A := A-B
-  | ADX -- X := A+B
-  | SUX -- X := A-B
-  | ADDM -- M[X] := A+B
-  -- Misc
-  | OUT -- A -> Out
-  | TAB -- B := A
-  | TAX -- X := A
-  | HLT
-  | IMM Byte
-  deriving Show
-
-encodeOp :: Op -> Byte
-encodeOp = encodeCat . op2cat
 
 
 ----------------------------------------------------------------------
@@ -131,6 +85,7 @@ op2cat = \case
   ADX -> Cat o o FromAlu ToM x
   SUX -> Cat o x FromAlu ToM x
   OUT -> Cat o o FromAcc Out x
+  OUTM -> Cat o o FromMem Out x
   TAB -> Cat o o FromAcc ToB x
   TAX -> Cat o o FromAcc ToM x
   HLT -> Cat o o FromMem Halt x
@@ -276,6 +231,9 @@ initState prog = State
 
 initMem :: [Op] -> Map Byte Byte
 initMem prog = Map.fromList (zip [0..] (map encodeOp prog))
+
+encodeOp :: Op -> Byte
+encodeOp = encodeCat . op2cat
 
 data Output = Output Byte
 
