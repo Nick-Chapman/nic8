@@ -80,7 +80,7 @@ op2cat = \case
   LXB -> Cat o o FromMem ToB x
   LXX -> Cat o o FromMem ToX x
   SXA -> Cat o o FromA ToMem x
-  JIU -> Cat o o FromMem ToP o
+  JIU -> Cat x x FromMem ToP o
   JIZ -> Cat o x FromMem ToP o
   JIV -> Cat x o FromMem ToP o
   ADD -> Cat o o FromAlu ToA x
@@ -214,7 +214,7 @@ cat2control = \case
     let doSubtract = xbit6
     let jumpIfZero = xbit6
     let jumpIfOverflow = xbit7
-    let unconditionalJump = not (xbit6 || xbit7)
+    let unconditionalJump = xbit6 && xbit7
     Control {provideMem,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,halt,immediate,doSubtract
