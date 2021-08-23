@@ -1,0 +1,159 @@
+
+module Control
+
+/*
+Control logic for nic8 is a bit tricky... 11 chips. fit on 2 boards
+
+1x LS173 (8-bit Reg)
+1x LS138 (3->8 decoder)
+3x LS74 (Dual FF)
+2x LS08 (Quad And)
+1x LS139 (Dual 2->4 decoder)
+2x LS00 (Quad Nand)
+1x LS04 (Hex Inverter)
+*/
+
+input clk
+input mr //master reset
+input stop
+input accIsZero
+input aluOverflow
+
+wire [7:0] abus
+wire [7:0] dbus
+
+reg IR [7:0]
+
+wire xbit7
+wire xbit6
+wire [1:0] src
+wire [2:0] dest
+wire indexed
+assign {xbit7, xbit6, src, dest, indexed} = IR
+
+// 7 (of 8 possible) destinations have selectors (active low)
+
+wire I-load-bar
+wire P-load-bar
+wire A-load-bar
+wire B-load-bar
+wire X-load-bar
+wire M-load-bar
+wire O-load-bar
+
+LS139( // 3->8 decoder
+  .CBA(dest)
+  .G1()
+  .G2(stop)
+  .Y0(I-load-bar)
+  .Y1(P-load-bar)
+  .Y2(A-load-bar)
+  .Y3(B-load-bar)
+  .Y4(X-load-bar)
+  .Y5(M-load-bar)
+  .Y6(O-load-bar)
+  .Y7() //not connected
+)
+
+// 6 of the 7 destinations are latched to provide stable clock gating
+
+wire A-load-latch
+wire B-load-latch
+wire X-load-latch
+wire O-load-latch
+wire M-load-latch
+wire I-load-latch
+wire I-load-latch-bar
+
+
+// 3 dual neg-edge triggered flip-flops for the latching; taking inverted output for active high clock gates
+
+LS74(
+  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(A-load-bar) .q1()                 .qbar1(A-load-latch)
+  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(B-load-bar) .q2()                 .qbar2(B-load-latch)
+)
+LS74(
+  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(X-load-bar) .q1()                 .qbar1(X-load-latch)
+  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(O-load-bar) .q2()                 .qbar2(O-load-latch)
+)
+LS74(
+  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(M-load-bar) .q1()                 .qbar1(M-load-latch)
+  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(I-load-bar) .q2(I-load-latch-bar) .qbar2(I-load-latch)
+)
+
+// clock gates; via 2x LS08 QUAD-AND (using 7 of 8)
+
+wire A-clk-load = clk & A-load-latch
+wire B-clk-load = clk & B-load-latch
+wire X-clk-load = clk & X-load-latch
+wire O-clk-load = clk & O-load-latch
+wire M-clk-load = clk & M-load-latch
+wire I-clk-load = clk & I-load-latch
+wire I-reset    = (clk & I-load-latch-bar) | mr
+
+
+// when running, four sources for the data bus
+wire M-data-out-en-bar
+wire E-data-out-en-bar
+wire A-data-out-en-bar
+wire X-data-out-en-bar
+
+// when running, two sources for the address buss
+wire P-addr-out-en-bar
+wire X-addr-out-en-bar
+
+LS138( // Dual 2->4 decoder
+  .BA1(src)
+  .G1(stop)
+  .1Y0(M-data-out-en-bar)
+  .1Y1(E-data-out-en-bar)
+  .1Y2(A-data-out-en-bar)
+  .1Y3(X-data-out-en-bar)
+
+  .BA2({0,indexed})
+  .G2(stop)
+  .2Y0(P-addr-out-en-bar)
+  .2Y1(X-addr-out-en-bar)
+  .2Y2() //nc
+  .2Y3() //nc
+)
+
+
+wire doSubtract = xbit6
+wire jumpIfZero = xbit6
+wire jumpIfOverflow = xbit7
+
+
+// nand gates (6 of 8 from 2x Quad package LS00)
+
+wire jumpUnconditional-bar = !(xbit6 & xbit7)
+wire jumpBecauseZero-bar = !(jumpIfZero & accIsZero)
+wire jumpBecauseOverflow-bar = !(jumpIfOverflow & aluOverflow)
+wire jumpBecauseCondition = !(jumpBecauseZero-bar & jumpBecauseOverflow-bar)
+wire jumpAnyReason = !(jumpUnconditional-bar & jumpBecauseCondition-bar)
+wire jump-bar = !(jumpAnyReason & P-load)
+
+
+// inverters here (5 of 6 from hex package LS04)
+
+wire jump = !jump-bar
+wire P-load = !P-load-bar
+
+wire clk-bar = !clk
+wire M-clk-load-bar = !M-clk-load
+wire jumpBecauseCondition-bar = !jumpBecauseCondition
+
+
+// controls routed to the other system modules
+
+MEM   (.read(M-data-out-en-bar) .write(M-clk-load-bar) .addr(abus) .data(dbus))
+
+A     (.reset(mr)                         .load(A-clk-load) .en(A-data-out-en-bar)                                     .data(dbus))
+ALU_B (.reset(mr) .doSubtract(doSubtract) .load(B-clk-load) .en(E-data-out-en-bar)                                     .data(dbus))
+X     (.reset(mr)                         .load(X-clk-load) .en(X-data-out-en-bar) .en2(X-addr-out-en-bar) .addr(abus) .data(dbus))
+PC    (.reset(mr) .clk(clk)               .load(jump)                              .en2(P-addr-out-en-bar) .addr(abus) .data(dbus))
+OUT   (.reset(mr)                         .load(O-clk-load)                                                            .data(dbus))
+
+
+// The actual register for the IR register we are decoding from
+LS173 (.cp(I-clk-load) .reset(I-reset) d(dbus) q(IR))
