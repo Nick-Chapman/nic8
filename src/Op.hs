@@ -22,7 +22,6 @@ data Op
   | JIU -- pc := M[pc]
   | JIZ -- pc := zero(A) ? M[pc] : pc+1
   | JIV -- pc := overflowFlag ? M[pc] : pc+1
-  | JAU -- pc := A
   -- Arithmetic (also sets overflow flag)
   | ADD -- A := A+B
   | ADDB -- B := A+B

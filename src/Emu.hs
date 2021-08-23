@@ -83,7 +83,6 @@ op2cat = \case
   JIU -> Cat o o FromMem ToP o
   JIZ -> Cat o x FromMem ToP o
   JIV -> Cat x o FromMem ToP o
-  JAU -> Cat o x FromA ToP x
   ADD -> Cat o o FromAlu ToA x
   ADDB -> Cat o o FromAlu ToB x
   ADDX -> Cat o o FromAlu ToX x
