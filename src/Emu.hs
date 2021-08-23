@@ -1,6 +1,6 @@
 
 module Emu
-  ( runIO, runCollectOutput
+  ( runIO, runCollectOutput, encodeOp
   , Cycles(..), OutOfGas(..)
   ) where
 
