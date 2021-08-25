@@ -20,13 +20,13 @@ run = Testing.run $ do
     asm1 = assemble $ mdo
       Emit [LIX, IMM vars]
       Emit [OUTM]
-      Emit [JIU, IMM done]
+      Emit [LIX, IMM done, JXU]
       vars <- Here
       Emit [IMM 42]
       done <- Here
       Emit [HLT]
   test
-    asm1 7 [42]
+    asm1 9 [42]
 
   let
     -- example which loops around PC and then runs into halt instruction
@@ -47,57 +47,56 @@ run = Testing.run $ do
   test [LIA,IMM 2,LIB,IMM 3,ADD,OUT,HLT] 9 [5]
   test [LIA,IMM 2,LIB,IMM 3,SUB,OUT,HLT] 9 [255] -- subtraction wraps mod 256
 
-  test [LIA,IMM 33,JIZ,IMM 6,OUT,HLT,LIA,IMM 44,OUT,HLT] 7 [33] -- jump taken
-  test [LIA,IMM 0, JIZ,IMM 6,OUT,HLT,LIA,IMM 44,OUT,HLT] 9 [44] -- jump not taken
+  test [LIA,IMM 33,LIX,IMM 7,JXZ,OUT,HLT,LIA,IMM 44,OUT,HLT] 9  [33] -- jump taken
+  test [LIA,IMM 0, LIX,IMM 7,JXZ,OUT,HLT,LIA,IMM 44,OUT,HLT] 11 [44] -- jump not taken
 
   test X.variousInstructions 61 [75,74,111,111,222,77]
-  test X.countdown5to0 45 [5,4,3,2,1,0]
-  test X.multiply5by7 145 [35]
-  test X.fibA 447 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibB 295 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibC 155 [1,1,2,3,5,8,13,21,34,55,89,144,233]
+  test X.countdown5to0 63 [5,4,3,2,1,0]
+  test X.multiply5by7 179 [35]
+  test X.fibA 491 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibB 339 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibC 209 [1,1,2,3,5,8,13,21,34,55,89,144,233]
 
   let
-    -- example with accesses memory sequentially via incrementing X
+    -- example which outputs memory sequentially
     dis = assemble $ mdo
-      Emit [LIB, IMM 1]
-      Emit [LIX, IMM array]
+      Emit [LIA, IMM array]
       loop <- Here
-      Emit [LXA]
-      Emit [JIZ, IMM done]
+      Emit [TAB, TAX, LXA]
+      Emit [LIX, IMM done, JXZ]
       Emit [OUT]
-      Emit [TXA, ADDX]
-      Emit [JIU, IMM loop]
+      Emit [LIA, IMM 1, ADD]
+      Emit [LIX, IMM loop, JXU]
       done <- Here
       Emit [HLT]
       array <- Here
       Emit (map IMM [2,3,5,7,11,13,0])
   test
-    dis 81 [2,3,5,7,11,13]
+    dis 133 [2,3,5,7,11,13]
 
   let
     countup = assemble $ mdo
       Emit [LIB, IMM 1]
       Emit [LIA, IMM 250]
       loop <- Here
-      Emit [JIZ, IMM done, OUT, ADD]
-      Emit [JIU, IMM loop]
+      Emit [LIX, IMM done, JXZ, OUT, ADD]
+      Emit [LIX, IMM loop, JXU]
       done <- Here
       Emit [HLT]
   test
-    countup 55 [250,251,252,253,254,255]
+    countup 81 [250,251,252,253,254,255]
 
   let
     countup10 = assemble $ mdo
       Emit [LIB, IMM 10]
       Emit [LIA, IMM 200]
       loop <- Here
-      Emit [OUT, ADD, JIV, IMM done]
-      Emit [JIU, IMM loop]
+      Emit [OUT, ADD, LIX, IMM done, JXV]
+      Emit [LIX, IMM loop, JXU]
       done <- Here
       Emit [HLT]
   test
-    countup10 51 [200,210,220,230,240,250]
+    countup10 73 [200,210,220,230,240,250]
 
   let
     divides numer denom = assemble $ mdo
@@ -113,15 +112,15 @@ run = Testing.run $ do
       no <- Here
       outi 0; halt
 
-  test (divides 8 1) 67 [1]
-  test (divides 8 2) 35 [1]
-  test (divides 8 3) 29 [0]
-  test (divides 8 4) 19 [1]
-  test (divides 8 5) 21 [0]
-  test (divides 8 11) 13 [0]
+  test (divides 8 1) 111 [1]
+  test (divides 8 2) 55 [1]
+  test (divides 8 3) 45 [0]
+  test (divides 8 4) 27 [1]
+  test (divides 8 5) 31 [0]
+  test (divides 8 11) 17 [0]
 
   -- test prime generation program
-  test Primes.outputPrimes 154757
+  test Primes.outputPrimes 242695
     [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97
     ,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199
     ,211,223,227,229,233,239,241,251]

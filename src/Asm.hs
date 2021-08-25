@@ -48,9 +48,9 @@ lxa = Emit [LXA]
 lxb = Emit [LXB]
 lxx = Emit [LXX]
 
-jump b = Emit [JIU, IMM b]
-jz b = Emit [JIZ, IMM b]
-jv b = Emit [JIV, IMM b]
+jump b = Emit [LIX, IMM b, JXU]
+jz b = Emit [LIX, IMM b, JXZ]
+jv b = Emit [LIX, IMM b, JXV]
 
 variable val = do
   loc <- Here

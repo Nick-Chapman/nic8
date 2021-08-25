@@ -52,57 +52,57 @@ countdown5to0 =
 --4:
   , OUT
   , SUB
-  , JIZ, IMM 10
-  , JIU, IMM 4
---10:
+  , LIX, IMM 12, JXZ
+  , LIX, IMM 4, JXU
+--12:
   , OUT
   , HLT
   ]
 
 multiply5by7 :: [Op]
 multiply5by7 =
-  [ JIU, IMM 10
+  [ LIX, IMM 11, JXU
 -- static mem storage
-  , IMM 5 -- #2 left
-  , IMM 7 -- #3 right
-  , IMM 0 -- #4 result
--- 5: finish
+  , IMM 5 -- #3 left
+  , IMM 7 -- #4 right
+  , IMM 0 -- #5 result
+-- 6: finish
   , LIX, IMM result, LXA
   , OUT
   , HLT
--- 10: main loop
-  , LIX, IMM left, LXA -- , OUT
-  , JIZ, IMM 5
+-- 11: main loop
+  , LIX, IMM left, LXA
+  , LIX, IMM 6, JXZ
   , LIB, IMM 1
   , SUB
-  , SXA
+  , LIX, IMM left, SXA
   , LIX, IMM right, LXB
   , LIX, IMM result, LXA
-  , ADD --, OUT
+  , ADD
   , SXA
-  , JIU, IMM 10
+  , LIX, IMM 11, JXU
   ]
   where
-    left = 2
-    right = 3
-    result = 4
+    left = 3
+    right = 4
+    result = 5
 
 fibA :: [Op]
 fibA =
-  [ JIU, IMM 6
--- 2:
+  [ LIX, IMM 7, JXU
+-- 3:
   , HLT
   , IMM 0
   , IMM 1
   , IMM 0
--- 6:
-  , LIX, IMM 3, LXA, TAB
-  , LIX, IMM 4, LXA, OUT
-  , ADD, LIX, IMM 5, SXA
-  , LIB, IMM 144, SUB, JIZ, IMM 2
-  , LIX, IMM 4, LXA, LIX, IMM 3, SXA
+-- 7:
+  , LIX, IMM 4, LXA, TAB
+  , LIX, IMM 5, LXA, OUT
+  , ADD, LIX, IMM 6, SXA
+  , LIB, IMM 144, SUB, LIX, IMM 3, JXZ
   , LIX, IMM 5, LXA, LIX, IMM 4, SXA
-  , JIU, IMM 6
+  , LIX, IMM 6, LXA, LIX, IMM 5, SXA
+  , LIX, IMM 7, JXU
   ]
 
 fibB :: [Op]
@@ -127,8 +127,8 @@ fibC = assemble $ mdo
   la 1
   loop <- Here
   out; addx
-  jv done
   tab; txa
+  jv done
   jump loop
   done <- Here
   halt

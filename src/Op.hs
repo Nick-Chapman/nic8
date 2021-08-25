@@ -19,9 +19,9 @@ data Op
   -- Store indexed
   | SXA -- M[X] := A
   -- Jumps
-  | JIU -- pc := M[pc]
-  | JIZ -- pc := zero(A) ? M[pc] : pc+1
-  | JIV -- pc := overflowFlag ? M[pc] : pc+1
+  | JXU -- pc := X
+  | JXZ -- pc := zero(A) ? X : pc+1
+  | JXV -- pc := overflowFlag ? X : pc+1
   -- Arithmetic (also sets overflow flag)
   | ADD -- A := A+B
   | ADDB -- B := A+B
