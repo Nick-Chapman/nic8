@@ -15,8 +15,8 @@ main = do
   Test.run
 
   putStrLn "Running example..."
-  let _prog = vSmall
-  let prog = fibForever
+  let prog = vSmall
+  let _prog = fibForever
   let _prog = Examples.fibC
   let _prog = Primes.outputPrimes
   printProg prog
