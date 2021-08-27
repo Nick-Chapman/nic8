@@ -15,11 +15,13 @@ main = do
   Test.run
 
   putStrLn "Running example..."
-  let prog = vSmall
+  let _prog = vSmall
+  let prog = fibForever
   let _prog = Examples.fibC
   let _prog = Primes.outputPrimes
   printProg prog
-  Emu.runIO prog
+  let _ = Emu.runIO prog
+  pure ()
 
 printProg :: [Op] -> IO ()
 printProg prog = do
@@ -35,3 +37,11 @@ vSmall = assemble $ do
   add
   out
   halt
+
+fibForever :: [Op]
+fibForever = assemble $ mdo
+  la 1
+  loop <- Here
+  out; addx
+  tab; txa
+  jump loop
