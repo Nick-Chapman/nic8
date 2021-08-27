@@ -4,7 +4,7 @@ module Control
 /*
 Control logic for nic8 is a bit tricky... 11 chips. fit on 2 boards
 
-1x LS173 (8-bit Reg)
+1x LS273 (8-bit Reg)
 1x LS138 (3->8 decoder)
 3x LS74 (Dual FF)
 2x LS08 (Quad And)
@@ -14,7 +14,7 @@ Control logic for nic8 is a bit tricky... 11 chips. fit on 2 boards
 */
 
 input clk
-input mr //master reset
+input mr-bar //master reset
 input stop
 input accIsZero
 input aluOverflow
@@ -62,8 +62,9 @@ wire B-load-latch
 wire X-load-latch
 wire O-load-latch
 wire M-load-latch
-wire I-load-latch
-wire I-load-latch-bar
+
+wire I-fetch-latch
+wire I-exec-latch
 
 
 // 3 dual neg-edge triggered flip-flops for the latching; taking inverted output for active high clock gates
@@ -78,7 +79,7 @@ LS74(
 )
 LS74(
   .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(M-load-bar) .q1()                 .qbar1(M-load-latch)
-  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(I-load-bar) .q2(I-load-latch-bar) .qbar2(I-load-latch)
+  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(I-load-bar) .q2(I-exec-latch)     .qbar2(I-fetch-latch)
 )
 
 // clock gates; via 2x LS08 QUAD-AND (using 7 of 8)
@@ -88,8 +89,9 @@ wire B-clk-load = clk & B-load-latch
 wire X-clk-load = clk & X-load-latch
 wire O-clk-load = clk & O-load-latch
 wire M-clk-load = clk & M-load-latch
-wire I-clk-load = clk & I-load-latch
-wire I-reset    = (clk & I-load-latch-bar) | mr
+
+wire I-clk-fetch = clk & I-fetch-latch
+wire I-clk-exec  = clk & I-exec-latch
 
 
 // when running, four sources for the data bus
@@ -133,6 +135,9 @@ wire jumpBecauseCondition = !(jumpBecauseZero-bar & jumpBecauseOverflow-bar)
 wire jumpAnyReason = !(jumpUnconditional-bar & jumpBecauseCondition-bar)
 wire jump-bar = !(jumpAnyReason & P-load)
 
+wire I-reset-bar = !(I-clk-exec-bar & mr-bar)
+wire I-clk-exec-bar = !I-clk-exec
+
 
 // inverters here (5 of 6 from hex package LS04)
 
@@ -142,6 +147,8 @@ wire P-load = !P-load-bar
 wire clk-bar = !clk
 wire M-clk-load-bar = !M-clk-load
 wire jumpBecauseCondition-bar = !jumpBecauseCondition
+
+wire mr = !mr-bar
 
 
 // controls routed to the other system modules
@@ -156,4 +163,4 @@ OUT   (.reset(mr)                         .load(O-clk-load)                     
 
 
 // The actual register for the IR register we are decoding from
-LS173 (.cp(I-clk-load) .reset(I-reset) d(dbus) q(IR))
+LS173 (.cp(I-clk-fetch) .reset(I-reset-bar) d(dbus) q(IR))
