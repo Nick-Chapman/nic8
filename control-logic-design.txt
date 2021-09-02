@@ -14,10 +14,13 @@ Control logic for nic8 is a bit tricky... 11 chips. fit on 2 boards
 */
 
 input clk
-input mr-bar //master reset
-input stop
-input accIsZero
-input aluOverflow
+input mr-bar      // master-reset; button
+input stop-bar    // go;   button & Green bulb
+input go-bar      // stop; button & Red bulb
+input accIsZero   // TODO: currently grounded; but do have logic for this now (8-way Nor)
+input aluOverflow // TODO: currently grounded
+
+input write-bar   // program the memory from switches; button
 
 wire [7:0] abus
 wire [7:0] dbus
@@ -34,7 +37,7 @@ assign {xbit7, xbit6, src, dest, indexed} = IR
 // 7 (of 8 possible) destinations have selectors (active low)
 
 wire I-load-bar
-wire P-load-bar
+wire P-load-bar // special - not latched because PC is build from 2x161, not a 273 like other registers
 wire A-load-bar
 wire B-load-bar
 wire X-load-bar
@@ -44,7 +47,7 @@ wire O-load-bar
 LS139( // 3->8 decoder
   .CBA(dest)
   .G1()
-  .G2(stop)
+  .G2(go-bar)
   .Y0(I-load-bar)
   .Y1(P-load-bar)
   .Y2(A-load-bar)
@@ -52,46 +55,48 @@ LS139( // 3->8 decoder
   .Y4(X-load-bar)
   .Y5(M-load-bar)
   .Y6(O-load-bar)
-  .Y7() //not connected
+  .Y7() //not connected // TODO: plan to use this for halt logic
 )
 
 // 6 of the 7 destinations are latched to provide stable clock gating
 
+wire X-load-latch
+wire M-load-latch
+wire O-load-latch
 wire A-load-latch
 wire B-load-latch
-wire X-load-latch
-wire O-load-latch
-wire M-load-latch
 
-wire I-fetch-latch
-wire I-exec-latch
+wire I-exec-latch // special; feeds into reset of IR register
+wire I-fetch-latch // Red bulb
 
 
 // 3 dual neg-edge triggered flip-flops for the latching; taking inverted output for active high clock gates
+// make no use of (active low) preset/clear
 
 LS74(
-  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(A-load-bar) .q1()                 .qbar1(A-load-latch)
-  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(B-load-bar) .q2()                 .qbar2(B-load-latch)
+  .clk1(clk-bar) .clr1(1) .pr1(1) .d1(X-load-bar) .q1()                 .qbar1(X-load-latch)
+  .clk2(clk-bar) .clr2(1) .pr2(1) .d2(A-load-bar) .q2()                 .qbar2(A-load-latch)
 )
 LS74(
-  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(X-load-bar) .q1()                 .qbar1(X-load-latch)
-  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(O-load-bar) .q2()                 .qbar2(O-load-latch)
+  .clk1(clk-bar) .clr1(1) .pr1(1) .d1(M-load-bar) .q1()                 .qbar1(M-load-latch)
+  .clk2(clk-bar) .clr2(1) .pr2(1) .d2(B-load-bar) .q2()                 .qbar2(B-load-latch)
 )
 LS74(
-  .clk1(clk-bar) .clr1(0) .pr1(mr) .d1(M-load-bar) .q1()                 .qbar1(M-load-latch)
-  .clk2(clk-bar) .clr2(0) .pr2(mr) .d2(I-load-bar) .q2(I-exec-latch)     .qbar2(I-fetch-latch)
+  .clk1(clk-bar) .clr1(1) .pr1(1) .d1(O-load-bar) .q1()                 .qbar1(O-load-latch)
+  .clk2(clk-bar) .clr2(1) .pr2(1) .d2(I-load-bar) .q2(I-exec-latch)     .qbar2(I-fetch-latch)
 )
 
-// clock gates; via 2x LS08 QUAD-AND (using 7 of 8)
+// clock gates; via 2x LS08 (Quad And)
 
-wire A-clk-load = clk & A-load-latch
-wire B-clk-load = clk & B-load-latch
-wire X-clk-load = clk & X-load-latch
-wire O-clk-load = clk & O-load-latch
-wire M-clk-load = clk & M-load-latch
+                                       // 1-TL unused
+wire X-clk-load  = clk & X-load-latch  // 1-TR // TODO: Yellow bulb, but not wired any where yet
+wire A-clk-load  = clk & A-load-latch  // 1-BL
+wire B-clk-load  = clk & B-load-latch  // 1-BR
 
-wire I-clk-fetch = clk & I-fetch-latch
-wire I-clk-exec  = clk & I-exec-latch
+wire M-clk-load  = clk & M-load-latch  // 2-TL // TODO: Yellow bulb, but not wired any where yet
+wire O-clk-load  = clk & O-load-latch  // 2-TR
+wire I-clk-exec  = clk & I-exec-latch  // 2-TL (special, red wire)
+wire I-clk-fetch = clk & I-fetch-latch // 2-TR
 
 
 // when running, four sources for the data bus
@@ -106,14 +111,14 @@ wire X-addr-out-en-bar
 
 LS138( // Dual 2->4 decoder
   .BA1(src)
-  .G1(stop)
+  .G1(go-bar)
   .1Y0(M-data-out-en-bar)
   .1Y1(E-data-out-en-bar)
   .1Y2(A-data-out-en-bar)
   .1Y3(X-data-out-en-bar)
 
   .BA2({0,indexed})
-  .G2(stop)
+  .G2(go-bar)
   .2Y0(P-addr-out-en-bar)
   .2Y1(X-addr-out-en-bar)
   .2Y2() //nc
@@ -126,40 +131,44 @@ wire jumpIfZero = xbit6
 wire jumpIfOverflow = xbit7
 
 
-// nand gates (6 of 8 from 2x Quad package LS00)
+// nand gates; 2x 74LS00 (Quad Nand)
 
-wire jumpUnconditional-bar = !(xbit6 & xbit7)
-wire jumpBecauseZero-bar = !(jumpIfZero & accIsZero)
-wire jumpBecauseOverflow-bar = !(jumpIfOverflow & aluOverflow)
-wire jumpBecauseCondition = !(jumpBecauseZero-bar & jumpBecauseOverflow-bar)
-wire jumpAnyReason = !(jumpUnconditional-bar & jumpBecauseCondition-bar)
-wire jump-bar = !(jumpAnyReason & P-load)
+wire jumpUnconditional-bar = !(xbit6 & xbit7)                                   // 1-TL
+wire jumpBecauseZero-bar = !(jumpIfZero & accIsZero)                            // 1-TR
+wire jumpBecauseCondition = !(jumpBecauseZero-bar & jumpBecauseOverflow-bar)    // 1-BL
+wire jumpAnyReason = !(jumpUnconditional-bar & jumpBecauseCondition-bar)        // 1-BR
 
-wire I-reset-bar = !(I-clk-exec-bar & mr-bar)
-wire I-clk-exec-bar = !I-clk-exec
+wire jumpBecauseOverflow-bar = !(jumpIfOverflow & aluOverflow)                  // 2-TL
+wire I-reset-bar = !(I-reset & I-reset)                                         // 2-TR (using Nand as Inverter)
+wire jump-bar = !(jumpAnyReason & P-load)                                       // 2-BL
+wire I-reset = !(I-clk-exec-bar & mr-bar)                                       // 2-BR
 
 
-// inverters here (5 of 6 from hex package LS04)
+// inverters; 1x LS04 (Hex Inverter) -- a,b,c/d,e,f
 
-wire jump = !jump-bar
-wire P-load = !P-load-bar
+wire jump = !jump-bar                                   // a -- drives Blue bulb, but not actually needed as the PC-load is active-low
+wire P-load = !P-load-bar                               // b
+wire clk-bar = !clk                                     // c
+wire M-clk-load-bar = !M-clk-load                       // d TODO: not wired yet
+wire jumpBecauseCondition-bar = !jumpBecauseCondition   // e
+wire I-clk-exec-bar = !I-clk-exec                       // f
 
-wire clk-bar = !clk
-wire M-clk-load-bar = !M-clk-load
-wire jumpBecauseCondition-bar = !jumpBecauseCondition
 
-wire mr = !mr-bar
+// stop/go logic; using some And gates (TODO: where to place?)
+
+wire M-read-bar = M-data-out-en-bar & stop-bar
+wire M-write-bar = M-clk-load-bar & write-bar // TODO: currently just have: wire M-write-bar = write-bar
 
 
 // controls routed to the other system modules
 
-MEM   (.read(M-data-out-en-bar) .write(M-clk-load-bar) .addr(abus) .data(dbus))
+MEM   (.read(M-read-bar) .write(M-write-bar) .addr(abus) .data(dbus))
 
-A     (.reset(mr)                         .load(A-clk-load) .en(A-data-out-en-bar)                                     .data(dbus))
-ALU_B (.reset(mr) .doSubtract(doSubtract) .load(B-clk-load) .en(E-data-out-en-bar)                                     .data(dbus))
-X     (.reset(mr)                         .load(X-clk-load) .en(X-data-out-en-bar) .en2(X-addr-out-en-bar) .addr(abus) .data(dbus))
-PC    (.reset(mr) .clk(clk)               .load(jump)                              .en2(P-addr-out-en-bar) .addr(abus) .data(dbus))
-OUT   (.reset(mr)                         .load(O-clk-load)                                                            .data(dbus))
+A     (.reset(mr-bar)                         .load(A-clk-load) .en(A-data-out-en-bar)                                     .data(dbus))
+ALU_B (.reset(mr-bar) .doSubtract(doSubtract) .load(B-clk-load) .en(E-data-out-en-bar)                                     .data(dbus))
+X     (.reset(mr-bar)                         .load(X-clk-load) .en(X-data-out-en-bar) .en2(X-addr-out-en-bar) .addr(abus) .data(dbus))
+PC    (.reset(mr-bar) .clk(clk)               .load(jump-bar)                          .en2(P-addr-out-en-bar) .addr(abus) .data(dbus))
+OUT   (.reset(mr-bar)                         .load(O-clk-load)                                                            .data(dbus))
 
 
 // The actual register for the IR register we are decoding from
