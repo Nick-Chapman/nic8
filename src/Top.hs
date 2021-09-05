@@ -2,7 +2,7 @@ module Top (main) where
 
 import Control.Monad (forM_)
 import Text.Printf (printf)
-import qualified Emu (runIO,encodeOp)
+import qualified Emu (runIO,runCollectOutput,encodeOp)
 import qualified Examples
 import qualified Primes
 import qualified Test (run)
@@ -17,11 +17,14 @@ main = do
   putStrLn "Running example..."
   let _prog = vSmall
   let _prog = fibForever
-  let prog = fibUnrolled
+  let _prog = fibUnrolled
   let _prog = Examples.fibC
   let _prog = Primes.outputPrimes
+  let prog = countdownForever
   printProg prog
-  Emu.runIO prog
+
+  let _ = Emu.runIO prog
+  print $ Emu.runCollectOutput 100 prog
   pure ()
 
 printProg :: [Op] -> IO ()
@@ -30,6 +33,17 @@ printProg prog = do
   forM_ (zip [0::Byte ..] prog) $ \(i,op) ->
     printf "%3d: %08b : %08b : %s\n" i i (Emu.encodeOp op) (show op)
 
+
+countdownForever :: [Op]
+countdownForever = assemble $ do
+  lb 1
+  start <- Here
+  la 5
+  loop <- Here
+  out
+  jz start
+  sub
+  jump loop
 
 vSmall :: [Op]
 vSmall = assemble $ do

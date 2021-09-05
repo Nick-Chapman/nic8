@@ -53,7 +53,7 @@ runCollectOutput max prog = do
         Just s' -> loop (cycles+1) acc' s'
 
 
-data OutOfGas = OutOfGas
+data OutOfGas = OutOfGas deriving Show
 newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 
 
