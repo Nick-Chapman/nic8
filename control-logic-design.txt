@@ -131,6 +131,7 @@ LS138( // Dual 2->4 decoder
 wire X-addr-out-en-bar = indexed & go
 wire P-addr-out-en-bar = !X-addr-out-en-bar //addr bus is always driven by one of X/P
 
+wire tick = X-addr-out-en-bar // tick is active high
 
 wire doSubtract = xbit6
 wire jumpIfZero = xbit6
@@ -173,7 +174,7 @@ MEM   (.read(M-read-bar) .write(M-write-bar) .addr(abus) .data(dbus))
 A     (.reset(mr-bar)                         .load(A-clk-load) .en(A-data-out-en-bar)                                     .data(dbus))
 ALU_B (.reset(mr-bar) .doSubtract(doSubtract) .load(B-clk-load) .en(E-data-out-en-bar)                                     .data(dbus))
 X     (.reset(mr-bar)                         .load(X-clk-load) .en(X-data-out-en-bar) .en2(X-addr-out-en-bar) .addr(abus) .data(dbus))
-PC    (.reset(mr-bar) .clk(clk)               .load(jump-bar)                          .en2(P-addr-out-en-bar) .addr(abus) .data(dbus))
+PC    (.reset(mr-bar) .clk(clk)  .tick(tick)  .load(jump-bar)                          .en2(P-addr-out-en-bar) .addr(abus) .data(dbus))
 OUT   (.reset(mr-bar)                         .load(O-clk-load)                                                            .data(dbus))
 
 
