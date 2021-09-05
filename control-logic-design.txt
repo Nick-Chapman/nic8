@@ -117,13 +117,19 @@ LS138( // Dual 2->4 decoder
   .1Y2(A-data-out-en-bar)
   .1Y3(X-data-out-en-bar)
 
-  .BA2({0,indexed})
-  .G2(go-bar)
-  .2Y0(P-addr-out-en-bar)
-  .2Y1(X-addr-out-en-bar)
-  .2Y2() //nc
-  .2Y3() //nc
+// unnecessary/complicated/wrong!...
+//
+//  .BA2({0,indexed})
+//  .G2(go-bar)
+//  .2Y0(P-addr-out-en-bar)
+//  .2Y1(X-addr-out-en-bar)
+//  .2Y2() //nc
+//  .2Y3() //nc
 )
+
+// instead... one And + One Inverter (alternatively 2 Nands)
+wire X-addr-out-en-bar = indexed & go
+wire P-addr-out-en-bar = !X-addr-out-en-bar //addr bus is always driven by one of X/P
 
 
 wire doSubtract = xbit6
