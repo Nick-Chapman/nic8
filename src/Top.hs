@@ -22,11 +22,12 @@ main = do
   let _prog = Primes.outputPrimes
   let _prog = countdownForever
   let _prog = fib3vars
-  let prog = fib2vars
+  let _prog = fib2vars
+  let prog = varProg1
   printProg prog
 
   let _ = Emu.runIO prog
-  print $ Emu.runCollectOutput 1000 prog
+  print $ Emu.runCollectOutput 100 prog
   pure ()
 
 printProg :: [Op] -> IO ()
@@ -35,6 +36,20 @@ printProg prog = do
   forM_ (zip [0::Byte ..] prog) $ \(i,op) ->
     printf "%3d: %08b : %08b : %s\n" i i (Emu.encodeOp op) (show op)
 
+
+varProg1 :: [Op] -- small program which does something useful with memory
+varProg1 = assemble $ mdo
+  start <- Here
+  loadA v1
+  out
+  lb 1
+  add
+  storeA v1
+  la 0
+  out
+  jump start
+  v1 <- variable 42
+  pure ()
 
 fib2vars :: [Op] -- program which uses memory for variable storage (2 vars)
 fib2vars = assemble $ mdo
