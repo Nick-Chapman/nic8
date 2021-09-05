@@ -128,8 +128,8 @@ LS138( // Dual 2->4 decoder
 )
 
 // instead... one And + One Inverter (alternatively 2 Nands)
-wire X-addr-out-en-bar = indexed & go
-wire P-addr-out-en-bar = !X-addr-out-en-bar //addr bus is always driven by one of X/P
+wire P-addr-out-en-bar = indexed & go
+wire X-addr-out-en-bar = !P-addr-out-en-bar //addr bus is always driven by one of X/P
 
 wire tick = X-addr-out-en-bar // tick is active high
 
