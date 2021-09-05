@@ -20,11 +20,13 @@ main = do
   let _prog = fibUnrolled
   let _prog = Examples.fibC
   let _prog = Primes.outputPrimes
-  let prog = countdownForever
+  let _prog = countdownForever
+  let _prog = fib3vars
+  let prog = fib2vars
   printProg prog
 
   let _ = Emu.runIO prog
-  print $ Emu.runCollectOutput 100 prog
+  print $ Emu.runCollectOutput 1000 prog
   pure ()
 
 printProg :: [Op] -> IO ()
@@ -32,6 +34,53 @@ printProg prog = do
   printf "#prog = %d\n" (length prog)
   forM_ (zip [0::Byte ..] prog) $ \(i,op) ->
     printf "%3d: %08b : %08b : %s\n" i i (Emu.encodeOp op) (show op)
+
+
+fib2vars :: [Op] -- program which uses memory for variable storage (2 vars)
+fib2vars = assemble $ mdo
+  start <- Here
+  la 1
+  storeA q
+  la 0
+  storeA p
+  loop <- Here
+  loadB p
+  loadA q
+  storeA p
+  add
+  storeA q
+  out
+  lb 233; sub
+  jz start --Emit [TAX, JXZ]
+  jump loop
+  pure ()
+  p <- variable 0
+  q <- variable 0
+  pure ()
+
+fib3vars :: [Op] -- program which uses memory for variable storage (3 vars)
+fib3vars = assemble $ mdo
+  start <- Here
+  la 0
+  storeA p
+  la 1
+  storeA q
+  loop <- Here
+  loadA p
+  loadB q
+  add
+  storeA r
+  loadA q
+  storeA p
+  loadA r
+  storeA q
+  out
+  lb 233; sub; jz start
+  jump loop
+  p <- variable 0
+  q <- variable 0
+  r <- variable 0
+  pure ()
 
 
 countdownForever :: [Op]
