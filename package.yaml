@@ -1,10 +1,10 @@
-name:                sap
+name:                nic8
 version:             0.1.0.0
 description:         Emulator for my take on SAP (Simple as possible 8 bit architecture)
 license:             BSD3
 author:              Nick Chapman
 maintainer:          nic@amadido.co.uk
-github:              https://github.com/Nick-Chapman/sap.git
+github:              https://github.com/Nick-Chapman/nic8.git
 
 extra-source-files:
 - README.md
@@ -59,4 +59,4 @@ library:
 executables:
   main.exe:
     main:                app/main.hs
-    dependencies:        sap
+    dependencies:        nic8
