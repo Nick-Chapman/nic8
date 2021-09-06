@@ -9,6 +9,7 @@ module Examples
   , countdownForever
   , fib2vars, fib3vars
   , varProg1
+  , collatz
   ) where
 
 import Asm
@@ -240,4 +241,54 @@ varProg1 = assemble $ mdo
   out
   jump start
   v1 <- variable 42
+  pure ()
+
+
+collatz :: [Op]
+collatz = assemble $ mdo
+  main <- Here
+  loadA next
+  storeA current
+  lb 1; add; storeA next
+
+  la 0; storeA steps
+  sequence <- Here
+  increment steps 1
+  loadA current
+  out
+  lb 1; sub; jz reached1; add
+
+  -- try to divide by 2
+  storeA tmp
+  la 0; storeA count
+  div2 <- Here
+  loadA tmp
+  jz after_div2
+  lb 2; sub
+  jv mult3plus1 -- not divisible by 2
+  storeA tmp
+  increment count 1
+  jump div2
+  after_div2 <- Here
+  loadA count
+  storeA current -- divide by 2
+  jump sequence
+
+  count <- variable 0
+  tmp <- variable 0
+
+  -- multiply by 3 and +1
+  mult3plus1 <- Here
+  loadA current
+  tab; add; add; lb 1; add
+  storeA current
+  jump sequence
+
+  reached1 <- Here
+  loadA steps; out
+  jump main
+
+  next <- variable 7
+  current <- variable 0
+  steps <- variable 0
   pure ()

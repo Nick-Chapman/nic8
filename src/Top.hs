@@ -23,11 +23,12 @@ main = do
   let _prog = countdownForever
   let _prog = fib3vars
   let _prog = fib2vars
-  let prog = varProg1
+  let _prog = varProg1
+  let prog = collatz
   printProg prog
 
   let _ = Emu.runIO prog
-  print $ Emu.runCollectOutput 100 prog
+  print $ Emu.runCollectOutput 20000 prog
   pure ()
 
 printProg :: [Op] -> IO ()
