@@ -8,8 +8,9 @@ module Examples
   , fibForever, fibUnrolled
   , countdownForever
   , fib2vars, fib3vars
-  , varProg1
+  , varProg1, varProg0
   , collatz
+  , openCountLoop, tightCountLoop
   ) where
 
 import Asm
@@ -243,6 +244,19 @@ varProg1 = assemble $ mdo
   v1 <- variable 42
   pure ()
 
+varProg0 :: [Op] -- even smaller
+varProg0 = assemble $ mdo
+  lb 1
+  loop <- Here
+  loadA v1
+  out
+  add
+  --storeA v1
+  sxa
+  jump loop
+  v1 <- variable 17
+  pure ()
+
 
 collatz :: [Op]
 collatz = assemble $ mdo
@@ -292,3 +306,20 @@ collatz = assemble $ mdo
   current <- variable 0
   steps <- variable 0
   pure ()
+
+
+openCountLoop :: [Op]
+openCountLoop = assemble $ do
+  lb 1
+  add
+  out
+
+tightCountLoop :: [Op]
+tightCountLoop = assemble $ mdo
+  lb 1
+  lx loop
+  loop <- Here
+  add
+  out
+  --jump loop
+  jxu

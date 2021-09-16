@@ -4,35 +4,30 @@ import Asm (Op,Byte)
 import Control.Monad (forM_)
 import Examples
 import Text.Printf (printf)
-import qualified Emu (runIO,runCollectOutput,encodeOp)
-import qualified Primes (outputPrimes)
+import qualified Emu
 import qualified Test (run)
 
 main :: IO ()
 main = do
-  putStrLn "*SAP*"
-  -- run the regression tests
+  putStrLn "*nic8*"
+  -- regression tests
   Test.run
+  putStrLn "Assembled examples..."
+  let
+    examples =
+      [ ("fibForever",fibForever)
+      , ("countdownForever",countdownForever)
+      , ("openCountLoop",openCountLoop)
+      , ("tightCountLoop",tightCountLoop)
+      , ("varProg0",varProg0)
+      ]
+  forM_ examples $ \(name,prog) -> do
+    printProg name prog
+    print $ Emu.runCollectOutput 300 prog
+    pure ()
 
-  putStrLn "Running example..."
-  let _prog = vSmall
-  let _prog = fibForever
-  let _prog = fibUnrolled
-  let _prog = Examples.fibC
-  let _prog = Primes.outputPrimes
-  let _prog = countdownForever
-  let _prog = fib3vars
-  let _prog = fib2vars
-  let _prog = varProg1
-  let prog = collatz
-  printProg prog
-
-  let _ = Emu.runIO prog
-  print $ Emu.runCollectOutput 20000 prog
-  pure ()
-
-printProg :: [Op] -> IO ()
-printProg prog = do
-  printf "#prog = %d\n" (length prog)
+printProg :: String -> [Op] -> IO ()
+printProg name prog = do
+  printf "%s:\n" name
   forM_ (zip [0::Byte ..] prog) $ \(i,op) ->
     printf "%3d: %08b : %08b : %s\n" i i (Emu.encodeOp op) (show op)
