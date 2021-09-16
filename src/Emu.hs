@@ -155,8 +155,8 @@ encodeDest =  \case
   ToI -> 0
   ToP -> 1
   ToA -> 2
-  ToB -> 3
-  ToX -> 4
+  ToX -> 3
+  ToB -> 4
   ToMem -> 5
   ToOut -> 6
   ToHalt -> 7
@@ -167,8 +167,8 @@ decodeDest = \case
   0 -> ToI
   1 -> ToP
   2 -> ToA
-  3 -> ToB
-  4 -> ToX
+  3 -> ToX
+  4 -> ToB
   5 -> ToMem
   6 -> ToOut
   7 -> ToHalt
