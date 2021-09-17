@@ -17,10 +17,10 @@ input clk
 input mr-bar      // master-reset; button
 input stop-bar    // go;   button & Green bulb
 input go-bar      // stop; button & Red bulb
-input accIsZero   // TODO: currently grounded; but do have logic for this now (8-way Nor)
-input aluOverflow // TODO: currently grounded
+input accIsZero   // driven from 8-way Nor of A-register
+input aluOverflow // TODO: currently grounded; need to latch ALU's carry out
 
-input write-bar   // program the memory from switches; button
+input write-button-bar   // program the memory from switches; button
 
 wire [7:0] abus
 wire [7:0] dbus
@@ -55,7 +55,7 @@ LS139( // 3->8 decoder
   .Y4(B-load-bar)
   .Y5(M-load-bar)
   .Y6(O-load-bar)
-  .Y7() //not connected // TODO: plan to use this for halt logic
+  .Y7() //not connected
 )
 
 // 6 of the 7 destinations are latched to provide stable clock gating
@@ -88,12 +88,12 @@ LS74(
 
 // clock gates; via 2x LS08 (Quad And)
 
-                                       // 1-TL unused
-wire X-clk-load  = clk & X-load-latch  // 1-TR // TODO: Yellow bulb, but not wired any where yet
+wire X-clk-load  = clk & X-load-latch  // 1-TL
+                                       // 1-TR unused
 wire A-clk-load  = clk & A-load-latch  // 1-BL
 wire B-clk-load  = clk & B-load-latch  // 1-BR
 
-wire M-clk-load  = clk & M-load-latch  // 2-TL // TODO: Yellow bulb, but not wired any where yet
+                                       // 2-TL unused
 wire O-clk-load  = clk & O-load-latch  // 2-TR
 wire I-clk-exec  = clk & I-exec-latch  // 2-TL (special, red wire)
 wire I-clk-fetch = clk & I-fetch-latch // 2-TR
@@ -117,22 +117,6 @@ LS138( // Dual 2->4 decoder
   .1Y2(A-data-out-en-bar)
   .1Y3(X-data-out-en-bar)
 
-// unnecessary/complicated/wrong!...
-//
-//  .BA2({0,indexed})
-//  .G2(go-bar)
-//  .2Y0(P-addr-out-en-bar)
-//  .2Y1(X-addr-out-en-bar)
-//  .2Y2() //nc
-//  .2Y3() //nc
-)
-
-// instead... one And + One Inverter (alternatively 2 Nands)
-wire P-addr-out-en-bar = indexed & go
-wire X-addr-out-en-bar = !P-addr-out-en-bar //addr bus is always driven by one of X/P
-
-wire tick = X-addr-out-en-bar // tick is active high
-
 wire doSubtract = xbit6
 wire jumpIfZero = xbit6
 wire jumpIfOverflow = xbit7
@@ -146,7 +130,7 @@ wire jumpBecauseCondition = !(jumpBecauseZero-bar & jumpBecauseOverflow-bar)    
 wire jumpAnyReason = !(jumpUnconditional-bar & jumpBecauseCondition-bar)        // 1-BR
 
 wire jumpBecauseOverflow-bar = !(jumpIfOverflow & aluOverflow)                  // 2-TL
-wire I-reset-bar = !(I-reset & I-reset)                                         // 2-TR (using Nand as Inverter)
+wire M-level-load-bar = !(clk-bar & M-load-latch)                               // 2-TR
 wire jump-bar = !(jumpAnyReason & P-load)                                       // 2-BL
 wire I-reset = !(I-clk-exec-bar & mr-bar)                                       // 2-BR
 
@@ -156,15 +140,39 @@ wire I-reset = !(I-clk-exec-bar & mr-bar)                                       
 wire jump = !jump-bar                                   // a -- drives Blue bulb, but not actually needed as the PC-load is active-low
 wire P-load = !P-load-bar                               // b
 wire clk-bar = !clk                                     // c
-wire M-clk-load-bar = !M-clk-load                       // d TODO: not wired yet
+wire I-reset-bar = !I-reset                             // d
 wire jumpBecauseCondition-bar = !jumpBecauseCondition   // e
 wire I-clk-exec-bar = !I-clk-exec                       // f
 
 
-// stop/go logic; using some And gates (TODO: where to place?)
+// LS08 (Quad And) -- (right of stop/go latched-buttons & bulbs)
+//
+wire M-read-bar = M-data-out-en-bar & stop-bar          // TL
+                                                        // TR unused
+wire P-addr-out-en-bar = indexed & go                   // BL
+                                                        // BR unused
 
-wire M-read-bar = M-data-out-en-bar & stop-bar
-wire M-write-bar = M-clk-load-bar & write-bar // TODO: currently just have: wire M-write-bar = write-bar
+
+// LS08 (Quad And) -- (extra and-gate to left of RAM) -- TODO: share with above; relocate write-button
+//
+wire M-write-bar = M-level-load-bar & write-button-bar
+
+
+// MEAX/PX display inverters; 1x LS04 (Hex Inverter) -- a,b,c/d,e,f
+
+wire E-bulb = ! E-data-out-en-bar // a
+wire A-bulb = ! A-data-out-en-bar // b
+wire X-bulb = ! X-data-out-en-bar // c
+wire M-bulb = ! M-read-bar        // d
+                                  // e unused
+wire P-bulb = ! P-addr-out-en-bar // f
+wire X-bulb =   P-addr-out-en-bar // (rename)
+
+
+// renames...
+//
+wire X-addr-out-en-bar = P-bulb
+wire tick = X-addr-out-en-bar // tick is active high
 
 
 // controls routed to the other system modules
