@@ -51,8 +51,8 @@ LS139( // 3->8 decoder
   .Y0(I-load-bar)
   .Y1(P-load-bar)
   .Y2(A-load-bar)
-  .Y3(B-load-bar)
-  .Y4(X-load-bar)
+  .Y3(X-load-bar)
+  .Y4(B-load-bar)
   .Y5(M-load-bar)
   .Y6(O-load-bar)
   .Y7() //not connected // TODO: plan to use this for halt logic
@@ -74,12 +74,12 @@ wire I-fetch-latch // Red bulb
 // make no use of (active low) preset/clear
 
 LS74(
-  .clk1(clk-bar) .clr1(1) .pr1(1) .d1(X-load-bar) .q1()                 .qbar1(X-load-latch)
+  .clk1(clk-bar) .clr1(1) .pr1(1) .d1(B-load-bar) .q1()                 .qbar1(B-load-latch)
   .clk2(clk-bar) .clr2(1) .pr2(1) .d2(A-load-bar) .q2()                 .qbar2(A-load-latch)
 )
 LS74(
   .clk1(clk-bar) .clr1(1) .pr1(1) .d1(M-load-bar) .q1()                 .qbar1(M-load-latch)
-  .clk2(clk-bar) .clr2(1) .pr2(1) .d2(B-load-bar) .q2()                 .qbar2(B-load-latch)
+  .clk2(clk-bar) .clr2(1) .pr2(1) .d2(X-load-bar) .q2()                 .qbar2(X-load-latch)
 )
 LS74(
   .clk1(clk-bar) .clr1(1) .pr1(1) .d1(O-load-bar) .q1()                 .qbar1(O-load-latch)
