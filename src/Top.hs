@@ -23,7 +23,7 @@ main = do
       ]
   forM_ examples $ \(name,prog) -> do
     printProg name prog
-    print $ Emu.runCollectOutput 300 prog
+    let _ = print $ Emu.runCollectOutput 300 prog
     pure ()
 
 printProg :: String -> [Op] -> IO ()
