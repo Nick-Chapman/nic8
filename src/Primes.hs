@@ -22,10 +22,8 @@ outputPrimes = assemble $ mdo
   loop_subtract <- Here
   sub
   jz divides
-  jv noDiv
-  jump loop_subtract
-  noDiv <- Here
-  -- move to next prime
+  jc loop_subtract
+  -- noDiv: move to next prime
   increment primePtr 1
   jump loop_testPrimes
 
@@ -38,7 +36,7 @@ outputPrimes = assemble $ mdo
   -- candidate is a multiple, so try next candidate
   divides <- Here
   increment candidate 2 -- simple optimization; step by 2
-  jv done -- stop if candidate exceeds 255
+  jc done -- stop if candidate exceeds 255
   jump loop_testCandidate -- otherwise test next candidate
   done <- Here
   halt

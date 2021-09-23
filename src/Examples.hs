@@ -6,11 +6,11 @@ module Examples
   , fibA, fibB, fibC
   , vSmall
   , fibForever, fibUnrolled
-  , countdownForever
   , fib2vars, fib3vars
   , varProg1, varProg0
   , collatz
   , openCountLoop, tightCountLoop
+  , countdownForeverZ, countdownForeverC
   ) where
 
 import Asm
@@ -135,7 +135,7 @@ fibC = assemble $ mdo
   loop <- Here
   out; addx
   tab; txa
-  jv done
+  jc done
   jump loop
   done <- Here
   halt
@@ -172,17 +172,6 @@ fibUnrolled = assemble $ mdo
   addout
   addb
   halt
-
-countdownForever :: [Op]
-countdownForever = assemble $ do
-  lb 1
-  start <- Here
-  la 5
-  loop <- Here
-  out
-  jz start
-  sub
-  jump loop
 
 fib2vars :: [Op] -- program which uses memory for variable storage (2 vars)
 fib2vars = assemble $ mdo
@@ -279,7 +268,7 @@ collatz = assemble $ mdo
   loadA tmp
   jz after_div2
   lb 2; sub
-  jv mult3plus1 -- not divisible by 2
+  jc mult3plus1 -- not divisible by 2
   storeA tmp
   increment count 1
   jump div2
@@ -323,3 +312,25 @@ tightCountLoop = assemble $ mdo
   out
   --jump loop
   jxu
+
+countdownForeverZ :: [Op]
+countdownForeverZ = assemble $ do
+  lb 1
+  start <- Here
+  la 5
+  loop <- Here
+  out
+  jz start
+  sub
+  jump loop
+
+countdownForeverC :: [Op]
+countdownForeverC = assemble $ do
+  lb 1
+  start <- Here
+  la 5
+  loop <- Here
+  out
+  sub
+  jc loop
+  jump start

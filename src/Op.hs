@@ -21,7 +21,7 @@ data Op
   -- Jumps
   | JXU -- pc := X
   | JXZ -- pc := zero(A) ? X : pc+1
-  | JXV -- pc := overflowFlag ? X : pc+1
+  | JXC -- pc := carryFlag ? X : pc+1
   -- Arithmetic (also sets overflow flag)
   | ADD -- A := A+B
   | ADDB -- B := A+B

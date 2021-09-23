@@ -91,7 +91,7 @@ run = Testing.run $ do
       Emit [LIB, IMM 10]
       Emit [LIA, IMM 200]
       loop <- Here
-      Emit [OUT, ADD, LIX, IMM done, JXV]
+      Emit [OUT, ADD, LIX, IMM done, JXC]
       Emit [LIX, IMM loop, JXU]
       done <- Here
       Emit [HLT]
@@ -105,22 +105,22 @@ run = Testing.run $ do
       loop <- Here
       sub
       jz yes
-      jv no
-      jump loop
+      jc loop
+      --no:
+      outi 0; halt
       yes <- Here
       outi 1; halt
-      no <- Here
-      outi 0; halt
 
-  test (divides 8 1) 111 [1]
-  test (divides 8 2) 55 [1]
-  test (divides 8 3) 45 [0]
-  test (divides 8 4) 27 [1]
-  test (divides 8 5) 31 [0]
+  test (divides 8 1) 83 [1]
+  test (divides 8 2) 43 [1]
+  test (divides 8 3) 37 [0]
+  test (divides 8 4) 23 [1]
+  test (divides 8 5) 27 [0]
   test (divides 8 11) 17 [0]
 
   -- test prime generation program
-  test Primes.outputPrimes 242695
+  test Primes.outputPrimes 192339
     [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97
     ,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199
     ,211,223,227,229,233,239,241,251]
+

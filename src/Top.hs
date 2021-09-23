@@ -16,15 +16,17 @@ main = do
   let
     examples =
       [ ("fibForever",fibForever)
-      , ("countdownForever",countdownForever)
       , ("openCountLoop",openCountLoop)
       , ("tightCountLoop",tightCountLoop)
       , ("varProg0",varProg0)
+      , ("countdownForeverZ",countdownForeverZ)
+      , ("countdownForeverC",countdownForeverC)
       ]
   forM_ examples $ \(name,prog) -> do
-    printProg name prog
-    let _ = print $ Emu.runCollectOutput 300 prog
-    pure ()
+        printProg name prog
+        print $ Emu.runCollectOutput 300 prog
+        pure ()
+  pure ()
 
 printProg :: String -> [Op] -> IO ()
 printProg name prog = do

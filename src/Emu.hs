@@ -82,7 +82,7 @@ op2cat = \case
   SXA -> Cat o o FromA ToMem x
   JXU -> Cat x x FromX ToP x
   JXZ -> Cat o x FromX ToP x
-  JXV -> Cat x o FromX ToP x
+  JXC -> Cat x o FromX ToP x
   ADD -> Cat o o FromAlu ToA x
   ADDB -> Cat o o FromAlu ToB x
   ADDX -> Cat o o FromAlu ToX x
@@ -193,7 +193,7 @@ data Control = Control
   , immediate :: Bool
   , doSubtract :: Bool
   , jumpIfZero :: Bool
-  , jumpIfOverflow :: Bool
+  , jumpIfCarry :: Bool
   , unconditionalJump :: Bool
   } deriving Show
 
@@ -217,12 +217,12 @@ cat2control = \case
     let immediate = not indexed
     let doSubtract = xbit6
     let jumpIfZero = xbit6
-    let jumpIfOverflow = xbit7
+    let jumpIfCarry = xbit7
     let unconditionalJump = xbit6 && xbit7
     Control {provideMem,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,halt,immediate,doSubtract
-            ,jumpIfZero,jumpIfOverflow,unconditionalJump}
+            ,jumpIfZero,jumpIfCarry,unconditionalJump}
 
 ----------------------------------------------------------------------
 -- State
@@ -234,12 +234,12 @@ data State = State
   , rA :: Byte
   , rB :: Byte
   , rX :: Byte
-  , flagOverflow :: Bool
+  , flagCarry :: Bool
   }
 
 instance Show State where
-  show State{rIR,rPC,rA,rB,rX,flagOverflow} =
-    printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, OVERFLOW=%s" rPC rIR rA rB rX (show flagOverflow)
+  show State{rIR,rPC,rA,rB,rX,flagCarry} =
+    printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, CARRY=%s" rPC rIR rA rB rX (show flagCarry)
 
 initState :: [Op] -> State
 initState prog = State
@@ -249,7 +249,7 @@ initState prog = State
   , rA = 0
   , rB = 0
   , rX = 0
-  , flagOverflow = False
+  , flagCarry = False
   }
 
 initMem :: [Op] -> Map Byte Byte
@@ -262,18 +262,18 @@ data Output = Output Byte
 
 step :: State -> Control -> (Maybe State,Maybe Output)
 step state control = do
-  let State{mem,rIR=_,rPC,rA,rB,rX,flagOverflow} = state
+  let State{mem,rIR=_,rPC,rA,rB,rX,flagCarry} = state
   let Control{provideMem,provideAlu,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,halt,immediate,doSubtract
-             ,jumpIfZero,jumpIfOverflow,unconditionalJump} = control
+             ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
   let aIsZero = (rA == 0)
-  let jumpControl = (jumpIfZero && aIsZero) || (jumpIfOverflow && flagOverflow) || unconditionalJump
+  let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
   let abus = if immediate then rPC else rX
   let alu = if doSubtract then (rA - rB) else (rA + rB)
-  let overflow =
+  let carry =
         if doSubtract
-        then rB > rA
+        then not (rB > rA)
         else fromIntegral rA + fromIntegral rB >= (256::Int)
   let dbus =
         case (provideMem,provideAlu,provideA,provideX) of
@@ -290,7 +290,7 @@ step state control = do
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
-        , flagOverflow = if provideAlu then overflow else flagOverflow
+        , flagCarry = if provideAlu then carry else flagCarry
         }
   (if halt then Nothing else Just s',
    if doOut then Just (Output dbus) else Nothing
