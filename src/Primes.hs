@@ -1,10 +1,10 @@
 
-module Primes (outputPrimes) where -- program to compute and output prime numbers
+module Primes (primes) where -- program to compute and output prime numbers
 
 import Asm
 
-outputPrimes :: [Op]
-outputPrimes = assemble $ mdo
+primes :: [Op]
+primes = assemble $ mdo
 
   outi 2
   loop_testCandidate <- Here
