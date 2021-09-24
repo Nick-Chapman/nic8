@@ -26,7 +26,11 @@ void setup() {
 
 int data[256];
 
-int program[] = {0x4,0x1,0x2c,0x17,0x29,0x35,0x6,0x2,0xf3};
+//int program[] = {0x4,0x1,0x2c,0x17,0x29,0x35,0x6,0x2,0xf3};
+
+// countdownForeverZ
+int program[] = {0x08, 0x01, 0x04, 0x05, 0x2d, 0x06, 0x02, 0x73, 0x55, 0x06, 0x04, 0xf3};
+
 
 char buf[200];
 
@@ -62,7 +66,7 @@ void writeStuff() {
     digitalWrite(CLOCK, HIGH);
     delay(1);
     digitalWrite(CLOCK, LOW);
-    delay(3);
+    delay(5);
   }
   sprintf(buf,"writeBytes...DONE\n");
   Serial.print(buf);
@@ -82,7 +86,7 @@ void printContents() {
   }
   for (int line = 0; line < 16; line++) {
     int data[16];
-    delay(3);
+    delay(5);
     for (int byte = 0; byte < 16; byte++) {
       data[byte] = 0;
       for (int bit = 0; bit < 8; bit++) {
@@ -92,7 +96,7 @@ void printContents() {
       digitalWrite(CLOCK, HIGH);
       delay(1);
       digitalWrite(CLOCK, LOW);
-      delay(3);
+      delay(5);
     }
     sprintf(buf, "%3d : %02x %02x %02x %02x %02x %02x %02x %02x  "
                  "%02x %02x %02x %02x %02x %02x %02x %02x\n", 16*line,
