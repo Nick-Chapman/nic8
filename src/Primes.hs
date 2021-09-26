@@ -3,10 +3,14 @@ module Primes (primes) where -- program to compute and output prime numbers
 
 import Asm
 
-primes :: [Op]
-primes = assemble $ mdo
+primes :: Bool -> [Op]
+primes halting = assemble $ mdo
 
-  outi 2
+  start <- Here
+  outi 2 -- output first prime 2 (special case)
+  la 3; storeA candidate -- set first candidiate as 3
+  la 0; lx allPrimes; sxa -- zero first cell in saved primes
+
   loop_testCandidate <- Here
 
   -- Test if candidate is divisible by any prime found so far
@@ -27,23 +31,26 @@ primes = assemble $ mdo
   increment primePtr 1
   jump loop_testPrimes
 
-  -- candidate does not divide by any previous prime...
+  -- candidate does not divide by any previous prime... so it is must be prime
   noMorePrimes <- Here
   loadA candidate
-  out -- so output
-  loadX primePtr; sxa -- and save
+  out -- output it!
+  loadX primePtr; sxa -- and save!
+  txa; lb 1; addx; la 0; sxa -- zero next cell in saved primes
 
   -- candidate is a multiple, so try next candidate
   divides <- Here
   increment candidate 2 -- simple optimization; step by 2
-  jc done -- stop if candidate exceeds 255
+  jc done -- restart if candidate exceeds 255
   jump loop_testCandidate -- otherwise test next candidate
+
   done <- Here
-  halt
+  if halting then halt else pure ()
+  jump start
 
   -- Variables
-  candidate <- variable 3
-  primePtr <- variable allPrimes
+  candidate <- variable 0
+  primePtr <- variable 0
 
   -- Primes saved here; zero byte terminates list
   allPrimes <- Here
