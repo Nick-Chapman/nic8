@@ -42,6 +42,5 @@ data Op
   | OUTI -- Out := M[pc]
   | OUTM -- Out := M[X]
   -- Misc
-  | HLT
   | IMM Byte
   deriving Show

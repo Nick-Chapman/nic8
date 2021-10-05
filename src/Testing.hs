@@ -6,7 +6,7 @@ import Emu (Cycles(..),OutOfGas(..),runCollectOutput)
 import Op (Op,Byte)
 
 test :: [Op] -> Cycles -> [Byte] -> Testing ()
-test prog xcycles expected = T1 (Test prog (xcycles,expected))
+test prog xcycles xoutput = T1 (Test prog (xcycles,xoutput))
 
 run :: Testing () -> IO ()
 run testing = do
@@ -42,7 +42,7 @@ instance Show Test where
 runTest :: Int -> Test -> IO Bool
 runTest n t@(Test prog expected) = do
   let max = Cycles 500000
-  case runCollectOutput max prog of
+  case (runCollectOutput max prog) of
     Left (OutOfGas,outputSoFar) -> do
       putStrLn $ "test #" ++ show n ++ ", " ++ show t
       putStrLn $ "- *OutOfGas*: (exceeded " ++ show max ++ " cycles)"

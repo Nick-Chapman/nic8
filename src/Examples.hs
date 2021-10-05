@@ -16,8 +16,8 @@ module Examples
 import Asm
 
 variousInstructions :: [Op]
-variousInstructions =
-  [ LIA, IMM 42
+variousInstructions = assemble $ do
+ Emit [ LIA, IMM 42
   , LIB, IMM 33
   , ADD
   , OUT -- expect 75
@@ -47,10 +47,9 @@ variousInstructions =
   , LXX
   , LXA
   , OUT -- expect 77
-  , HLT
   ]
+ spin
 
--- TODO: recode remaining example using Asm
 
 countdown5to0 :: [Op]
 countdown5to0 =
@@ -63,60 +62,55 @@ countdown5to0 =
   , LIX, IMM 4, JXU
 --12:
   , OUT
-  , HLT
+  , LIX, IMM 15
+--15:
+  , JXU
   ]
 
 multiply5by7 :: [Op]
-multiply5by7 =
-  [ LIX, IMM 11, JXU
--- static mem storage
-  , IMM 5 -- #3 left
-  , IMM 7 -- #4 right
-  , IMM 0 -- #5 result
--- 6: finish
-  , LIX, IMM result, LXA
-  , OUT
-  , HLT
--- 11: main loop
-  , LIX, IMM left, LXA
-  , LIX, IMM 6, JXZ
-  , LIB, IMM 1
-  , SUB
-  , LIX, IMM left, SXA
-  , LIX, IMM right, LXB
-  , LIX, IMM result, LXA
-  , ADD
-  , SXA
-  , LIX, IMM 11, JXU
-  ]
-  where
-    left = 3
-    right = 4
-    result = 5
+multiply5by7 = assemble $ mdo
+  jump mainLoop
+  left <- variable 5
+  right <- variable 7
+  result <- variable 0
+  finish <- Here
+  loadA result
+  out
+  spin
+  mainLoop <- Here
+  loadA left
+  jz finish
+  lb 1
+  sub
+  storeA left
+  loadB right
+  loadA result
+  add
+  sxa
+  jump mainLoop
 
 fibA :: [Op]
-fibA =
-  [ LIX, IMM 7, JXU
--- 3:
-  , HLT
-  , IMM 0
-  , IMM 1
-  , IMM 0
--- 7:
-  , LIX, IMM 4, LXA, TAB
-  , LIX, IMM 5, LXA, OUT
-  , ADD, LIX, IMM 6, SXA
-  , LIB, IMM 144, SUB, LIX, IMM 3, JXZ
-  , LIX, IMM 5, LXA, LIX, IMM 4, SXA
-  , LIX, IMM 6, LXA, LIX, IMM 5, SXA
-  , LIX, IMM 7, JXU
-  ]
+fibA = assemble $ mdo
+  jump loop
+  done <- Here
+  spin
+  v1 <- variable 0
+  v2 <- variable 1
+  v3 <- variable 0
+  loop <- Here
+  loadB v1
+  loadA v2; out
+  add; storeA v3
+  lb 144; sub; jz done
+  loadA v2; storeA v1
+  loadA v3; storeA v2
+  jump loop
 
 fibB :: [Op]
 fibB = assemble $ mdo
   jump loop
   done <- Here
-  halt
+  spin
   p <- variable 0
   q <- variable 1
   loop <- Here
@@ -138,7 +132,7 @@ fibC = assemble $ mdo
   jc done
   jump loop
   done <- Here
-  halt
+  spin
 
 vSmall :: [Op]
 vSmall = assemble $ do
@@ -146,7 +140,7 @@ vSmall = assemble $ do
   tab
   add
   out
-  halt
+  spin
 
 fibForever :: [Op]
 fibForever = assemble $ mdo
@@ -171,7 +165,7 @@ fibUnrolled = assemble $ mdo
   add
   addout
   addb
-  halt
+  spin
 
 fib2vars :: [Op] -- program which uses memory for variable storage (2 vars)
 fib2vars = assemble $ mdo

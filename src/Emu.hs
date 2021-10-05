@@ -1,7 +1,8 @@
 
 module Emu
-  ( runIO, runCollectOutput, encodeOp
-  , Cycles(..), OutOfGas(..)
+  ( runCollectOutput
+  , encodeOp
+  , Cycles(..), OutOfGas(..),
   ) where
 
 import Data.Bits (testBit,shiftL,shiftR,(.&.))
@@ -10,52 +11,27 @@ import Op (Op(..),Byte)
 import Text.Printf (printf)
 import qualified Data.Map as Map
 
-runIO :: [Op] -> IO ()
-runIO prog = do
-  --print prog
-  let state0 = initState prog
-  loop 0 state0
-  where
-    loop :: Int -> State -> IO ()
-    loop i s = do
-      let State{rIR} = s
-      --printf "%3d : %s : %s\n" i (show s) (show (decodeOp rIR))
-      let cat = decodeCat rIR
-      --print cat
-      let con = cat2control cat
-      --print con
-      let (s'Maybe,oMaybe) = step s con
-      case oMaybe of
-        Nothing -> pure ()
-        Just (Output byte) -> print ("output",byte)
-      case s'Maybe of
-        Nothing -> do
-          --print (mem s)
-          pure () --done
-        Just s' -> loop (i+1) s'
-
 runCollectOutput :: Cycles -> [Op] -> Either (OutOfGas,[Byte]) (Cycles,[Byte])
 runCollectOutput max prog = do
   let state0 = initState prog
-  loop (Cycles 0) [] state0
+  loop (Cycles 0) [] state0 state0
   where
-    loop :: Cycles -> [Byte] -> State -> Either (OutOfGas,[Byte]) (Cycles,[Byte])
-    loop cycles acc s = if cycles > max then Left (OutOfGas, reverse acc) else do
-      let State{rIR} = s
+    loop :: Cycles -> [Byte] -> State -> State -> Either (OutOfGas,[Byte]) (Cycles,[Byte])
+    loop cycles acc sMinus1 s0 = if cycles > max then Left (OutOfGas, reverse acc) else do
+      --print (cycles,s)
+      let State{rIR} = s0
       let cat = decodeCat rIR
       let con = cat2control cat
-      let (s'Maybe,oMaybe) = step s con
+      let (s1,oMaybe) = step s0 con
       let acc' = case oMaybe of
             Nothing -> acc
             Just (Output byte) -> byte:acc
-      case s'Maybe of
-        Nothing -> Right (cycles, reverse acc') -- done
-        Just s' -> loop (cycles+1) acc' s'
-
+      if s1 == sMinus1
+        then Right (cycles - 2, reverse acc')
+        else loop (cycles+1) acc' s0 s1
 
 data OutOfGas = OutOfGas deriving Show
 newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
-
 
 ----------------------------------------------------------------------
 -- Cat
@@ -98,9 +74,6 @@ op2cat = \case
   TAB -> Cat o o FromA ToB x
   TAX -> Cat o o FromA ToX x
   TXA -> Cat o o FromX ToA x
-  HLT -> Cat x x FromX ToHalt x
-  -- HLT -> Cat o o FromX ToX x -- encode HLT as X->X
-  -- further unwanted source/dest pairs which can encode something else: FromMem/ToMem, FromA/ToA
   IMM b -> Lit b
   where
     o = False
@@ -147,7 +120,7 @@ decodeSource = \case
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut | ToHalt
+data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
@@ -159,8 +132,7 @@ encodeDest =  \case
   ToB -> 4
   ToMem -> 5
   ToOut -> 6
-  ToHalt -> 7
-  -- destination 7 available for future expansions! - not any more
+  -- destination 7 available for future expansions!
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
@@ -171,7 +143,6 @@ decodeDest = \case
   4 -> ToB
   5 -> ToMem
   6 -> ToOut
-  7 -> ToHalt
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------
@@ -189,7 +160,6 @@ data Control = Control
   , loadX :: Bool
   , storeMem :: Bool
   , doOut :: Bool
-  , halt :: Bool
   , immediate :: Bool
   , doSubtract :: Bool
   , jumpIfZero :: Bool
@@ -212,8 +182,6 @@ cat2control = \case
     let loadX = (dest == ToX)
     let storeMem = (dest == ToMem)
     let doOut = (dest == ToOut)
-    let halt = (dest == ToHalt)
-    --let halt = (provideX && loadX)
     let immediate = not indexed
     let doSubtract = xbit6
     let jumpIfZero = xbit6
@@ -221,7 +189,7 @@ cat2control = \case
     let unconditionalJump = xbit6 && xbit7
     Control {provideMem,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
-            ,doOut,halt,immediate,doSubtract
+            ,doOut,immediate,doSubtract
             ,jumpIfZero,jumpIfCarry,unconditionalJump}
 
 ----------------------------------------------------------------------
@@ -235,7 +203,7 @@ data State = State
   , rB :: Byte
   , rX :: Byte
   , flagCarry :: Bool
-  }
+  } deriving Eq
 
 instance Show State where
   show State{rIR,rPC,rA,rB,rX,flagCarry} =
@@ -260,12 +228,12 @@ encodeOp = encodeCat . op2cat
 
 data Output = Output Byte
 
-step :: State -> Control -> (Maybe State,Maybe Output)
+step :: State -> Control -> (State,Maybe Output)
 step state control = do
   let State{mem,rIR=_,rPC,rA,rB,rX,flagCarry} = state
   let Control{provideMem,provideAlu,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
-             ,doOut,halt,immediate,doSubtract
+             ,doOut,immediate,doSubtract
              ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
   let aIsZero = (rA == 0)
   let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
@@ -292,6 +260,6 @@ step state control = do
         , rX = if loadX then dbus else rX
         , flagCarry = if provideAlu then carry else flagCarry
         }
-  (if halt then Nothing else Just s',
+  (s',
    if doOut then Just (Output dbus) else Nothing
     )

@@ -4,7 +4,7 @@ module Primes (primes) where -- program to compute and output prime numbers
 import Asm
 
 primes :: Bool -> [Op]
-primes halting = assemble $ mdo
+primes spining = assemble $ mdo
 
   start <- Here
   outi 2 -- output first prime 2 (special case)
@@ -45,7 +45,7 @@ primes halting = assemble $ mdo
   jump loop_testCandidate -- otherwise test next candidate
 
   done <- Here
-  if halting then halt else pure ()
+  if spining then spin else pure ()
   jump start
 
   -- Variables
