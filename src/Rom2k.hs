@@ -62,12 +62,10 @@ erasedPage :: [Word8]
 erasedPage = replicate 256 0xff
 
 ddigs :: [Word8]
---ddigs = take 10 hdigs
-ddigs = [ encodeSegs (segs i) | i <- [0..9] ]
+ddigs = take 10 hdigs
 
 hdigs :: [Word8]
-hdigs = [0x3f, 0x0c, 0x5b, 0x5e, 0x6c, 0x76, 0x77, 0x1c, 0x7f, 0x7c
-        ,1,2,3,4,5,6] -- TODO: determine LED code for hex values: a,b,c,d,e,f
+hdigs = [ encodeSegs (segs i) | i <- [0..15] ]
 
 data Seg = A | B | C | D | E | F | G deriving Eq
 {-
@@ -79,16 +77,22 @@ data Seg = A | B | C | D | E | F | G deriving Eq
 -}
 segs :: Int -> [Seg]
 segs = \case
-  0 -> [ A, B, C, D, E, F    ]
-  1 -> [    B, C             ]
-  2 -> [ A, B,    D, E,    G ]
-  3 -> [ A, B, C, D,       G ]
-  4 -> [    B, C,       F, G ]
-  5 -> [ A,    C, D,    F, G ]
-  6 -> [ A,    C, D, E, F, G ]
-  7 -> [ A, B, C             ]
-  8 -> [ A, B, C, D, E, F, G ]
-  9 -> [ A, B, C,       F, G ]
+  0x0 -> [ A, B, C, D, E, F    ]
+  0x1 -> [    B, C             ]
+  0x2 -> [ A, B,    D, E,    G ]
+  0x3 -> [ A, B, C, D,       G ]
+  0x4 -> [    B, C,       F, G ]
+  0x5 -> [ A,    C, D,    F, G ]
+  0x6 -> [ A,    C, D, E, F, G ]
+  0x7 -> [ A, B, C             ]
+  0x8 -> [ A, B, C, D, E, F, G ]
+  0x9 -> [ A, B, C,       F, G ]
+  0xa -> [ A, B, C,    E, F, G ]
+  0xb -> [       C, D, E, F, G ]
+  0xc -> [          D, E,    G ]
+  0xd -> [    B, C, D, E,    G ]
+  0xe -> [ A,       D, E, F, G ]
+  0xf -> [ A,          E, F, G ]
   n ->
     error (show ("segs",n))
 
