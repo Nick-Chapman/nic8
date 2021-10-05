@@ -120,7 +120,7 @@ decodeSource = \case
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut
+data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut | ToNowhere
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
@@ -132,6 +132,7 @@ encodeDest =  \case
   ToB -> 4
   ToMem -> 5
   ToOut -> 6
+  ToNowhere -> 7
   -- destination 7 available for future expansions!
 
 decodeDest :: Byte -> Dest
@@ -143,6 +144,7 @@ decodeDest = \case
   4 -> ToB
   5 -> ToMem
   6 -> ToOut
+  7 -> ToNowhere
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------

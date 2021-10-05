@@ -25,6 +25,11 @@ run = Testing.run $ do
   test' [LIA,IMM 2,LIB,IMM 3,ADD,OUT] 9 [5]
   test' [LIA,IMM 2,LIB,IMM 3,SUB,OUT] 9 [255] -- subtraction wraps mod 256
 
+  -- 0xff executes as a 2-cycle NOP
+  test' [IMM 0xff] 3 []
+  test' [IMM 0xff, IMM 0xff] 5 []
+  test' [IMM 0xff, IMM 0xff, IMM 0xff] 7 []
+
   let
     -- 1st example to use the assembler
     asm1 = assemble $ mdo
