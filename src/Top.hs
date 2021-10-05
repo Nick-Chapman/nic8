@@ -7,12 +7,14 @@ import Examples
 import Primes (primes)
 import Text.Printf (printf)
 import qualified Emu
+import qualified Rom2k (generateAll)
 import qualified Test (run)
 
 main :: IO ()
 main = do
   putStrLn "*nic8*"
-  Test.run -- regression tests
+  Rom2k.generateAll
+  let _ = Test.run -- regression tests
   let _ = printAndRunExamples examples
   pure ()
 
