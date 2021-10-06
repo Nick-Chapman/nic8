@@ -25,14 +25,16 @@ generateAll = do
 decimalLED :: [Word8]
 decimalLED = concat
   [ erasedPage
-  , take 256 (concat (repeat ddigs))
-  , take 256 (concat (repeat (concat $ map (replicate 10) ddigs)))
-  , take 256 (concat (repeat (concat $ map (replicate 100) ddigs)))
+  , take 256 (concat (repeat (ddigs order)))
+  , take 256 (concat (repeat (concat $ map (replicate 10) (ddigs order))))
+  , take 256 (concat (repeat (concat $ map (replicate 100) (ddigs order))))
   , erasedPage
   , erasedPage
   , erasedPage
   , erasedPage
   ]
+  where
+    order = SegOrder [P,G,F,A,B,C,D,E]
 
 hexLED :: [Word8]
 hexLED = concat
@@ -42,38 +44,46 @@ hexLED = concat
   , erasedPage
   , erasedPage
   , erasedPage
-  , concat (replicate 16 hdigs)
-  , concat (map (replicate 16) hdigs)
+  , concat (replicate 16 (hdigs order))
+  , concat (map (replicate 16) (hdigs order))
   ]
+  where
+    order = SegOrder [P,G,F,A,B,C,D,E]
 
 decimalAndHexLED :: [Word8]
 decimalAndHexLED = concat
   [ erasedPage
-  , take 256 (concat (repeat ddigs))
-  , take 256 (concat (repeat (concat $ map (replicate 10) ddigs)))
-  , take 256 (concat (repeat (concat $ map (replicate 100) ddigs)))
+  , take 256 (concat (repeat (ddigs order1)))
+  , take 256 (concat (repeat (concat $ map (replicate 10) (ddigs order1))))
+  , take 256 (concat (repeat (concat $ map (replicate 100) (ddigs order1))))
   , erasedPage
   , erasedPage
-  , concat (replicate 16 hdigs)
-  , concat (map (replicate 16) hdigs)
+  , concat (replicate 16 (hdigs order2))
+  , concat (map (replicate 16) (hdigs order2))
   ]
+  where
+    order1 = SegOrder [P,G,F,A,B,C,D,E] -- orig
+    order2 = SegOrder [E,D,P,C,G,B,F,A] -- new
 
 erasedPage :: [Word8]
 erasedPage = replicate 256 0xff
 
-ddigs :: [Word8]
-ddigs = take 10 hdigs
+ddigs :: SegOrder -> [Word8]
+ddigs order = [ encodeSegs order (segs i) | i <- [0..9] ]
 
-hdigs :: [Word8]
-hdigs = [ encodeSegs (segs i) | i <- [0..15] ]
+hdigs :: SegOrder -> [Word8]
+hdigs order = [ encodeSegs order (segs i) | i <- [0..15] ]
 
-data Seg = A | B | C | D | E | F | G deriving Eq
+
+newtype SegOrder = SegOrder [Seg] -- encoding order: from most to least sig bit
+
+data Seg = A | B | C | D | E | F | G | P deriving Eq
 {-
                       A
                     F   B
                       G
                     E   C
-                      D
+                      D      P (decimal point)
 -}
 segs :: Int -> [Seg]
 segs = \case
@@ -96,14 +106,13 @@ segs = \case
   n ->
     error (show ("segs",n))
 
-encodeSegs :: [Seg] -> Word8
-encodeSegs segs = sum [ 1 `shiftL` segBit seg | seg <- segs ]
+encodeSegs :: SegOrder -> [Seg] -> Word8
+encodeSegs order segs = sum [ 1 `shiftL` (segBit order) seg | seg <- segs ]
 
-segBit :: Seg -> Int
-segBit seg = the [ n | (x,n) <- bitMap, x == seg]
+segBit :: SegOrder -> Seg -> Int
+segBit (SegOrder order) seg = the [ n | (x,n) <- bitMap, x == seg]
   where
-    bitMap = zip order [0..]
-    order = [E,D,C,B,A,F,G]
+    bitMap = zip (reverse order) [0..]
 
 the :: Show a => [a] -> a
 the = \case
