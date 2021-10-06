@@ -99,7 +99,7 @@ segs = \case
   0x9 -> [ A, B, C,       F, G ]
   0xa -> [ A, B, C,    E, F, G ]
   0xb -> [       C, D, E, F, G ]
-  0xc -> [          D, E,    G ]
+  0xc -> [ A,       D, E, F    ]
   0xd -> [    B, C, D, E,    G ]
   0xe -> [ A,       D, E, F, G ]
   0xf -> [ A,          E, F, G ]
