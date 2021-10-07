@@ -29,6 +29,7 @@ generateAll = do
   genRom2k "decimalLED" decimalLED
   genRom2k "hexLED" hexLED
   genRom2k "decimalAndHexLED" decimalAndHexLED
+  genRom2k "hex5621AH" hex5621AH
   genRom2k "programs" programs
 
 genRom2k :: String -> [Word8] -> IO ()
@@ -40,6 +41,20 @@ genRom2k name bytes = do
 
 ----------------------------------------------------------------------
 -- LED roms
+
+hex5621AH :: [Word8]
+hex5621AH = concat
+  [ concat (replicate 16 (hdigs order))
+  , concat (map (replicate 16) (hdigs order))
+  , erasedPage
+  , erasedPage
+  , erasedPage
+  , erasedPage
+  , erasedPage
+  , erasedPage
+  ]
+  where
+    order = SegOrder [P,A,B,F,C,E,D,G]
 
 decimalLED :: [Word8]
 decimalLED = concat
