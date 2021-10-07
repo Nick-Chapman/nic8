@@ -12,10 +12,23 @@ module Examples
   , openCountLoop, tightCountLoop
   , countdownForeverZ, countdownForeverC
   , module Primes
+
+  , table
   ) where
 
 import Asm
 import Primes
+
+table :: [(String,[Op])]
+table =
+  [ ("countdownForeverZ",countdownForeverZ)
+  , ("countdownForeverC",countdownForeverC)
+  , ("fibForever",fibForever)
+  , ("varProg0",varProg0)
+  , ("primesNoInit(1)",primesNoInit)
+  , ("primesNoInit(2)",primesNoInit)
+  , ("primes",primes False)
+  ]
 
 variousInstructions :: [Op]
 variousInstructions = assemble $ do

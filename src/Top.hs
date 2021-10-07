@@ -3,7 +3,7 @@ module Top (main) where
 import Asm (Op,Byte)
 import Control.Monad (forM_)
 import Data.List (intercalate)
-import Examples
+import qualified Examples (table)
 import Text.Printf (printf)
 import qualified Emu (runCollectOutput,encodeOp)
 import qualified Rom2k (generateAll)
@@ -14,19 +14,8 @@ main = do
   putStrLn "*nic8*"
   Rom2k.generateAll
   let _ = Test.run -- regression tests
-  let _ = printAndRunExamples examples
+  printAndRunExamples Examples.table
   pure ()
-
-examples :: [(String,[Op])]
-examples =
-  [ ("fibForever",fibForever)
-  , ("openCountLoop",openCountLoop)
-  , ("tightCountLoop",tightCountLoop)
-  , ("varProg0",varProg0)
-  , ("countdownForeverZ",countdownForeverZ)
-  , ("countdownForeverC",countdownForeverC)
-  , ("primes",primes False)
-  ]
 
 printAndRunExamples :: [(String,[Op])] -> IO ()
 printAndRunExamples examples = do

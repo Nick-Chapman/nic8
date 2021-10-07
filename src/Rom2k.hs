@@ -2,11 +2,11 @@ module Rom2k (generateAll) where
 
 import Data.Bits (shiftL)
 import Data.Word8 (Word8)
-import Examples
 import Op (Op)
 import Prelude hiding (take)
 import qualified Data.ByteString as BS
 import qualified Emu (encodeOp)
+import qualified Examples (table)
 
 take :: Int -> [a] -> [a]
 take n = loop (0::Int) n
@@ -16,7 +16,7 @@ take n = loop (0::Int) n
       [] -> error (show ("take, not enough, have",i,"need another",n))
       x:xs -> x : loop (i+1) (n-1) xs
 
-pad :: Word8 -> Int -> [Word8] -> [Word8]
+pad :: a -> Int -> [a] -> [a]
 pad filler n xs =
   if length xs > n then error (show ("pad",n,"will truncate from  size",length xs)) else
     take n (xs ++ repeat filler)
@@ -29,7 +29,7 @@ generateAll = do
   genRom2k "decimalLED" decimalLED
   genRom2k "hexLED" hexLED
   genRom2k "decimalAndHexLED" decimalAndHexLED
-  genRom2k "programs" progs
+  genRom2k "programs" programs
 
 genRom2k :: String -> [Word8] -> IO ()
 genRom2k name bytes = do
@@ -141,17 +141,8 @@ the = \case
 ----------------------------------------------------------------------
 -- program rom
 
-progs :: [Word8]
-progs = concat
-  [ compile countdownForeverZ
-  , compile countdownForeverC
-  , compile fibForever
-  , compile varProg0
-  , compile primesNoInit
-  , compile primesNoInit
-  , compile (primes False)
-  , erasedPage
-  ]
+programs :: [Word8]
+programs = concat (pad erasedPage 8 [compile ops | (_,ops) <- Examples.table])
 
 compile :: [Op] -> [Word8]
-compile prog = pad 0x0 256 (map Emu.encodeOp prog)
+compile ops = pad 0x0 256 (map Emu.encodeOp ops)
