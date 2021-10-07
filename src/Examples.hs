@@ -21,13 +21,11 @@ import Primes
 
 table :: [(String,[Op])]
 table =
-  [ ("countdownForeverZ",countdownForeverZ)
-  , ("countdownForeverC",countdownForeverC)
-  , ("fibForever",fibForever)
-  , ("varProg0",varProg0)
-  , ("primesNoInit(1)",primesNoInit)
-  , ("primesNoInit(2)",primesNoInit)
-  , ("primes",primes False)
+  [ ("fibForever",fibForever)
+  , ("openCountLoop", openCountLoop)
+  , ("tightCountLoop", tightCountLoop)
+  , ("primes",primes True)
+  , ("collatz",collatz)
   ]
 
 variousInstructions :: [Op]
@@ -277,7 +275,10 @@ collatz = assemble $ mdo
   loadA tmp
   jz after_div2
   lb 2; sub
-  jc mult3plus1 -- not divisible by 2
+  jc is_div2
+  jump mult3plus1 -- not divisible by 2
+
+  is_div2 <- Here
   storeA tmp
   increment count 1
   jump div2
@@ -300,7 +301,7 @@ collatz = assemble $ mdo
   loadA steps; out
   jump main
 
-  next <- variable 7
+  next <- variable 3
   current <- variable 0
   steps <- variable 0
   pure ()
