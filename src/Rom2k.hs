@@ -29,7 +29,7 @@ generateAll = do
   genRom2k "decimalLED" decimalLED
   genRom2k "hexLED" hexLED
   genRom2k "decimalAndHexLED" decimalAndHexLED
-  genRom2k "progs" progs
+  genRom2k "programs" progs
 
 genRom2k :: String -> [Word8] -> IO ()
 genRom2k name bytes = do
@@ -147,8 +147,8 @@ progs = concat
   , compile countdownForeverC
   , compile fibForever
   , compile varProg0
-  , erasedPage
-  , erasedPage
+  , compile primesNoInit
+  , compile primesNoInit
   , compile (primes False)
   , erasedPage
   ]

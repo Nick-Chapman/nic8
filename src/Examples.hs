@@ -11,11 +11,11 @@ module Examples
   , collatz
   , openCountLoop, tightCountLoop
   , countdownForeverZ, countdownForeverC
-  , primes
+  , module Primes
   ) where
 
 import Asm
-import Primes (primes)
+import Primes
 
 variousInstructions :: [Op]
 variousInstructions = assemble $ do
