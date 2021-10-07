@@ -4,9 +4,8 @@ import Asm (Op,Byte)
 import Control.Monad (forM_)
 import Data.List (intercalate)
 import Examples
-import Primes (primes)
 import Text.Printf (printf)
-import qualified Emu
+import qualified Emu (runCollectOutput,encodeOp)
 import qualified Rom2k (generateAll)
 import qualified Test (run)
 

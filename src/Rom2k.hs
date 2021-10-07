@@ -1,9 +1,12 @@
 module Rom2k (generateAll) where
 
+import Data.Bits (shiftL)
+import Data.Word8 (Word8)
+import Examples
+import Op (Op)
 import Prelude hiding (take)
 import qualified Data.ByteString as BS
-import Data.Word8 (Word8)
-import Data.Bits (shiftL)
+import qualified Emu (encodeOp)
 
 take :: Int -> [a] -> [a]
 take n = loop (0::Int) n
@@ -13,6 +16,11 @@ take n = loop (0::Int) n
       [] -> error (show ("take, not enough, have",i,"need another",n))
       x:xs -> x : loop (i+1) (n-1) xs
 
+pad :: Word8 -> Int -> [Word8] -> [Word8]
+pad filler n xs =
+  if length xs > n then error (show ("pad",n,"will truncate from  size",length xs)) else
+    take n (xs ++ repeat filler)
+
 generateAll :: IO ()
 generateAll = do
   putStrLn "*generating roms*"
@@ -21,6 +29,17 @@ generateAll = do
   genRom2k "decimalLED" decimalLED
   genRom2k "hexLED" hexLED
   genRom2k "decimalAndHexLED" decimalAndHexLED
+  genRom2k "progs" progs
+
+genRom2k :: String -> [Word8] -> IO ()
+genRom2k name bytes = do
+  let n = length bytes
+  if n == 2048 then pure () else error (show ("genRom2k",name,"wrong-size",n))
+  --putStrLn $ "- " ++ name
+  BS.writeFile ("roms/" ++ name ++ ".rom") (BS.pack bytes)
+
+----------------------------------------------------------------------
+-- LED roms
 
 decimalLED :: [Word8]
 decimalLED = concat
@@ -119,10 +138,20 @@ the = \case
   [x] -> x
   xs -> error (show ("the",xs))
 
-genRom2k :: String -> [Word8] -> IO ()
-genRom2k name bytes = do
-  let n = length bytes
-  if n == 2048 then pure () else error (show ("genRom2k",name,"wrong-size",n))
-  --putStrLn $ "- " ++ name
-  BS.writeFile ("roms/" ++ name ++ ".rom") (BS.pack bytes)
+----------------------------------------------------------------------
+-- program rom
 
+progs :: [Word8]
+progs = concat
+  [ compile countdownForeverZ
+  , compile countdownForeverC
+  , compile fibForever
+  , compile varProg0
+  , erasedPage
+  , erasedPage
+  , compile (primes False)
+  , erasedPage
+  ]
+
+compile :: [Op] -> [Word8]
+compile prog = pad 0x0 256 (map Emu.encodeOp prog)
