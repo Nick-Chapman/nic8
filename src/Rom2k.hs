@@ -44,8 +44,8 @@ genRom2k name bytes = do
 
 hex5621AH :: [Word8]
 hex5621AH = concat
-  [ concat (replicate 16 (hdigs order))
-  , concat (map (replicate 16) (hdigs order))
+  [ concat (map (replicate 16) (hdigs order)) -- high nibble
+  , concat (replicate 16 (hdigs order))       -- low  nibble
   , erasedPage
   , erasedPage
   , erasedPage
@@ -54,7 +54,7 @@ hex5621AH = concat
   , erasedPage
   ]
   where
-    order = SegOrder [P,A,B,F,C,E,D,G]
+    order = SegOrder [P,A,B,F,G,D,E,C]
 
 decimalLED :: [Word8]
 decimalLED = concat
@@ -78,8 +78,8 @@ hexLED = concat
   , erasedPage
   , erasedPage
   , erasedPage
-  , concat (replicate 16 (hdigs order))
-  , concat (map (replicate 16) (hdigs order))
+  , concat (replicate 16 (hdigs order))       -- low  nibble
+  , concat (map (replicate 16) (hdigs order)) -- high nibble
   ]
   where
     order = SegOrder [P,G,F,A,B,C,D,E]
