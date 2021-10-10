@@ -7,7 +7,7 @@ DDRB = $6002
     .org $8000
 
 reset:
-    lda $ff
+    lda #$ff
     sta DDRB
     lda #7
 loop:
