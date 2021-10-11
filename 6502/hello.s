@@ -18,7 +18,7 @@ reset:
     sta DDRB
     sta DDRA
 
-    lda #%00110000               ; function set: 8 bit; 1 line, 5x8
+    lda #%00111000               ; function set: 8 bit; 2 lines, 5x8
     sta PORTB
     lda #0
     sta PORTA
@@ -27,7 +27,7 @@ reset:
     lda #0
     sta PORTA
 
-    lda #%00001110               ; turn on display and cursor
+    lda #%00001111               ; turn on display and cursor blinking
     sta PORTB
     lda #0
     sta PORTA
@@ -45,6 +45,15 @@ reset:
     lda #0
     sta PORTA
 
+    lda #%00000001               ; clear display
+    sta PORTB
+    lda #0
+    sta PORTA
+    lda #(E)
+    sta PORTA
+    lda #0
+    sta PORTA
+
     lda #'H'                    ; message starts here...
     sta PORTB
     lda #(RS)
@@ -54,26 +63,44 @@ reset:
     lda #(RS)
     sta PORTA
 
-    lda #'i'
-    sta PORTB
-    lda #(RS)
-    sta PORTA
-    lda #(RS | E)
-    sta PORTA
-    lda #(RS)
-    sta PORTA
-
+    lda #'e'
+    jsr send_lcd_data
+    lda #'l'
+    jsr send_lcd_data
+    lda #'l'
+    jsr send_lcd_data
+    lda #'o'
+    jsr send_lcd_data
+    lda #','
+    jsr send_lcd_data
+    lda #' '
+    jsr send_lcd_data
+    lda #'W'
+    jsr send_lcd_data
+    lda #'o'
+    jsr send_lcd_data
+    lda #'r'
+    jsr send_lcd_data
+    lda #'l'
+    jsr send_lcd_data
+    lda #'d'
+    jsr send_lcd_data
     lda #'!'
-    sta PORTB
-    lda #(RS)
-    sta PORTA
-    lda #(RS | E)
-    sta PORTA
-    lda #(RS)
-    sta PORTA
+    jsr send_lcd_data
 
 spin:
     jmp spin
+
+
+send_lcd_data:
+    sta PORTB
+    lda #(RS)
+    sta PORTA
+    lda #(RS | E)
+    sta PORTA
+    lda #(RS)
+    sta PORTA
+    rts
 
     .org $fffc
     .word reset
