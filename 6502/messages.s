@@ -2,9 +2,10 @@
 ;;; Modification of hello program:
 ;;; use loops more: for sending message chars & the pause
 ;;; allow the pause to be easily switched between being suitable for 4KHz and 1MHz
-;;; send more than 2 messages; have message strings generated on fly from a number
 ;;; ready to explore using the 1MHz clock
 ;;; which will require we code a wait on the the LCD busy flag
+;;; --DONE
+;;; have message strings generated on fly from a number
 
     .org $fffc
     .word reset
@@ -70,14 +71,14 @@ message1: .asciiz "Hello, world!"
 message2: .asciiz "This is fun!"
 message3: .asciiz "Third message."
 message4: .asciiz "4th message."
-message5: .asciiz "Let's make this message much longer that will fit on the screen."
+message5: .asciiz "* This message *                        * over 2 lines *"
 message6: .asciiz "ABCDE"
 message7: .asciiz " BCD"
 message8: .asciiz "  C"
 message9: .asciiz "**last message**"
 
 init_display:
-    lda #$ff
+    lda #%11111111
     sta DDRB
     sta DDRA
     lda #%00111000              ; function set: 8 bit; 2 lines, 5x8
@@ -94,6 +95,7 @@ clear_display:
     rts
 
 send_lcd_command:
+    jsr wait_lcd
     sta PORTB
     lda #0
     sta PORTA
@@ -104,6 +106,7 @@ send_lcd_command:
     rts
 
 send_lcd_data:
+    jsr wait_lcd
     sta PORTB
     lda #(RS)
     sta PORTA
@@ -113,15 +116,47 @@ send_lcd_data:
     sta PORTA
     rts
 
+wait_lcd:
+    pha
+    lda #%00000000              ; temp set read
+    sta DDRB
+wait_lcd_loop:
+    lda #(RW)
+    sta PORTA
+    lda #(RW | E)
+    sta PORTA
+    lda PORTB
+    and #%10000000
+    bne wait_lcd_loop
+
+    lda #%11111111              ; revert to write
+    sta DDRB
+    pla
+    rts
+
 pause:
-    ldy #25                     ;1/4 second with slow clock
+    ldy #100                    ; 1 second
 pause_loop:
-    jsr pause_40
+    jsr pause_10000             ; for fast clock
     dey
     bne pause_loop
     rts
 
-pause_40:                       ; 40 clocks is about .01sec with the 4KHz clock
+pause_10000:                    ; .01sec with the 1MHz clock
+    pha
+    txa
+    pha
+    ldx #250
+pause_10000_loop:
+    jsr pause_40
+    dex
+    bne pause_10000_loop
+    pla
+    tax
+    pla
+    rts
+
+pause_40:                       ; 40 clocks .01sec with the 4KHz clock
     nop                         ; #clocks: nop:2, jsr:6, rts:6
     nop                         ; so we need 14 nops: 14*2 + 6 + 6 = 40
     nop
