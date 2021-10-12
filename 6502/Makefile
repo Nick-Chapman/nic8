@@ -1,5 +1,5 @@
 
-top: messages.bin
+top: timer.bin
 
 first.bin: first.s
 	vasm6502_oldstyle -o first.bin first.s -dotdir -Fbin
@@ -9,3 +9,6 @@ hello.bin: hello.s
 
 messages.bin: messages.s
 	vasm6502_oldstyle -o messages.bin messages.s -dotdir -Fbin
+
+timer.bin: timer.s
+	vasm6502_oldstyle -o timer.bin timer.s -dotdir -Fbin
