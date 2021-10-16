@@ -92,7 +92,21 @@ print_number:
 digits: .ascii "0123456789abcdef"
 
 print_char:
+    pha
+    and #%11110000
     jsr wait_lcd
+    sta PORTB
+    lda #(RS)
+    sta PORTA
+    lda #(RS | E)
+    sta PORTA
+    lda #(RS)
+    sta PORTA
+    pla
+    asl
+    asl
+    asl
+    asl
     sta PORTB
     lda #(RS)
     sta PORTA
@@ -103,24 +117,43 @@ print_char:
     rts
 
 clear_display:
-    lda #%00000001
-    jsr send_lcd_command
+    jsr wait_lcd
+    lda #%00000000
+    jsr send_lcd_command_nibble
+    lda #%00010000
+    jsr send_lcd_command_nibble
     rts
 
 init_display:
     lda #%11111111
     sta DDRB
     sta DDRA
-    lda #%00111000              ; function set: 8 bit; 2 lines, 5x8
-    jsr send_lcd_command
-    lda #%00001110              ; turn on display; cursor; no blinking
-    jsr send_lcd_command
-    lda #%00000110              ; entry mode: increment; no shift
-    jsr send_lcd_command
+    ;; (from 8 bit mode) function set: 4 bit
+    jsr wait_lcd
+    lda #%00100000
+    jsr send_lcd_command_nibble
+
+    ;; function set: 4 bit; 2 lines, 5x8
+    jsr wait_lcd
+    lda #%00100000
+    jsr send_lcd_command_nibble
+    lda #%10000000
+    jsr send_lcd_command_nibble
+    ;; turn on display; cursor; no blinking
+    jsr wait_lcd
+    lda #%00000000
+    jsr send_lcd_command_nibble
+    lda #%11100000
+    jsr send_lcd_command_nibble
+    ;; entry mode: increment; no shift
+    jsr wait_lcd
+    lda #%00000000
+    jsr send_lcd_command_nibble
+    lda #%01100000
+    jsr send_lcd_command_nibble
     rts
 
-send_lcd_command:
-    jsr wait_lcd
+send_lcd_command_nibble:
     sta PORTB
     lda #0
     sta PORTA
@@ -140,6 +173,13 @@ wait_lcd_loop:
     lda #(RW | E)
     sta PORTA
     lda PORTB
+    pha
+    lda #(RW)
+    sta PORTA
+    lda #(RW | E)
+    sta PORTA
+    lda PORTB
+    pla
     and #%10000000
     bne wait_lcd_loop
     lda #%11111111              ; revert to write
