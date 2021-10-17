@@ -1,6 +1,10 @@
 
 ;;; routines to initialize and print to the LCD screen, in 4 bit mode
 
+;;; VIA
+PORTB = $6000                   ; LCD data & control
+DDRB = $6002
+
 ;;; LCD control bits on port A
 E  = %00001000
 RW = %00000100                  ; 1-read

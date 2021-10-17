@@ -1,5 +1,5 @@
 
-all: rom/hello.bin rom/messages.bin rom/timer.bin
+all: rom/hello.bin rom/messages.bin rom/timer.bin rom/hannah.bin
 
 rom/first.bin: first.s
 	vasm6502_oldstyle -I lib -o rom/first.bin first.s -dotdir -Fbin
@@ -12,3 +12,6 @@ rom/messages.bin: messages.s lib/lcd.s
 
 rom/timer.bin: timer.s lib/lcd.s lib/ticks.s
 	vasm6502_oldstyle -I lib -o rom/timer.bin timer.s -dotdir -Fbin
+
+rom/hannah.bin: hannah.s lib/lcd.s lib/ticks.s
+	vasm6502_oldstyle -I lib -o rom/hannah.bin hannah.s -dotdir -Fbin

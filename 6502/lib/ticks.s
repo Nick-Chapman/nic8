@@ -1,6 +1,14 @@
 
 ;;; routines to initialize timer on 6522, and maintain ticks in irq
 
+T1CL = $6004
+T1CH = $6005
+
+ACR = $600B
+IER = $600E
+
+ticks = $A0                     ; maintained by irq; +1 every 10ms
+
 irq:
     bit T1CL ; acknowledge interrupt
     inc ticks

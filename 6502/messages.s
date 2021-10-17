@@ -11,12 +11,6 @@
     .word reset
     .word 0
 
-;;; VIA
-PORTB = $6000                   ; LCD data
-PORTA = $6001                   ; LCD control; using 3 bits
-DDRB = $6002
-DDRA = $6003
-
     .org $8000
 
     include lcd.s

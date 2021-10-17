@@ -5,19 +5,6 @@
     .word reset
     .word irq
 
-;;; VIA
-PORTB = $6000                   ; LCD data
-;PORTA = $6001                   ; LCD control; using 3 bits
-DDRB = $6002
-;DDRA = $6003
-
-T1CL = $6004
-T1CH = $6005
-
-ACR = $600B
-IER = $600E
-
-ticks = $A0                     ; maintained by irq; +1 every 10ms
 number = $A1                    ; maintained in main loop; +1 every 1/2s
 last_message_ticks = $A2
 
