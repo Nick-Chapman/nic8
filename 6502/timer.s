@@ -7,9 +7,9 @@
 
 ;;; VIA
 PORTB = $6000                   ; LCD data
-PORTA = $6001                   ; LCD control; using 3 bits
+;PORTA = $6001                   ; LCD control; using 3 bits
 DDRB = $6002
-DDRA = $6003
+;DDRA = $6003
 
 T1CL = $6004
 T1CH = $6005

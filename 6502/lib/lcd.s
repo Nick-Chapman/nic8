@@ -2,33 +2,33 @@
 ;;; routines to initialize and print to the LCD screen, in 4 bit mode
 
 ;;; LCD control bits on port A
-E  = %10000000
-RW = %01000000                  ; 1-read
-RS = %00100000                  ; 1-data
+E  = %00001000
+RW = %00000100                  ; 1-read
+RS = %00000010                  ; 1-data
+
+NOT_E = %11110111
 
 print_char:
     pha
     and #%11110000
     jsr wait_lcd
-    sta PORTB
-    lda #(RS)
-    sta PORTA
-    lda #(RS | E)
-    sta PORTA
-    lda #(RS)
-    sta PORTA
+    ora #(RS)
+    sta PORTB                   ; E lo
+    ora #(E)
+    sta PORTB                   ; E hi
+    and #(NOT_E)
+    sta PORTB                   ; E lo again (necessary?)
     pla
     asl
     asl
     asl
     asl
-    sta PORTB
-    lda #(RS)
-    sta PORTA
-    lda #(RS | E)
-    sta PORTA
-    lda #(RS)
-    sta PORTA
+    ora #(RS)
+    sta PORTB                   ; E lo
+    ora #(E)
+    sta PORTB                   ; E hi
+    and #(NOT_E)
+    sta PORTB                   ; E lo again
     rts
 
 clear_display:
@@ -42,7 +42,6 @@ clear_display:
 init_display:
     lda #%11111111
     sta DDRB
-    sta DDRA
     ;; (from 8 bit mode) function set: 4 bit
     jsr wait_lcd
     lda #%00100000
@@ -70,29 +69,27 @@ init_display:
 
 send_lcd_command_nibble:
     sta PORTB
-    lda #0
-    sta PORTA
-    lda #(E)
-    sta PORTA
-    lda #0
-    sta PORTA
+    ora #(E)
+    sta PORTB
+    and #(NOT_E)
+    sta PORTB
     rts
 
 wait_lcd:
     pha
-    lda #%00000000              ; temp set read
+    lda #%00001111              ; temp set read for D-4,5,6,7
     sta DDRB
 wait_lcd_loop:
     lda #(RW)
-    sta PORTA
+    sta PORTB
     lda #(RW | E)
-    sta PORTA
+    sta PORTB
     lda PORTB
     pha
     lda #(RW)
-    sta PORTA
+    sta PORTB
     lda #(RW | E)
-    sta PORTA
+    sta PORTB
     lda PORTB
     pla
     and #%10000000
