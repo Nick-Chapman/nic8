@@ -17,11 +17,6 @@ T1CH = $6005
 ACR = $600B
 IER = $600E
 
-;;; LCD control bits on port A
-E  = %10000000
-RW = %01000000                  ; 1-read
-RS = %00100000                  ; 1-data
-
 ticks = $A0                     ; maintained by irq; +1 every 10ms
 number = $A1                    ; maintained in main loop; +1 every 1/2s
 last_message_ticks = $A2

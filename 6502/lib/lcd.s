@@ -1,6 +1,11 @@
 
 ;;; routines to initialize and print to the LCD screen, in 4 bit mode
 
+;;; LCD control bits on port A
+E  = %10000000
+RW = %01000000                  ; 1-read
+RS = %00100000                  ; 1-data
+
 print_char:
     pha
     and #%11110000

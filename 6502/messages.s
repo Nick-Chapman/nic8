@@ -17,11 +17,6 @@ PORTA = $6001                   ; LCD control; using 3 bits
 DDRB = $6002
 DDRA = $6003
 
-;;; LCD control bits on port A
-E  = %10000000
-RW = %01000000                  ; 1-read
-RS = %00100000                  ; 1-data
-
     .org $8000
 
     include lcd.s
