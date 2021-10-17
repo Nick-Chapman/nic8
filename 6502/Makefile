@@ -1,14 +1,14 @@
 
-top: timer.bin
+all: rom/hello.bin rom/messages.bin rom/timer.bin
 
-first.bin: first.s
-	vasm6502_oldstyle -o first.bin first.s -dotdir -Fbin
+rom/first.bin: first.s
+	vasm6502_oldstyle -I lib -o rom/first.bin first.s -dotdir -Fbin
 
-hello.bin: hello.s
-	vasm6502_oldstyle -o hello.bin hello.s -dotdir -Fbin
+rom/hello.bin: hello.s
+	vasm6502_oldstyle -I lib -o rom/hello.bin hello.s -dotdir -Fbin
 
-messages.bin: messages.s
-	vasm6502_oldstyle -o messages.bin messages.s -dotdir -Fbin
+rom/messages.bin: messages.s
+	vasm6502_oldstyle -I lib -o rom/messages.bin messages.s -dotdir -Fbin
 
-timer.bin: timer.s
-	vasm6502_oldstyle -o timer.bin timer.s -dotdir -Fbin
+rom/timer.bin: timer.s
+	vasm6502_oldstyle -I lib -o rom/timer.bin timer.s -dotdir -Fbin
