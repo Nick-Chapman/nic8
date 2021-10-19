@@ -1,10 +1,6 @@
 
 ;;; routines to initialize and print to the LCD screen, in 4 bit mode
 
-;;; VIA
-PORTB = $6000                   ; LCD data & control
-DDRB = $6002
-
 ;;; LCD control bits on port A
 E  = %00001000
 RW = %00000100                  ; 1-read
@@ -12,27 +8,34 @@ RS = %00000010                  ; 1-data
 
 NOT_E = %11110111
 
+SOUND_CLOCK_INACTIVE = 1
+
+send_portB:
+    ora #(SOUND_CLOCK_INACTIVE)
+    sta PORTB
+    rts
+
 print_char:
     pha
     and #%11110000
     jsr wait_lcd
     ora #(RS)
-    sta PORTB                   ; E lo
+    jsr send_portB                   ; E lo
     ora #(E)
-    sta PORTB                   ; E hi
+    jsr send_portB                   ; E hi
     and #(NOT_E)
-    sta PORTB                   ; E lo again (necessary?)
+    jsr send_portB                   ; E lo again (necessary?)
     pla
     asl
     asl
     asl
     asl
     ora #(RS)
-    sta PORTB                   ; E lo
+    jsr send_portB                   ; E lo
     ora #(E)
-    sta PORTB                   ; E hi
+    jsr send_portB                   ; E hi
     and #(NOT_E)
-    sta PORTB                   ; E lo again
+    jsr send_portB                   ; E lo again
     rts
 
 clear_display:
@@ -71,12 +74,13 @@ init_display:
     jsr send_lcd_command_nibble
     rts
 
+;;; TODO: subroutine to make 2x call of send_lcd_command_nibble, given a byte in acc
 send_lcd_command_nibble:
-    sta PORTB
+    jsr send_portB
     ora #(E)
-    sta PORTB
+    jsr send_portB
     and #(NOT_E)
-    sta PORTB
+    jsr send_portB
     rts
 
 wait_lcd:
@@ -85,15 +89,15 @@ wait_lcd:
     sta DDRB
 wait_lcd_loop:
     lda #(RW)
-    sta PORTB
+    jsr send_portB
     lda #(RW | E)
-    sta PORTB
+    jsr send_portB
     lda PORTB
     pha
     lda #(RW)
-    sta PORTB
+    jsr send_portB
     lda #(RW | E)
-    sta PORTB
+    jsr send_portB
     lda PORTB
     pla
     and #%10000000

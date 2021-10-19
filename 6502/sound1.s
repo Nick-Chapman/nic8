@@ -7,6 +7,7 @@
 
     .org $8000
 
+ticks = $A0                     ; maintained by irq; +1 every 10ms
     include ticks.s
     include lcd.s
 

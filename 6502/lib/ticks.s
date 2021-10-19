@@ -7,7 +7,7 @@ T1CH = $6005
 ACR = $600B
 IER = $600E
 
-ticks = $A0                     ; maintained by irq; +1 every 10ms
+
 
 irq:
     bit T1CL ; acknowledge interrupt

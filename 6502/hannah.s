@@ -7,7 +7,12 @@
 
     .org $8000
 
+PORTB = $6000 ; 7 MSBs for lcd
+DDRB = $6002
+
     include lcd.s
+
+ticks = $A0                     ; maintained by irq; +1 every 10ms
     include ticks.s
 
 GAP = 170
