@@ -1,5 +1,6 @@
 module Top (main) where
 
+import Arc (generateSoundData)
 import Asm (Op,Byte)
 import Control.Monad (forM_)
 import Data.List (intercalate)
@@ -12,9 +13,10 @@ import qualified Test (run)
 main :: IO ()
 main = do
   putStrLn "*nic8*"
-  Rom2k.generateAll
+  Arc.generateSoundData
+  let _ = Rom2k.generateAll
   let _ = Test.run -- regression tests
-  printAndRunExamples Examples.table
+  let _ = printAndRunExamples Examples.table
   pure ()
 
 printAndRunExamples :: [(String,[Op])] -> IO ()
