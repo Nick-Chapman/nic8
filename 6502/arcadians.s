@@ -16,6 +16,7 @@ DDRA = $6003
 ticks = $71                    ; maintained by irq; +1 every 10ms
     include ticks.s
     include 76489.s
+    include lcd.s
 
 bptr = $72 ;2 bytes
 goal_ticks = $74
@@ -28,8 +29,25 @@ main_reset:
 
     jsr init_timer
     jsr init_sound
+    jsr init_display
+    jsr clear_display
+    jsr print_message
+    jmp play_music
 
-restart:
+print_message:
+    ldy #0
+print_message_loop:
+    lda message,y
+    beq print_message_done
+    jsr print_char
+    iny
+    jmp print_message_loop
+print_message_done:
+    rts
+
+message: .asciiz "** Arcadians ** "
+
+play_music:
     lda #(data & $ff)       ;lo
     sta bptr
     lda #(data >> 8)        ;hi
