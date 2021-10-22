@@ -15,6 +15,7 @@ DDRA = $6003
 
 ticks = $71                    ; maintained by irq; +1 every 10ms
     include ticks.s
+    include 76489.s
 
 bptr = $72 ;2 bytes
 goal_ticks = $74
@@ -90,67 +91,3 @@ spin:
 data:
     include arc-data.s
     .byte 0, 0                     ;FINISH
-
-;; share code below (with sound1) in lib...
-
-init_sound:
-    lda #1
-    sta PORTB
-    rts
-
-send_sound_data:
-    ;; experiment to see what nops are needed
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTA
-    lda #0
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    lda #1
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    rts

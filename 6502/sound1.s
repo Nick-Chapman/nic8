@@ -11,66 +11,12 @@ ticks = $A0                     ; maintained by irq; +1 every 10ms
     include ticks.s
     include lcd.s
 
-;PORTB = $6000                   ; LSB bit is 76489 control
+PORTB = $6000                   ; LSB bit is 76489 control
 PORTA = $6001                   ; 76489 data
-;DDRB = $6002
+DDRB = $6002
 DDRA = $6003
 
-send:
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTA
-    lda #0
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    lda #1
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    rts
+    include 76489.s
 
 message:
     pha
@@ -87,8 +33,7 @@ reset:
 
     jsr init_display
 
-    lda #1
-    sta PORTB
+    jsr init_sound
 
     jsr init_timer
     lda #'!'
@@ -119,16 +64,16 @@ loop:
 
 tone_d:
     lda #%01010001
-    jsr send
+    jsr send_sound_data
     lda #%01100000
-    jsr send
+    jsr send_sound_data
     rts
 
 tone_e:
     lda #%11110001
-    jsr send
+    jsr send_sound_data
     lda #%10100000
-    jsr send
+    jsr send_sound_data
     rts
 
 silence_all:
@@ -140,27 +85,27 @@ silence_all:
 
 silence_0:
     lda #%11111001
-    jsr send
+    jsr send_sound_data
     rts
 
 silence_1:
     lda #%11111101
-    jsr send
+    jsr send_sound_data
     rts
 
 silence_2:
     lda #%11111011
-    jsr send
+    jsr send_sound_data
     rts
 
 silence_3:
     lda #%11111111
-    jsr send
+    jsr send_sound_data
     rts
 
 loud_0:
     lda #%00001001
-    jsr send
+    jsr send_sound_data
     rts
 
 last_message_ticks = $A2

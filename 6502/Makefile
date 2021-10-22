@@ -16,11 +16,11 @@ rom/timer.bin: timer.s lib/lcd.s lib/ticks.s
 rom/hannah.bin: hannah.s lib/lcd.s lib/ticks.s
 	vasm6502_oldstyle -I lib -o rom/hannah.bin hannah.s -dotdir -Fbin
 
-rom/sound1.bin: sound1.s lib/ticks.s
+rom/sound1.bin: sound1.s lib/ticks.s lib/lcd.s lib/76489.s
 	vasm6502_oldstyle -I lib -o rom/sound1.bin sound1.s -dotdir -Fbin
 
-rom/sound2.bin: sound2.s lib/ticks.s lib/lcd.s
+rom/sound2.bin: sound2.s lib/ticks.s lib/lcd.s lib/76489.s
 	vasm6502_oldstyle -I lib -o rom/sound2.bin sound2.s -dotdir -Fbin
 
-rom/arcadians.bin: arcadians.s lib/ticks.s arc-data.s
+rom/arcadians.bin: arcadians.s lib/ticks.s lib/76489.s arc-data.s
 	vasm6502_oldstyle -I lib -o rom/arcadians.bin arcadians.s -dotdir -Fbin

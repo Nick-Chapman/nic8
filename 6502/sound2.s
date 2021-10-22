@@ -16,6 +16,7 @@ DDRA = $6003
 ticks = $71                    ; maintained by irq; +1 every 10ms
     include ticks.s
     include lcd.s
+    include 76489.s
 
 bptr = $72 ;2 bytes
 goal_ticks = $74
@@ -112,7 +113,7 @@ spin:
 ;;; buffer format: repeats of: DEL, N, b1,b2..bN,
 ;;; DEL in 1/100s, N is number of following bytes
 
-H = 25 ;1/4s
+H = 50 ;1/4s
 
 data:
     .byte (H*0), '-', 4, $f9, $fd, $fb, $ff ;silence c#0, c#1, c#2, c#3
@@ -132,71 +133,5 @@ data:
     .byte (H*1), 'd', 2, $51, $60           ;d
     .byte (H*1), 'c', 2, $e1, $e0           ;c
     .byte (H*0), 'C', 2, $f5, $70           ;low c on c#1
-    .byte (H*7), '-', 2, $f9, $fd           ;silence c#0, c#1
+    .byte (H*5), '-', 2, $f9, $fd           ;silence c#0, c#1
     .byte (H*0), '!', 0                     ;FINISH
-
-
-
-;; share code below (with sound1) in lib...
-
-init_sound:
-    lda #1
-    sta PORTB
-    rts
-
-send_sound_data:
-    ;; experiment to see what nops are needed
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTA
-    lda #0
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    lda #1
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
-    sta PORTB
-    rts
