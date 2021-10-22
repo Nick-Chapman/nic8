@@ -12,7 +12,6 @@ import qualified Test (run)
 
 main :: IO ()
 main = do
-  putStrLn "*nic8*"
   Arc.generateSoundData
   let _ = Rom2k.generateAll
   let _ = Test.run -- regression tests

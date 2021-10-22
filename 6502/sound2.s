@@ -116,22 +116,22 @@ spin:
 H = 25 ;1/4s
 
 data:
-    .byte (H*0), '-', 4, $f9, $fd, $fb, $ff ;silence c#0, c#1, c#2, c#3
-    .byte (H*3), '+', 2, $09, $0d           ;volume-on c#0, c#1
-    .byte (H*0), 'c', 2, $e1, $e0           ;c
-    .byte (H*0), 'C', 2, $f5, $70           ;low c on c#1
-    .byte (H*1), 'd', 2, $51, $60           ;d
-    .byte (H*1), 'e', 2, $f1, $a0           ;e
-    .byte (H*1), 'f', 2, $91, $a0           ;f
-    .byte (H*1), 'g', 2, $01, $a0           ;g
-    .byte (H*0), 'G', 2, $f5, $90           ;low g on c#1
-    .byte (H*3), '-', 1, $f9                ;silence c#0
-    .byte (H*1), '+', 1, $09                ;volume-on c#0
-    .byte (H*0), 'g', 2, $01, $a0           ;g
-    .byte (H*1), 'f', 2, $91, $a0           ;f
-    .byte (H*1), 'e', 2, $f1, $a0           ;e
-    .byte (H*1), 'd', 2, $51, $60           ;d
-    .byte (H*1), 'c', 2, $e1, $e0           ;c
-    .byte (H*0), 'C', 2, $f5, $70           ;low c on c#1
-    .byte (H*5), '-', 2, $f9, $fd           ;silence c#0, c#1
+    .byte (H*0), '-', 4, $9f, $bf, $df, $ff ;silence c#0, c#1, c#2, c#3
+    .byte (H*3), '+', 2, $90, $b0           ;volume-on c#0, c#1
+    .byte (H*0), 'c', 2, $87, $07           ;c
+    .byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
+    .byte (H*1), 'd', 2, $8a, $06           ;d
+    .byte (H*1), 'e', 2, $8f, $05           ;e
+    .byte (H*1), 'f', 2, $89, $05           ;f
+    .byte (H*1), 'g', 2, $80, $05           ;g
+    .byte (H*0), 'G', 2, $af, $09           ;low g on c#1
+    .byte (H*3), '-', 1, $9f                ;silence c#0
+    .byte (H*1), '+', 1, $90                ;volume-on c#0
+    .byte (H*0), 'g', 2, $80, $05           ;g
+    .byte (H*1), 'f', 2, $89, $05           ;f
+    .byte (H*1), 'e', 2, $8f, $05           ;e
+    .byte (H*1), 'd', 2, $8a, $06           ;d
+    .byte (H*1), 'c', 2, $87, $07           ;c
+    .byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
+    .byte (H*5), '-', 2, $9f, $bf           ;silence c#0, c#1
     .byte (H*0), '!', 0                     ;FINISH

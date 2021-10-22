@@ -8,10 +8,7 @@ import Text.Printf (printf)
 
 generateSoundData :: IO ()
 generateSoundData = do
-  putStrLn "*generateSoundData*"
-  print (length rawData)
   let collected = collect rawData
-  print (length collected)
   mapM_ print collected
   pure ()
 
@@ -20,12 +17,12 @@ data Line = Line { del :: Int, bytes :: [Word8] }
 instance Show Line where
   show (Line{del,bytes}) =
     printf "    .byte %d, %d%s" del (length bytes)
-    (concat [ printf ", $%02x" (flipByte byte) :: String | byte <- bytes ])
+    (concat [ printf ", $%02x" byte :: String | byte <- bytes ])
 
 -- Flip bits in a byte from left-to-right
 -- TODO: remove when I fix the wiring between 6522 and 76489 !
-flipByte :: Word8 -> Word8
-flipByte b =
+_flipByte :: Word8 -> Word8
+_flipByte b =
   foldl1 (.|.) [ setOrClear (b `testBit` n) (7-n)  | n <- [0..7] ]
   where
     setOrClear :: Bool -> Int -> Word8

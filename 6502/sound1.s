@@ -63,16 +63,16 @@ loop:
     jmp loop
 
 tone_d:
-    lda #%01010001
+    lda #$8a
     jsr send_sound_data
-    lda #%01100000
+    lda #$06
     jsr send_sound_data
     rts
 
 tone_e:
-    lda #%11110001
+    lda #$8f
     jsr send_sound_data
-    lda #%10100000
+    lda #$05
     jsr send_sound_data
     rts
 
@@ -84,27 +84,27 @@ silence_all:
     rts
 
 silence_0:
-    lda #%11111001
+    lda #$9f
     jsr send_sound_data
     rts
 
 silence_1:
-    lda #%11111101
+    lda #$bf
     jsr send_sound_data
     rts
 
 silence_2:
-    lda #%11111011
+    lda #$df
     jsr send_sound_data
     rts
 
 silence_3:
-    lda #%11111111
+    lda #$ff
     jsr send_sound_data
     rts
 
 loud_0:
-    lda #%00001001
+    lda #$90
     jsr send_sound_data
     rts
 
