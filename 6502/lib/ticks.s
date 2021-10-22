@@ -20,9 +20,9 @@ init_timer:
     sta ticks
     lda #%01000000              ; continuous interrupts from Timer1
     sta ACR
-    lda #$0e                    ; 2 + 270E hex = 10000 decimal (10ms)
+    lda #$1e                    ; 2 + 4E1E hex = 20000 decimal (10ms on 2Mhx clock)
     sta T1CL
-    lda #$27
+    lda #$4e
     sta T1CH
     lda #%11000000              ; enable Timer1 interrupt
     sta IER
