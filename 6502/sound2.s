@@ -113,7 +113,7 @@ spin:
 ;;; buffer format: repeats of: DEL, N, b1,b2..bN,
 ;;; DEL in 1/100s, N is number of following bytes
 
-H = 50 ;1/4s
+H = 25 ;1/4s
 
 data:
     .byte (H*0), '-', 4, $f9, $fd, $fb, $ff ;silence c#0, c#1, c#2, c#3
