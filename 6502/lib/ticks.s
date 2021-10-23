@@ -7,7 +7,12 @@ T1CH = $6005
 ACR = $600B
 IER = $600E
 
+mHz = 1000000
 
+clks_per_sec = 2 * mHz
+ticks_per_sec = 100
+
+clks_per_tick = (clks_per_sec / ticks_per_sec - 2)
 
 irq:
     bit T1CL ; acknowledge interrupt
@@ -20,9 +25,9 @@ init_timer:
     sta ticks
     lda #%01000000              ; continuous interrupts from Timer1
     sta ACR
-    lda #$1e                    ; 2 + 4E1E hex = 20000 decimal (10ms on 2Mhx clock)
+    lda #(clks_per_tick & $ff)
     sta T1CL
-    lda #$4e
+    lda #(clks_per_tick >> 8)
     sta T1CH
     lda #%11000000              ; enable Timer1 interrupt
     sta IER
