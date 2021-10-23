@@ -1,5 +1,7 @@
 
-all: rom/hello.bin rom/messages.bin rom/timer.bin rom/hannah.bin rom/sound1.bin rom/sound2.bin rom/arcadians.bin
+#TODO: make a pattern rule!
+
+all: rom/hello.bin rom/messages.bin rom/timer.bin rom/hannah.bin rom/sound1.bin rom/sound2.bin rom/arcadians.bin rom/sonic.bin
 
 rom/first.bin: first.s
 	vasm6502_oldstyle -I lib -o rom/first.bin first.s -dotdir -Fbin
@@ -22,5 +24,8 @@ rom/sound1.bin: sound1.s lib/ticks.s lib/lcd.s lib/76489.s
 rom/sound2.bin: sound2.s lib/ticks.s lib/lcd.s lib/76489.s
 	vasm6502_oldstyle -I lib -o rom/sound2.bin sound2.s -dotdir -Fbin
 
-rom/arcadians.bin: arcadians.s lib/ticks.s lib/76489.s arc-data.s
+rom/arcadians.bin: arcadians.s lib/ticks.s lib/lcd.s lib/76489.s arc-data.s
 	vasm6502_oldstyle -I lib -o rom/arcadians.bin arcadians.s -dotdir -Fbin
+
+rom/sonic.bin: sonic.s lib/ticks.s lib/lcd.s lib/76489.s
+	vasm6502_oldstyle -I lib -o rom/sonic.bin sonic.s -dotdir -Fbin
