@@ -1,6 +1,6 @@
 
 mains = first hello messages timer hannah sound1 sound2 arcadians sonic
-shared_source = ticks lcd 76489
+shared_source = ticks lcd 76489 send_message
 
 bins = $(patsubst %, rom/%.bin, $(mains))
 libs = $(patsubst %, lib/%.s, $(shared_source))
