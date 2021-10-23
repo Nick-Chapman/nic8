@@ -60,11 +60,11 @@ init_display:
     jsr send_lcd_command_nibble
     lda #%10000000
     jsr send_lcd_command_nibble
-    ;; turn on display; cursor; no blinking
+    ;; turn on display; no cursor; no blinking
     jsr wait_lcd
     lda #%00000000
     jsr send_lcd_command_nibble
-    lda #%11100000
+    lda #%11000000
     jsr send_lcd_command_nibble
     ;; entry mode: increment; no shift
     jsr wait_lcd

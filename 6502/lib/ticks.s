@@ -9,7 +9,7 @@ IER = $600E
 
 mHz = 1000000
 
-clks_per_sec = 2 * mHz
+clks_per_sec = 4 * mHz
 ticks_per_sec = 100
 
 clks_per_tick = (clks_per_sec / ticks_per_sec - 2)
