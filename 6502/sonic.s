@@ -69,10 +69,13 @@ after_reset_song_0:
     clc
     ldy #0
     lda (ptr),y                 ; header size
+    adc #1
     tay
     adc (ptr),y                 ; title size
+    adc #1
     tay
     adc (ptr),y                 ; author size
+    adc #1
     jsr bump_ptr
 
 play_music_loop:
