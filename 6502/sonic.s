@@ -1,7 +1,5 @@
 ;;; Play Sonic music found at bitshifters
 
-;;; TODO: share common code...
-
     .org $fffc
     .word main_reset
     .word irq
@@ -25,7 +23,6 @@ goal_ticks = $74
 song_count = $77
 
 main_reset:
-    ;; TODO share this
     lda #%11111111
     sta DDRA
     lda #%11111111
@@ -65,16 +62,26 @@ after_reset_song_0:
     lda #100                    ;2secs pause
     jsr sleep
 
-    ;; skip over header & (TODO:print) title/auther sections
+    ;; skip over header
     clc
     ldy #0
-    lda (ptr),y                 ; header size
+    lda (ptr),y
     adc #1
     tay
-    adc (ptr),y                 ; title size
-    adc #1
-    tay
-    adc (ptr),y                 ; author size
+    ;; print title
+    jsr clear_display
+print_title:
+    iny
+    lda (ptr),y
+    beq author
+    jsr print_char
+    jmp print_title
+author:
+    iny
+    tya
+    ;; skip over author
+    clc
+    adc (ptr),y
     adc #1
     jsr bump_ptr
 
