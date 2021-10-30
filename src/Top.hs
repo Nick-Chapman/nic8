@@ -9,10 +9,12 @@ import Text.Printf (printf)
 import qualified Emu (runCollectOutput,encodeOp)
 import qualified Rom2k (generateAll)
 import qualified Test (run)
+import qualified Dis76489 as Dis (main)
 
 main :: IO ()
 main = do
-  Arc.generateSoundData
+  Dis.main
+  let _ = Arc.generateSoundData
   let _ = Rom2k.generateAll
   let _ = Test.run -- regression tests
   let _ = printAndRunExamples Examples.table

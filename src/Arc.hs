@@ -1,5 +1,9 @@
 
-module Arc (generateSoundData) where
+module Arc
+  ( generateSoundData
+  , Line(..)
+  , arcLineData
+  ) where
 
 import ArcRawData (rawData)
 import Data.Bits (testBit,(.|.),bit)
@@ -8,9 +12,11 @@ import Text.Printf (printf)
 
 generateSoundData :: IO ()
 generateSoundData = do
-  let collected = collect rawData
-  mapM_ print collected
+  mapM_ print arcLineData
   pure ()
+
+arcLineData :: [Line]
+arcLineData = collect rawData
 
 data Line = Line { del :: Int, bytes :: [Word8] }
 
