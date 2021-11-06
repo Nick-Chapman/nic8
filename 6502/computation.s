@@ -34,16 +34,26 @@ g_number = $11 ; 2 bytes
 g_divisor = $13 ; 2 bytes
 g_mod10 = $15 ; 2 bytes
 
+;g_control = $22
+
     include ticks.s
     include lcd.s
 
 reset_main:
+    ;jsr toggle_control
     jsr init_via
     jsr init_timer
     jsr init_display
     jsr clear_display
     jsr example
     jsr spin
+
+;; toggle_control:
+;;     lda g_control
+;;     and #1
+;;     eor #1
+;;     sta g_control
+;;     rts
 
 init_via:
     lda #%11111111
@@ -60,22 +70,34 @@ example:
     jsr init_ds_stack
 example_loop:
     jsr print_number_dec
-    lda #1
-    jsr sleep
+    jsr print_dot
+    ;lda #1
+    ;jsr sleep
     jsr push_number
-    jsr ds_increment
+
+;;     lda g_control
+;;     bne do_dec
+;;     jsr ds_increment
+;;     jmp after_inc_or_dec
+;; do_dec:
+;;     jsr ds_decrement
+;; after_inc_or_dec:
+
+    jsr ds_decrement
+
     jsr pull_number
     jmp example_loop
 
 init_number:
-    ;; stz (not supported by assembler)
+    lda #100
+    sta g_number
     lda #0
     sta g_number + 1
-    sta g_number
     rts
 
 print_number_dec: ; print 1-5 decimal digits for 16 bit number
-    jsr clear_display
+    ;jsr clear_display
+    jsr return_home
     lda g_number
     ldx g_number + 1
     jsr print_word_ax_in_decimal
@@ -116,35 +138,46 @@ ds_increment:
     jsr ds_add
     rts
 
+ds_decrement:
+    jsr ds_push_minus_one
+    jsr ds_add
+    rts
+
 ds_push_one:
     lda #1 ; lo
     ldx #0 ; hi
     jsr ds_push_ax
     rts
 
+ds_push_minus_one:
+    lda #$ff ; lo
+    ldx #$ff ; hi
+    jsr ds_push_ax
+    rts
+
 ;;;--------------------
-;;; primitive data-stack (ds) of 16bit (2byte) values
-;;; keep data stack in zero page, using y to index
+;;; primitive data-stack (ds) of 16bit values
+;;; keep data stack in zero page, growing downwards; using y to index
 
 init_ds_stack:
     ldy #$ff
     rts
 
 ds_push_ax: ; ( -- x;a )
-    stx 0,y
     dey
-    sta 0,y
     dey
+    sta 1,y
+    stx 2,y
     rts
 
 ds_pull_ax: ; ( x;a -- )
+    lda 1,y
+    ldx 2,y
     iny
-    lda 0,y
     iny
-    ldx 0,y
     rts
 
-ds_dup: ; (v -- v v)
+ds_dup: ; (V -- V V)
     dey
     dey
     lda 4,y
@@ -153,13 +186,13 @@ ds_dup: ; (v -- v v)
     sta 1,y
     rts
 
-ds_add: ; (a b -- a+b)
+ds_add: ; (A B -- A+B)
     clc
     lda 1,y
-    adc 3,y
+    adc 3,y ;lo
     sta 3,y
     lda 2,y
-    adc 4,y
+    adc 4,y ;hi
     sta 4,y
     iny
     iny
