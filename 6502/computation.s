@@ -31,6 +31,9 @@ DDRB = $6002
 ticks = $10
 g_number = $11 ; 2 bytes
 
+g_divisor = $13 ; 2 bytes
+g_mod10 = $15 ; 2 bytes
+
     include ticks.s
     include lcd.s
 
@@ -56,9 +59,12 @@ example:
     jsr init_number
     jsr init_ds_stack
 example_loop:
-    jsr step_number
-    jsr print_number
-    jsr example_pause
+    jsr print_number_dec
+    lda #1
+    jsr sleep
+    jsr push_number
+    jsr ds_increment
+    jsr pull_number
     jmp example_loop
 
 init_number:
@@ -67,28 +73,19 @@ init_number:
     sta g_number + 1
     sta g_number
     rts
-print_number: ; print 4 hex digits for 16 bit number
+
+print_number_dec: ; print 1-5 decimal digits for 16 bit number
     jsr clear_display
-    ;;jsr print_dot
-    lda g_number + 1
-    jsr print_byte_as_hex
     lda g_number
-    jsr print_byte_as_hex
-    rts
-print_dot:
-    lda #'.'
-    jsr print_char
-    rts
-example_pause:
-    lda #100 ; 1 sec
-    jsr sleep
+    ldx g_number + 1
+    jsr print_word_ax_in_decimal
     rts
 
-step_number:
-    jsr push_number
-    jsr ds_triple
-    jsr ds_increment
-    jsr pull_number
+print_dot:
+    pha ; make sure this debug routine changes no registers!
+    lda #'.'
+    jsr print_char
+    pla
     rts
 
 push_number:
@@ -107,7 +104,7 @@ pull_number:
 ;;;--------------------
 ;;; derived data-stack (ds)  ops
 
-ds_triple:
+ds_triple: ;not used at moment
     jsr ds_dup
     jsr ds_dup
     jsr ds_add
@@ -120,8 +117,8 @@ ds_increment:
     rts
 
 ds_push_one:
-    lda #1
-    ldx #0
+    lda #1 ; lo
+    ldx #0 ; hi
     jsr ds_push_ax
     rts
 
@@ -184,21 +181,51 @@ sleep_wait:
     rts
 
 ;;;--------------------
-;;; print byte passed in accumulator as 2 digit hex number
-print_byte_as_hex
-    pha
-    lsr
-    lsr
-    lsr
-    lsr
-    tax
-    lda digits,x
-    jsr print_char
+;;; print word passed in a/x as 1-5 digit decimal number
+print_word_ax_in_decimal:
+    sta g_divisor ;lo
+    stx g_divisor + 1 ;hi
+    lda #0
+    pha ; marker for print
+each_digit:
+    lda #0
+    sta g_mod10
+    sta g_mod10 + 1
+    clc
+    ldx #16
+each_bit:
+    rol g_divisor
+    rol g_divisor + 1
+    rol g_mod10
+    rol g_mod10 + 1
+    sec
+    lda g_mod10
+    sbc #10
+    pha ; save
+    lda g_mod10 + 1
+    sbc #0
+    bcc ignore_result
+    sta g_mod10 + 1
     pla
-    and #%1111
-    tax
-    lda digits,x
+    pha
+    sta g_mod10
+ignore_result:
+    pla ;drop
+    dex
+    bne each_bit
+    rol g_divisor
+    rol g_divisor + 1
+    clc
+    lda g_mod10
+    adc #'0'
+    pha ;save on stack for reverse print
+    lda g_divisor
+    ora g_divisor + 1
+    bne each_digit
+print_from_stack:
+    pla
+    beq done
     jsr print_char
+    jmp print_from_stack
+done:
     rts
-
-digits: .ascii "0123456789abcdef"
