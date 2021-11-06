@@ -34,33 +34,101 @@ g_number = $11 ; 2 bytes
 g_divisor = $13 ; 2 bytes
 g_mod10 = $15 ; 2 bytes
 
-;g_control = $22
-
     include ticks.s
     include lcd.s
 
 reset_main:
-    ;jsr toggle_control
     jsr init_via
     jsr init_timer
     jsr init_display
     jsr clear_display
-    jsr example
-    jsr spin
-
-;; toggle_control:
-;;     lda g_control
-;;     and #1
-;;     eor #1
-;;     sta g_control
-;;     rts
+    jsr even_simpler_example
+spin:
+    jmp spin
 
 init_via:
     lda #%11111111
     sta DDRB
     rts
-spin:
-    jmp spin
+
+
+even_simpler_example:
+    jsr init_screen
+    jsr sleep1
+    jsr update_pause
+    lda #'1'
+    jsr putchar
+    jsr update_pause
+    lda #'2'
+    jsr putchar
+    jsr update_pause
+    lda #'3'
+    jsr putchar
+    jsr update_pause
+    lda #'x'
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr putchar
+    jsr update_pause
+    lda #'4'
+    jsr putchar
+    jsr update_pause
+    lda #'5'
+    jsr putchar
+    jsr update_pause
+    lda #'6'
+    jsr putchar
+    jsr update_pause
+    lda #'7'
+    jsr putchar
+    jsr update_pause
+    lda #'8'
+    jsr putchar
+    jsr update_pause
+    rts
+
+update_pause:
+    ;jsr clear_display
+    jsr print_screen
+    jsr sleep1
+    rts
+
+simple_example: ; just while testing asyn print
+    jsr return_home
+    lda #<789
+    ldx #>789
+    jsr print_word_ax_in_decimal
+    jsr print_dot
+
+    jsr sleep1
+    jsr return_home
+    lda #<1234
+    ldx #>1234
+    jsr print_word_ax_in_decimal
+    jsr print_dot
+
+    jsr sleep1
+    jsr return_home
+    lda #42
+    ldx #0
+    jsr print_word_ax_in_decimal
+    jsr print_dot
+    rts
+
+
+sleep1:
+    pha
+    lda #100
+    jsr sleep
+    pla
+    rts
 
 ;;;--------------------
 ;;; example which manipulates 16bit number in mem
@@ -71,20 +139,8 @@ example:
 example_loop:
     jsr print_number_dec
     jsr print_dot
-    ;lda #1
-    ;jsr sleep
     jsr push_number
-
-;;     lda g_control
-;;     bne do_dec
-;;     jsr ds_increment
-;;     jmp after_inc_or_dec
-;; do_dec:
-;;     jsr ds_decrement
-;; after_inc_or_dec:
-
     jsr ds_decrement
-
     jsr pull_number
     jmp example_loop
 
@@ -96,7 +152,6 @@ init_number:
     rts
 
 print_number_dec: ; print 1-5 decimal digits for 16 bit number
-    ;jsr clear_display
     jsr return_home
     lda g_number
     ldx g_number + 1
@@ -261,4 +316,76 @@ print_from_stack:
     jsr print_char
     jmp print_from_stack
 done:
+    rts
+
+;;;--------------------
+;;; async lcd printing
+
+g_screen = $200 ; 32 bytes
+g_screen_pointer = $220
+
+putchar:
+    ;jsr print_char
+    ldx g_screen_pointer
+    sta g_screen,x
+    inc g_screen_pointer
+    rts
+
+return_home:
+    ;jsr lcd_return_home
+    lda #0
+    sta g_screen_pointer
+    rts
+
+init_screen:
+    jsr return_home
+    ;; copy patten into screen array: a..z, 3 spaces, 2 Xs, !
+    ldx #0
+each_pat_char:
+    txa
+    clc
+    adc #'a'
+    sta g_screen,x
+    inx
+    sec
+    cpx #26
+    bne each_pat_char
+    lda #' ' ; space
+    sta g_screen+26
+    sta g_screen+27
+    sta g_screen+28
+    lda #'X'
+    sta g_screen+29
+    sta g_screen+30
+    lda #'!'
+    sta g_screen+31 ; bang in last place
+    rts
+
+
+print_screen:
+    ;; copy screen to lcd
+    jsr lcd_return_home
+    ldx #0
+each_line1_char:
+    lda g_screen,x
+    jsr print_char
+    inx
+    sec
+    cpx #16
+    bne each_line1_char
+    ;; reposition to line2. do 24 dummy prints
+    lda #'+' ;dont expect to see this
+    ldx #24
+each_dummy_print:
+    jsr print_char
+    dex
+    bne each_dummy_print
+    ldx #16
+each_line2_char:
+    lda g_screen,x
+    jsr print_char
+    inx
+    sec
+    cpx #32
+    bne each_line2_char
     rts
