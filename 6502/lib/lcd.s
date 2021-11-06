@@ -44,19 +44,23 @@ print_char:
     rts
 
 clear_display: ;(0000 0001)
+    pha
     jsr wait_lcd
     lda #%00000000
     jsr send_lcd_command_nibble
     lda #%00010000
     jsr send_lcd_command_nibble
+    pla
     rts
 
-return_home: ;(0000 001x)
+lcd_return_home: ;(0000 001x)
+    pha
     jsr wait_lcd
     lda #%00000000
     jsr send_lcd_command_nibble
     lda #%00100000
     jsr send_lcd_command_nibble
+    pla
     rts
 
 init_display:
