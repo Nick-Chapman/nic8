@@ -85,7 +85,7 @@ put_next_message_char_when_time:
     pla ;get char
     tay
     lda #0
-    cpy ' '
+    cpy #' '
     bne not_a_space
     clc
     adc #50 ; extra 1/2 second for a space

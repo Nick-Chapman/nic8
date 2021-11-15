@@ -37,7 +37,7 @@ main_reset:
     jsr clear_display
 
     sec
-    lda #num_songs
+    lda #num_songs_minus_1
     cmp song_count            ; on power up may contain any value
     bcs after_reset_song_0    ; dont reset if song_count in range
     lda #0
@@ -177,7 +177,7 @@ print_hex_number:
 
 digits: .ascii "0123456789abcdef"
 
-num_songs = (((song_table_end - song_table) >> 1) - 1)
+num_songs_minus_1 = (((song_table_end - song_table) >> 1) - 1)
 
 song_table:
     .word sonic1
