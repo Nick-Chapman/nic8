@@ -3,7 +3,7 @@
 
     .org $fffc
     .word reset
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
@@ -12,15 +12,15 @@ DDRB = $6002
 
     include lcd.s
 
-ticks = $A0                     ; maintained by irq; +1 every 10ms
+g_ticks = $A0 ; maintained by irq; +1 every 10ms
     include ticks.s
 
 GAP = 170
 QUICK = 40
 
 reset:
-    jsr init_display
-    jsr init_timer
+    jsr init_lcd
+    jsr init_ticks
 
     ldx #(message1 & $ff)       ;lo
     ldy #(message1 >> 8)        ;hi
@@ -175,11 +175,11 @@ last_message_ticks = $A2
 
 pause:
     sta PTIME
-    lda ticks
+    lda g_ticks
     sta last_message_ticks
 keep_waiting:
     sec
-    lda ticks
+    lda g_ticks
     sbc last_message_ticks
     cmp $BB
     bcc keep_waiting
@@ -189,11 +189,11 @@ print_message:
     stx MPTR                    ;lo
     sty MPTR + 1                ;hi
     ldy #0
-    jsr clear_display
+    jsr lcd_clear_display
 print_message_loop:
     lda (MPTR),y
     beq print_message_done
-    jsr print_char
+    jsr lcd_putchar
     iny
     jmp print_message_loop
 print_message_done:

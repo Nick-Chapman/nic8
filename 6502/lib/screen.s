@@ -1,18 +1,21 @@
+;;; REQUIRES: g_screen, g_screen_pointer
+;;; PROVIDES: init_screen, print_screen, screen_putchar_raw, screen_return_home
 
-;; put* functions write to the in-memory screen
-putchar:
+;;; TODO: move scrolling code here & make it the default
+
+screen_putchar_raw:
     ldx g_screen_pointer
     sta g_screen,x
     inc g_screen_pointer
     rts
 
-return_home:
+screen_return_home:
     lda #0
     sta g_screen_pointer
     rts
 
 init_screen:
-    jsr return_home
+    jsr screen_return_home
     ldx #0
     lda #' '
 each_pat_char:
@@ -23,14 +26,14 @@ each_pat_char:
     bne each_pat_char
     rts
 
-;; print_* functions write to the underlying lcd
+;; print screen to the underlying lcd
 print_screen:
     ;; copy screen to lcd
     jsr lcd_return_home
     ldx #0
 each_line1_char:
     lda g_screen,x
-    jsr print_char
+    jsr lcd_putchar
     inx
     sec
     cpx #16
@@ -39,13 +42,13 @@ each_line1_char:
     lda #'+' ;dont expect to see this
     ldx #24
 each_dummy_print:
-    jsr print_char
+    jsr lcd_putchar
     dex
     bne each_dummy_print
     ldx #16
 each_line2_char:
     lda g_screen,x
-    jsr print_char
+    jsr lcd_putchar
     inx
     sec
     cpx #32

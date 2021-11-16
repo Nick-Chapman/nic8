@@ -21,14 +21,11 @@
 
     .org $fffc
     .word reset_main
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
-PORTB = $6000
-DDRB = $6002
-
-ticks = $10
+g_ticks = $10
 g_number = $11 ; 2 bytes
 
 g_divisor = $13 ; 2 bytes
@@ -39,18 +36,15 @@ g_mod10 = $15 ; 2 bytes
 
 reset_main:
     jsr init_via
-    jsr init_timer
-    jsr init_display
-    jsr clear_display
+    jsr init_ticks
+    jsr init_lcd
+    jsr lcd_clear_display
     jsr init_screen
     jsr example
 spin:
     jmp spin
 
-init_via:
-    lda #%11111111
-    sta DDRB
-    rts
+    include via.s ; TODO: move to top
 
 ;;;--------------------
 ;;; example which manipulates 16bit number in mem
@@ -72,12 +66,12 @@ next_screen_print = $33
 print_screen_when_time:
     lda next_screen_print
     sec
-    sbc ticks
+    sbc g_ticks
     beq print_screen_now
     rts
 print_screen_now:
     jsr print_screen
-    lda ticks
+    lda g_ticks
     clc
     adc #5 ; 20 times/sec
     sta next_screen_print
@@ -85,13 +79,13 @@ print_screen_now:
 
 sleep:
     clc
-    adc ticks
+    adc g_ticks
     pha ; goal ticks
 sleep_wait:
     sec
     pla
     pha
-    sbc ticks
+    sbc g_ticks
     bne sleep_wait
     pla
     rts
@@ -104,7 +98,7 @@ init_number:
     rts
 
 put_number_dec: ; print 1-5 decimal digits for 16 bit number
-    jsr return_home
+    jsr screen_return_home
     lda g_number
     ldx g_number + 1
     jsr put_word_ax_in_decimal
@@ -113,7 +107,7 @@ put_number_dec: ; print 1-5 decimal digits for 16 bit number
 put_dot:
     pha ; make sure this debug routine changes no registers!
     lda #'.'
-    jsr putchar
+    jsr screen_putchar_raw
     pla
     rts
 
@@ -209,19 +203,20 @@ ds_add: ; (A B -- A+B)
 ;;; sleep for N (in acc) 1/100s
 ;; sleep:
 ;;     clc
-;;     adc ticks
+;;     adc g_ticks
 ;;     pha ; goal ticks
 ;; sleep_wait:
 ;;     sec
 ;;     pla
 ;;     pha
-;;     sbc ticks
+;;     sbc g_ticks
 ;;     bne sleep_wait
 ;;     pla
 ;;     rts
 
-;;;--------------------
-;;; print word passed in a/x as 1-5 digit decimal number
+
+;;; TODO: delete in favour of using version in decimal
+;;; after having adapted to use teh scrolling version
 put_word_ax_in_decimal:
     sta g_divisor ;lo
     stx g_divisor + 1 ;hi
@@ -265,7 +260,7 @@ ignore_result:
 put_from_stack:
     pla
     beq done
-    jsr putchar
+    jsr screen_putchar_raw ; TODO: use scrolling
     jmp put_from_stack
 done:
     rts
@@ -275,4 +270,4 @@ done:
 
 g_screen = $200 ; 32 bytes
 g_screen_pointer = $220
-    include screen.s
+    include screen.s            ; TODO move to top

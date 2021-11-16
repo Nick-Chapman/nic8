@@ -2,7 +2,7 @@
 
     .org $fffc
     .word main_reset
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
@@ -12,14 +12,13 @@ PORTA = $6001
 DDRB = $6002
 DDRA = $6003
 
-;;; TODO: switch to 4Mhz clock (think that is what sonic music assumes)
-ticks = $71
+g_ticks = $71
     include ticks.s
-    include 76489.s
+    include sound.s
     include lcd.s
 
 ptr = $72 ;2 bytes
-goal_ticks = $74
+g_sleep_ticks = $74
 song_count = $77
 
 main_reset:
@@ -28,13 +27,12 @@ main_reset:
     lda #%11111111
     sta DDRB
 
-    jsr init_timer
-
+    jsr init_ticks
     jsr init_sound
     jsr silence
 
-    jsr init_display
-    jsr clear_display
+    jsr init_lcd
+    jsr lcd_clear_display
 
     sec
     lda #num_songs_minus_1
@@ -69,12 +67,12 @@ after_reset_song_0:
     adc #1
     tay
     ;; print title
-    jsr clear_display
+    jsr lcd_clear_display
 print_title:
     iny
     lda (ptr),y
     beq author
-    jsr print_char
+    jsr lcd_putchar
     jmp print_title
 author:
     iny
@@ -99,12 +97,12 @@ sleep1:
 ;;; sleep for N (in accumulator) 1/50s ticks (so max time 2.5secs)
 sleep:
     clc
-    adc ticks
-    sta goal_ticks
+    adc g_ticks
+    sta g_sleep_ticks
 sleep_wait:
     sec
-    lda goal_ticks
-    sbc ticks
+    lda g_sleep_ticks
+    sbc g_ticks
     bne sleep_wait
     rts
 
@@ -124,7 +122,7 @@ send_packet:
     ldy #0
     lda (ptr),y                 ; read N, the #bytes to send
     cmp #$ff
-    beq finish                  ; stop if eof (TODO: seems hacky?)
+    beq finish                  ; stop if eof
     tax
     beq send_bytes_done
 continue_send_bytes:
@@ -132,7 +130,7 @@ continue_send_bytes:
     ;; x: N, N-1 ... 1
     ;; y: 1, 2 ... N+1
     lda (ptr),y                 ; read data byte to send
-    jsr send_sound_data
+    jsr sound_send_data
     dex
     bne continue_send_bytes
 send_bytes_done:
@@ -158,7 +156,7 @@ spin:
 ;;; print byte passed in accumulator as 2 digit hex number
 print_hex_number:
     pha
-    jsr clear_display           ; TODO: dont clear, just reposition
+    jsr lcd_clear_display
     pla
     pha
     lsr
@@ -167,12 +165,12 @@ print_hex_number:
     lsr
     tax
     lda digits,x
-    jsr print_char
+    jsr lcd_putchar
     pla
     and #%1111
     tax
     lda digits,x
-    jsr print_char
+    jsr lcd_putchar
     rts
 
 digits: .ascii "0123456789abcdef"

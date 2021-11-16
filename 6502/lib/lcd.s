@@ -1,3 +1,5 @@
+;;; REQUIRES: DDRB, PORTB
+;;; PROVIDES: init_lcd, lcd_clear_display, lcd_return_home, lcd_putchar
 
 ;;; routines to initialize and print to the LCD screen, in 4 bit mode
 
@@ -20,7 +22,7 @@ send_portB:
     sta PORTB
     rts
 
-print_char:
+lcd_putchar:
     pha
     and #%11110000
     jsr wait_lcd
@@ -43,7 +45,7 @@ print_char:
     jsr send_portB                   ; E lo again
     rts
 
-clear_display: ;(0000 0001)
+lcd_clear_display: ;(0000 0001)
     pha
     jsr wait_lcd
     lda #%00000000
@@ -63,7 +65,7 @@ lcd_return_home: ;(0000 001x)
     pla
     rts
 
-init_display:
+init_lcd:
     lda #%11111111
     sta DDRB
     ;; (from 8 bit mode) function set: 4 bit

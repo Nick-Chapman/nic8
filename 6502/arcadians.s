@@ -3,23 +3,23 @@
 
     .org $fffc
     .word main_reset
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
 ;;; VIA
-PORTB = $6000               ; (7 MSBs for lcd); LSB is 76489 control bit
-PORTA = $6001               ; 76489 data
+PORTB = $6000 ; (7 MSBs for lcd); LSB is sound control bit
+PORTA = $6001 ; 76489 data
 DDRB = $6002
 DDRA = $6003
 
-ticks = $71                    ; maintained by irq; +1 every 10ms
+g_ticks = $71 ; maintained by irq; +1 every 10ms
     include ticks.s
-    include 76489.s
+    include sound.s
     include lcd.s
 
 bptr = $72 ;2 bytes
-goal_ticks = $74
+g_sleep_ticks = $74
 
 main_reset:
     lda #%11111111
@@ -27,10 +27,10 @@ main_reset:
     lda #%11111111
     sta DDRB
 
-    jsr init_timer
+    jsr init_ticks
     jsr init_sound
-    jsr init_display
-    jsr clear_display
+    jsr init_lcd
+    jsr lcd_clear_display
     jsr print_message
     jmp play_music
 
@@ -39,7 +39,7 @@ print_message:
 print_message_loop:
     lda message,y
     beq print_message_done
-    jsr print_char
+    jsr lcd_putchar
     iny
     jmp print_message_loop
 print_message_done:
@@ -56,16 +56,16 @@ play_music:
     lda (bptr),y            ; read DEL
     asl                     ; double it; to change units from 1/50s -> 1/100s
     clc
-    adc ticks
-    sta goal_ticks
+    adc g_ticks
+    sta g_sleep_ticks
 top_loop:
     jsr send_if_time_to_send
     jmp top_loop
 
 send_if_time_to_send:
     sec
-    lda goal_ticks
-    sbc ticks
+    lda g_sleep_ticks
+    sbc g_ticks
     beq send_bytes
     rts
 send_bytes:
@@ -79,16 +79,16 @@ continue_send_bytes:
     ;; x: N, N-1 ... 1
     ;; y: 2, 3 ... N+2
     lda (bptr),y                 ; read data byte to send
-    jsr send_sound_data
+    jsr sound_send_data
     dex
     bne continue_send_bytes
     iny                     ; y is now N+2
-    ;; read next DEL and increment goal_ticks
+    ;; read next DEL and increment g_sleep_ticks
     lda (bptr),y
     asl                         ; double DEL
     clc
-    adc goal_ticks
-    sta goal_ticks
+    adc g_sleep_ticks
+    sta g_sleep_ticks
     ;; shift buffer pointer by y (N+2)
     tya
     clc

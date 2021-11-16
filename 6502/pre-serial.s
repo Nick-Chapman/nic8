@@ -3,14 +3,11 @@
 
     .org $fffc
     .word reset_main
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
-PORTB = $6000
-DDRB = $6002
-
-ticks = $71                     ; TODO: rename g_tick & fixup all files
+g_ticks = $71
 g_screen_pointer = $72
 g_next_screen_print = $73
 g_time_put_next_message_char = $74
@@ -25,16 +22,14 @@ g_screen = $200 ; 32 bytes
 
 reset_main:
     jsr init_via
-    jsr init_timer
-    jsr init_display
-    jsr clear_display
+    jsr init_ticks
+    jsr init_lcd
+
+    jsr lcd_clear_display
     jsr init_screen
     jmp example
 
-init_via:
-    lda #%11111111
-    sta DDRB
-    rts
+    include via.s ; TODO: move to top
 
 example:
     jsr print_screen_now
@@ -50,12 +45,12 @@ spin:
 print_screen_when_time:
     lda g_next_screen_print
     sec
-    sbc ticks
+    sbc g_ticks
     beq print_screen_now
     rts
 print_screen_now:
     jsr print_screen
-    lda ticks
+    lda g_ticks
     clc
     adc #5 ; 20 times/sec
     sta g_next_screen_print
@@ -64,7 +59,7 @@ print_screen_now:
 
 init_put_message:
     jsr init_message_ptr
-    lda ticks
+    lda g_ticks
     clc
     adc #100 ; wait 1 sec to start
     sta g_time_put_next_message_char
@@ -73,14 +68,15 @@ init_put_message:
 put_next_message_char_when_time:
     lda g_time_put_next_message_char
     sec
-    sbc ticks
+    sbc g_ticks
     bne put_next_message_char_done
     ldy #0
     lda (g_message_ptr),y
     beq spin ; spin when reach end of message
+    ;; TODO: extract/share: scroll/put sequence
     jsr maybe_scroll
     pha ;save char
-    jsr putchar ; only call to underlying (screen)putchar; follows maybe_scroll, so is safe
+    jsr screen_putchar_raw ; only call to underlying (screen)putchar; follows maybe_scroll, so is safe
     jsr increment_message_ptr
     pla ;get char
     tay
@@ -91,7 +87,7 @@ put_next_message_char_when_time:
     adc #50 ; extra 1/2 second for a space
 not_a_space:
     adc #25 ; everything else, print at 4 chars/sec
-    adc ticks
+    adc g_ticks
     sta g_time_put_next_message_char
 put_next_message_char_done:
     rts

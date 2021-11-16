@@ -1,25 +1,25 @@
 
     .org $fffc
     .word main_reset
-    .word irq
+    .word ticks_irq
 
     .org $8000
 
 ;;; VIA
-PORTB = $6000               ; 7 MSBs for lcd; LSB is 76489 control bit
-PORTA = $6001               ; 76489 data
+PORTB = $6000 ; 7 MSBs for lcd; LSB is 76489 control bit
+PORTA = $6001 ; 76489 data
 DDRB = $6002
 DDRA = $6003
 
 ;;; variables in various random slots in page-0 :)
 
-ticks = $71                    ; maintained by irq; +1 every 10ms
+g_ticks = $71 ; maintained by irq; +1 every 10ms
     include ticks.s
     include lcd.s
-    include 76489.s
+    include sound.s
 
 bptr = $72 ;2 bytes
-goal_ticks = $74
+g_sleep_ticks = $74
 repeat = $75
 
 main_reset:
@@ -31,8 +31,8 @@ main_reset:
     lda #3
     sta repeat
 
-    jsr init_display
-    jsr init_timer
+    jsr init_lcd
+    jsr init_ticks
     jsr init_sound
 
 restart:
@@ -43,16 +43,16 @@ restart:
     ldy #0
     lda (bptr),y
     clc
-    adc ticks
-    sta goal_ticks
+    adc g_ticks
+    sta g_sleep_ticks
 top_loop:
     jsr send_if_time_to_send
     jmp top_loop
 
 send_if_time_to_send:
     sec
-    lda goal_ticks
-    sbc ticks
+    lda g_sleep_ticks
+    sbc g_ticks
     beq send_bytes              ;hmm?
     rts
 send_bytes:
@@ -71,15 +71,15 @@ continue_send_bytes:
     ;; x: N, N-1 ... 1
     ;; y: 3, 4 ... N+3
     lda (bptr),y                 ; read data byte to send
-    jsr send_sound_data
+    jsr sound_send_data
     dex
     bne continue_send_bytes
     iny                     ; y is now N+3
-    ;; read next DEL and increment goal_ticks
+    ;; read next DEL and increment g_sleep_ticks
     lda (bptr),y
     clc
-    adc goal_ticks
-    sta goal_ticks
+    adc g_sleep_ticks
+    sta g_sleep_ticks
     ;; shift buffer pointer by y (N+3)
     tya
     clc
@@ -92,14 +92,14 @@ shift_btr_no_carry:
 
 message:
     pha
-    jsr clear_display
+    jsr lcd_clear_display
     pla
-    jsr print_char
+    jsr lcd_putchar
     rts
 
 dot:
     lda #'.'
-    jsr print_char
+    jsr lcd_putchar
     rts
 
 finish:

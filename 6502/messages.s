@@ -19,11 +19,21 @@ DDRB = $6002
     include lcd.s
 
 MPTR = $AA
-    include send_message.s
+
+send_message:
+    ldy #0
+send_message_loop:
+    lda (MPTR),y
+    beq send_message_done
+    jsr lcd_putchar
+    iny
+    jmp send_message_loop
+send_message_done:
+    rts
 
 reset:
-    jsr init_display
-    jsr clear_display
+    jsr init_lcd
+    jsr lcd_clear_display
     ldx #0
 messages_loop:
     lda messages,x
@@ -34,7 +44,7 @@ messages_loop:
     sta MPTR + 1
     inx
     jsr pause
-    jsr clear_display
+    jsr lcd_clear_display
     jsr send_message
     jmp messages_loop
 spin:

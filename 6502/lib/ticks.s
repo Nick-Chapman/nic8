@@ -1,6 +1,8 @@
+;;; REQUIRES: g_ticks
+;;; PROVIDES: init_ticks, ticks_irq
 
-;;; routines to initialize timer on 6522, and maintain ticks in irq
 
+;;; TODO: move these defs to via.s ; better still, merge this file into via.s
 T1CL = $6004
 T1CH = $6005
 
@@ -14,21 +16,21 @@ ticks_per_sec = 100
 
 clks_per_tick = (clks_per_sec / ticks_per_sec - 2)
 
-irq:
+ticks_irq:
     bit T1CL ; acknowledge interrupt
-    inc ticks
+    inc g_ticks
     rti
 
-init_timer:
+init_ticks:
     cli
     lda #0
-    sta ticks
-    lda #%01000000              ; continuous interrupts from Timer1
+    sta g_ticks
+    lda #%01000000 ; continuous interrupts from Timer1
     sta ACR
     lda #(clks_per_tick & $ff)
     sta T1CL
     lda #(clks_per_tick >> 8)
     sta T1CH
-    lda #%11000000              ; enable Timer1 interrupt
+    lda #%11000000 ; enable Timer1 interrupt
     sta IER
     rts
