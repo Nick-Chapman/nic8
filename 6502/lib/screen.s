@@ -1,13 +1,5 @@
 ;;; REQUIRES: g_screen, g_screen_pointer
-;;; PROVIDES: init_screen, print_screen, screen_putchar_raw, screen_return_home
-
-;;; TODO: move scrolling code here & make it the default
-
-screen_putchar_raw:
-    ldx g_screen_pointer
-    sta g_screen,x
-    inc g_screen_pointer
-    rts
+;;; PROVIDES: init_screen, print_screen, screen_putchar, screen_newline, screen_return_home
 
 screen_return_home:
     lda #0
@@ -28,6 +20,7 @@ each_pat_char:
 
 ;; print screen to the underlying lcd
 print_screen:
+    pha
     ;; copy screen to lcd
     jsr lcd_return_home
     ldx #0
@@ -53,4 +46,57 @@ each_line2_char:
     sec
     cpx #32
     bne each_line2_char
+    pla
+    rts
+
+screen_putchar:
+    cmp #13 ; carriage return (ASCII 13) as added by str directive
+    beq screen_newline
+    jsr maybe_scroll
+    jmp local_screen_putchar_raw
+
+local_screen_putchar_raw:
+    ldx g_screen_pointer
+    sta g_screen,x
+    inc g_screen_pointer
+    rts
+
+screen_newline:
+    pha
+    lda g_screen_pointer
+    cmp #16
+    bmi after_scrollup
+    jsr scrollup
+after_scrollup:
+    jsr local_screen_return_to_start_line2
+    pla
+    rts
+
+maybe_scroll:
+    pha
+    lda g_screen_pointer
+    cmp #32
+    bne maybe_scroll_done
+    jsr scrollup
+    jsr local_screen_return_to_start_line2
+maybe_scroll_done:
+    pla
+    rts
+
+scrollup:
+    ldx #0
+each_scroll_char: ; TODO: local label
+    lda g_screen+16,x
+    sta g_screen,x
+    lda #' '
+    sta g_screen+16,x
+    inx
+    sec
+    cpx #16
+    bne each_scroll_char
+    rts
+
+local_screen_return_to_start_line2:
+    lda #16
+    sta g_screen_pointer
     rts

@@ -10,14 +10,14 @@
 ;;; Idea for computations:
 ;;; - counting DONE
 ;;; - collatz
-;;; - slow fib calculation
+;;; - slow fib calculation (see fib.s)
 ;;; - prime generation
 ;;; - binary2decimal DONE
 ;;; - multiplication
 ;;; - ops for implementing a clock
 ;;; Beter LCD abstraction
 ;;; - perhaps manipulate screen-contents in memory DONE
-;;; - with sep thread which keeps LCD up to date with mem
+;;; - with sep thread which keeps LCD up to date with mem (see pre-serial.s)
 
     .org $fffc
     .word reset_main
@@ -25,14 +25,24 @@
 
     .org $8000
 
-g_ticks = $10
-g_number = $11 ; 2 bytes
+;;; bytes
+g_ticks = $50
+g_screen_pointer = $51
 
-g_divisor = $13 ; 2 bytes
-g_mod10 = $15 ; 2 bytes
+;;; words
+g_message_ptr = $70
+g_number = $72
+g_divisor = $74
+g_mod10 = $76
 
+;;; buffers
+g_screen = $200 ; 32 bytes
+
+    include via.s
     include ticks.s
     include lcd.s
+    include screen.s
+    include decimal.s
 
 reset_main:
     jsr init_via
@@ -43,8 +53,6 @@ reset_main:
     jsr example
 spin:
     jmp spin
-
-    include via.s ; TODO: move to top
 
 ;;;--------------------
 ;;; example which manipulates 16bit number in mem
@@ -77,19 +85,6 @@ print_screen_now:
     sta next_screen_print
     rts
 
-sleep:
-    clc
-    adc g_ticks
-    pha ; goal ticks
-sleep_wait:
-    sec
-    pla
-    pha
-    sbc g_ticks
-    bne sleep_wait
-    pla
-    rts
-
 init_number:
     lda #0
     sta g_number
@@ -101,13 +96,13 @@ put_number_dec: ; print 1-5 decimal digits for 16 bit number
     jsr screen_return_home
     lda g_number
     ldx g_number + 1
-    jsr put_word_ax_in_decimal
+    jsr decimal_put_word
     rts
 
 put_dot:
-    pha ; make sure this debug routine changes no registers!
+    pha
     lda #'.'
-    jsr screen_putchar_raw
+    jsr screen_putchar
     pla
     rts
 
@@ -122,7 +117,6 @@ pull_number:
     sta g_number
     stx g_number + 1
     rts
-
 
 ;;;--------------------
 ;;; derived data-stack (ds)  ops
@@ -198,76 +192,3 @@ ds_add: ; (A B -- A+B)
     iny
     iny
     rts
-
-;;;--------------------
-;;; sleep for N (in acc) 1/100s
-;; sleep:
-;;     clc
-;;     adc g_ticks
-;;     pha ; goal ticks
-;; sleep_wait:
-;;     sec
-;;     pla
-;;     pha
-;;     sbc g_ticks
-;;     bne sleep_wait
-;;     pla
-;;     rts
-
-
-;;; TODO: delete in favour of using version in decimal
-;;; after having adapted to use teh scrolling version
-put_word_ax_in_decimal:
-    sta g_divisor ;lo
-    stx g_divisor + 1 ;hi
-    lda #0
-    pha ; marker for print
-each_digit:
-    lda #0
-    sta g_mod10
-    sta g_mod10 + 1
-    clc
-    ldx #16
-each_bit:
-    rol g_divisor
-    rol g_divisor + 1
-    rol g_mod10
-    rol g_mod10 + 1
-    sec
-    lda g_mod10
-    sbc #10
-    pha ; save
-    lda g_mod10 + 1
-    sbc #0
-    bcc ignore_result
-    sta g_mod10 + 1
-    pla
-    pha
-    sta g_mod10
-ignore_result:
-    pla ;drop
-    dex
-    bne each_bit
-    rol g_divisor
-    rol g_divisor + 1
-    clc
-    lda g_mod10
-    adc #'0'
-    pha ;save on stack for reverse print
-    lda g_divisor
-    ora g_divisor + 1
-    bne each_digit
-put_from_stack:
-    pla
-    beq done
-    jsr screen_putchar_raw ; TODO: use scrolling
-    jmp put_from_stack
-done:
-    rts
-
-;;;--------------------
-;;; async lcd printing
-
-g_screen = $200 ; 32 bytes
-g_screen_pointer = $220
-    include screen.s            ; TODO move to top

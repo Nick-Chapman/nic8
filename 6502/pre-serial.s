@@ -1,5 +1,5 @@
 
-;;; setup dev framework code for serial link
+;;; setup dev framework code for serial link -- hmm, didn't actually make much progress on the serial stuff!
 
     .org $fffc
     .word reset_main
@@ -7,29 +7,30 @@
 
     .org $8000
 
-g_ticks = $71
-g_screen_pointer = $72
-g_next_screen_print = $73
-g_time_put_next_message_char = $74
-g_message_ptr = $75 ; 2 bytes
-; $77 next
+;;; bytes
+g_ticks = $50
+g_screen_pointer = $51
+g_next_screen_print = $52
+g_time_put_next_message_char = $53
 
+;;; words
+g_message_ptr = $75
+
+;;; buffers
 g_screen = $200 ; 32 bytes
 
     include ticks.s
     include lcd.s
     include screen.s
+    include via.s
 
 reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_lcd
-
     jsr lcd_clear_display
     jsr init_screen
     jmp example
-
-    include via.s ; TODO: move to top
 
 example:
     jsr print_screen_now
@@ -56,12 +57,11 @@ print_screen_now:
     sta g_next_screen_print
     rts
 
-
 init_put_message:
     jsr init_message_ptr
     lda g_ticks
     clc
-    adc #100 ; wait 1 sec to start
+    adc #50 ; wait 1/2 sec to start
     sta g_time_put_next_message_char
     rts
 
@@ -73,10 +73,8 @@ put_next_message_char_when_time:
     ldy #0
     lda (g_message_ptr),y
     beq spin ; spin when reach end of message
-    ;; TODO: extract/share: scroll/put sequence
-    jsr maybe_scroll
     pha ;save char
-    jsr screen_putchar_raw ; only call to underlying (screen)putchar; follows maybe_scroll, so is safe
+    jsr screen_putchar
     jsr increment_message_ptr
     pla ;get char
     tay
@@ -84,9 +82,9 @@ put_next_message_char_when_time:
     cpy #' '
     bne not_a_space
     clc
-    adc #50 ; extra 1/2 second for a space
+    adc #20 ; extra time for a space
 not_a_space:
-    adc #25 ; everything else, print at 4 chars/sec
+    adc #10 ; everything else, print at 10 chars/sec
     adc g_ticks
     sta g_time_put_next_message_char
 put_next_message_char_done:
@@ -107,33 +105,9 @@ increment_message_ptr_done:
     rts
 
 message:
-    .asciiz "one two three four five six seven eight nine ten eleven twelve thrirteen"
-
-maybe_scroll:
-    pha
-    lda g_screen_pointer
-    cmp #32
-    bne maybe_scroll_done
-    jsr scroll
-    jsr screen_return_to_start_line2
-maybe_scroll_done:
-    pla
-    rts
-
-scroll:
-    ldx #0
-each_scroll_char:
-    lda g_screen+16,x
-    sta g_screen,x
-    lda #' '
-    sta g_screen+16,x
-    inx
-    sec
-    cpx #16
-    bne each_scroll_char
-    rts
-
-screen_return_to_start_line2:
-    lda #16
-    sta g_screen_pointer
-    rts
+    .str "zero one two"
+    .str "three four"
+    .str "five six"
+    .str "seven eight nine"
+    .string "ten eleven twelve thirteen fourteen fifteen sixteen"
+    .byte 0

@@ -1,5 +1,5 @@
 ;;; REQUIRES: g_divisor (word), g_mod10 (word)
-;;; PROVIDES: decimal_put_word
+;;; PROVIDES: decimal_put_word, decimal_put_byte
 
 ;;; decode 16 bit word pased in A/X as 1-5 digit decimal number
 ;;; put string to screen
@@ -47,7 +47,11 @@ ignore_result:
 put_from_stack:
     pla
     beq done
-    jsr scrolling_putchar
+    jsr screen_putchar
     jmp put_from_stack
 done:
     rts
+
+decimal_put_byte:
+    ldx #0
+    jmp decimal_put_word
