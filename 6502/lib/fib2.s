@@ -5,7 +5,24 @@
 ;;; caller reserves 2 byte space for result (push hi; lo)
 ;;; then pushes the 1 byte argument
 
-fib2:
+
+fib2_name:
+    .asciiz "Stack arg/res"
+    .word fib2_name
+fib2_entry:
+    pha ; res-hi
+    pha ; res-lo
+    pha ; arg
+    jsr fib2_recurse ; code under test!
+    pla ; discard arg
+    tsx
+    pla ; res-lo
+    sta $105,x
+    pla ; res-hi
+    sta $106,x
+    rts
+
+fib2_recurse:
     tsx
     lda $103,x ; arg (under 2 byte ret address)
 
@@ -18,7 +35,7 @@ fib2:
     sec
     sbc #1
     pha
-    jsr fib2
+    jsr fib2_recurse
     pla
 
     tsx
@@ -28,7 +45,7 @@ fib2:
     sec
     sbc #2
     pha
-    jsr fib2
+    jsr fib2_recurse
     pla
 
     tsx

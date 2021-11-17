@@ -8,4 +8,4 @@ libs = $(patsubst %, lib/%.s, $(shared_source))
 all: $(bins)
 
 rom/%.bin: %.s $(libs)
-	vasm6502_oldstyle -I lib -dotdir -Fbin $< -o $@
+	vasm6502_oldstyle -c02 -esc -I lib -dotdir -Fbin $< -o $@
