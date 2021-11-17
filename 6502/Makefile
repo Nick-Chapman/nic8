@@ -1,5 +1,5 @@
 
-mains = first hello messages timer hannah sound1 sound2 arcadians sonic computation pre-serial fib
+mains = first hello messages timer hannah sound1 sound2 arcadians sonic computation pre-serial fib-trials
 shared_source = via ticks lcd sound screen sleep decimal fib1 fib2
 
 bins = $(patsubst %, rom/%.bin, $(mains))
