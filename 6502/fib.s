@@ -29,9 +29,15 @@ g_screen = $200 ; 32 bytes
     include screen.s
     include sleep.s
     include decimal.s
+
+    ;; pick an implementation of fib to test
     include fib1.s
+    include fib2.s
 
 reset_main:
+    ldx #$ff
+    txs
+
     jsr init_via
     jsr init_ticks
     jsr init_sound ; silence
@@ -41,27 +47,37 @@ reset_main:
     jmp example
 
 example:
+    jsr pause
     lda #0
 example_loop:
     pha
     sta g_arg
     jsr put_arg
     jsr print_screen
-    jsr fib1 ; code under test!
+    jsr fib2_shim
     jsr put_res
     jsr print_screen
+
     jsr pause
-;    pla
-;    pha
-;    and #1
-;    beq after_newline ; no newline when n = 0,2,4...
     jsr screen_newline
-;after_newline:
     jsr print_screen
     pla
     clc
     adc #1
     jmp example_loop
+
+fib2_shim:
+    pha ; res-hi
+    pha ; res-lo
+    lda g_arg
+    pha ; arg
+    jsr fib2 ; code under test!
+    pla ; discard arg
+    pla ; res-lo
+    sta g_res
+    pla ; res-hi
+    sta g_res + 1
+    rts
 
 pause:
     pha
