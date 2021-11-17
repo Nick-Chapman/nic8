@@ -6,6 +6,18 @@
 init_sound:
     lda #1
     sta PORTB
+    jsr sound_silence
+    rts
+
+sound_silence:
+    lda #$9f
+    jsr sound_send_data
+    lda #$bf
+    jsr sound_send_data
+    lda #$df
+    jsr sound_send_data
+    lda #$ff
+    jsr sound_send_data
     rts
 
 sound_send_data:

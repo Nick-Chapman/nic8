@@ -6,71 +6,64 @@
 
     .org $8000
 
-;;; VIA
-PORTB = $6000
-PORTA = $6001
-DDRB = $6002
-DDRA = $6003
+;;; bytes
+g_ticks = $50
+g_sleep_ticks = $51
+g_song_count = $52
 
-g_ticks = $71
+;;; words
+g_ptr = $70
+
+    include via.s
     include ticks.s
     include sound.s
     include lcd.s
 
-ptr = $72 ;2 bytes
-g_sleep_ticks = $74
-song_count = $77
-
 main_reset:
-    lda #%11111111
-    sta DDRA
-    lda #%11111111
-    sta DDRB
 
+    jsr init_via
     jsr init_ticks
     jsr init_sound
-    jsr silence
-
     jsr init_lcd
     jsr lcd_clear_display
 
     sec
     lda #num_songs_minus_1
-    cmp song_count            ; on power up may contain any value
-    bcs after_reset_song_0    ; dont reset if song_count in range
+    cmp g_song_count            ; on power up may contain any value
+    bcs after_reset_song_0      ; dont reset if g_song_count in range
     lda #0
-    sta song_count            ; cycle/reset to song 0
+    sta g_song_count            ; cycle/reset to song 0
 after_reset_song_0:
 
     ;; select current song data
-    lda song_count
-    inc song_count              ; next song on reset
+    lda g_song_count
+    inc g_song_count            ; next song on reset
     asl
     tay
     lda song_table,y
-    sta ptr
+    sta g_ptr
     iny
     lda song_table,y
-    sta ptr+1
+    sta g_ptr+1
     iny
 
     ;; show song number(+1) so it matches file name
-    lda song_count
+    lda g_song_count
     jsr print_hex_number
-    lda #100                    ;2secs pause
+    lda #100 ; 1sec pause
     jsr sleep
 
     ;; skip over header
     clc
     ldy #0
-    lda (ptr),y
+    lda (g_ptr),y
     adc #1
     tay
     ;; print title
     jsr lcd_clear_display
 print_title:
     iny
-    lda (ptr),y
+    lda (g_ptr),y
     beq author
     jsr lcd_putchar
     jmp print_title
@@ -79,7 +72,7 @@ author:
     tya
     ;; skip over author
     clc
-    adc (ptr),y
+    adc (g_ptr),y
     adc #1
     jsr bump_ptr
 
@@ -106,21 +99,10 @@ sleep_wait:
     bne sleep_wait
     rts
 
-silence:
-    lda #(silence_data & $ff)
-    sta ptr
-    lda #(silence_data >> 8)
-    sta ptr+1
-    jsr send_packet
-    rts
-silence_data:
-    .byte 4, $9f, $bf, $df, $ff
-
-
 send_packet:
-    ;; ptr points to the #bytes to send
+    ;; g_ptr points to the #bytes to send
     ldy #0
-    lda (ptr),y                 ; read N, the #bytes to send
+    lda (g_ptr),y                 ; read N, the #bytes to send
     cmp #$ff
     beq finish                  ; stop if eof
     tax
@@ -129,7 +111,7 @@ continue_send_bytes:
     iny                         ; y=1 (skipping N)
     ;; x: N, N-1 ... 1
     ;; y: 1, 2 ... N+1
-    lda (ptr),y                 ; read data byte to send
+    lda (g_ptr),y                 ; read data byte to send
     jsr sound_send_data
     dex
     bne continue_send_bytes
@@ -140,16 +122,16 @@ send_bytes_done:
 
 ;;; bump the ptr by the value in the accumulator
 bump_ptr:
-    adc ptr
-    sta ptr
+    adc g_ptr
+    sta g_ptr
     bcc bump_ptr_no_carry
-    inc ptr + 1
+    inc g_ptr + 1
 bump_ptr_no_carry:
     rts
 
 
 finish:
-    jsr silence
+    jsr sound_silence
 spin:
     jmp spin
 

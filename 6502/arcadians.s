@@ -7,26 +7,20 @@
 
     .org $8000
 
-;;; VIA
-PORTB = $6000 ; (7 MSBs for lcd); LSB is sound control bit
-PORTA = $6001 ; 76489 data
-DDRB = $6002
-DDRA = $6003
+;;; bytes
+g_ticks = $50
+g_sleep_ticks = $51
 
-g_ticks = $71 ; maintained by irq; +1 every 10ms
+;;; words
+g_ptr = $70
+
+    include via.s
     include ticks.s
     include sound.s
     include lcd.s
 
-bptr = $72 ;2 bytes
-g_sleep_ticks = $74
-
 main_reset:
-    lda #%11111111
-    sta DDRA
-    lda #%11111111
-    sta DDRB
-
+    jsr init_via
     jsr init_ticks
     jsr init_sound
     jsr init_lcd
@@ -49,11 +43,11 @@ message: .asciiz "** Arcadians ** "
 
 play_music:
     lda #(data & $ff)       ;lo
-    sta bptr
+    sta g_ptr
     lda #(data >> 8)        ;hi
-    sta bptr+1
+    sta g_ptr+1
     ldy #0
-    lda (bptr),y            ; read DEL
+    lda (g_ptr),y           ; read DEL
     asl                     ; double it; to change units from 1/50s -> 1/100s
     clc
     adc g_ticks
@@ -69,22 +63,22 @@ send_if_time_to_send:
     beq send_bytes
     rts
 send_bytes:
-    ;; bptr points to the delay we just did, at +1 we have #bytes to send
+    ;; g_ptr points to the delay we just did, at +1 we have #bytes to send
     ldy #1
-    lda (bptr),y                 ; read N, the #bytes to send
-    beq finish                     ; stop if 0
+    lda (g_ptr),y               ; read N, the #bytes to send
+    beq finish                  ; stop if 0
     tax
 continue_send_bytes:
     iny                         ; y=2 (skipping DEL,N)
     ;; x: N, N-1 ... 1
     ;; y: 2, 3 ... N+2
-    lda (bptr),y                 ; read data byte to send
+    lda (g_ptr),y               ; read data byte to send
     jsr sound_send_data
     dex
     bne continue_send_bytes
     iny                     ; y is now N+2
     ;; read next DEL and increment g_sleep_ticks
-    lda (bptr),y
+    lda (g_ptr),y
     asl                         ; double DEL
     clc
     adc g_sleep_ticks
@@ -92,10 +86,10 @@ continue_send_bytes:
     ;; shift buffer pointer by y (N+2)
     tya
     clc
-    adc bptr
-    sta bptr
+    adc g_ptr
+    sta g_ptr
     bcc shift_btr_no_carry
-    inc bptr + 1
+    inc g_ptr + 1
 shift_btr_no_carry:
     rts
 

@@ -2,41 +2,38 @@
 ;;; Example of using VIA timer & interrupts
 
     .org $fffc
-    .word reset
+    .word main_reset
     .word ticks_irq
-
-number = $A1 ; maintained in main loop; +1 every 1/2s
-last_message_ticks = $A2
 
     .org $8000
 
-PORTB = $6000 ; 7 MSBs for lcd
-DDRB = $6002
+g_number = $A0
+g_ticks = $A1
+g_last_message_ticks = $A2
 
+    include via.s
     include lcd.s
-
-g_ticks = $A0 ; maintained by irq; +1 every 10ms
     include ticks.s
 
-reset:
+main_reset:
     jsr init_ticks
     jsr init_lcd
     lda #$42
-    sta number
+    sta g_number
     jsr print_number
 loop:
     jsr wait_for_half_second
-    inc number
+    inc g_number
     jsr print_number
     jmp loop
 
 wait_for_half_second:
     lda g_ticks
-    sta last_message_ticks
+    sta g_last_message_ticks
 keep_waiting:
     sec
     lda g_ticks
-    sbc last_message_ticks
+    sbc g_last_message_ticks
     cmp #50
     bcc keep_waiting
     rts
@@ -45,7 +42,7 @@ print_number:
     jsr lcd_clear_display
     lda #"x"
     jsr lcd_putchar
-    lda number
+    lda g_number
     lsr
     lsr
     lsr
@@ -53,7 +50,7 @@ print_number:
     tax
     lda digits,x
     jsr lcd_putchar
-    lda number
+    lda g_number
     and #%1111
     tax
     lda digits,x

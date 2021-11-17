@@ -7,20 +7,21 @@
 
     .org $8000
 
-PORTB = $6000 ; 7 MSBs for lcd
-DDRB = $6002
-
-    include lcd.s
-
-g_ticks = $A0 ; maintained by irq; +1 every 10ms
-    include ticks.s
+g_ticks = $A0
 
 GAP = 170
 QUICK = 40
 
+    include via.s
+    include ticks.s
+    include sound.s
+    include lcd.s
+
 reset:
-    jsr init_lcd
+    jsr init_via
     jsr init_ticks
+    jsr init_sound ; silence
+    jsr init_lcd
 
     ldx #(message1 & $ff)       ;lo
     ldy #(message1 >> 8)        ;hi

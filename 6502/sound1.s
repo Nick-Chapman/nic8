@@ -2,35 +2,22 @@
 ;;; first attempts to drive 76489 sound chip
 
     .org $fffc
-    .word reset
+    .word main_reset
     .word ticks_irq
 
     .org $8000
 
-g_ticks = $A0 ; maintained by irq; +1 every 10ms
+g_ticks = $50
+g_sleep_ticks = $51
+
+    include via.s
     include ticks.s
     include lcd.s
-
-PORTB = $6000 ; LSB bit is 76489 control
-PORTA = $6001 ; 76489 data
-DDRB = $6002
-DDRA = $6003
-
     include sound.s
+    include sleep.s
 
-message:
-    pha
-    jsr lcd_clear_display
-    pla
-    jsr lcd_putchar
-    rts
-
-reset:
-    lda #%11111111
-    sta DDRA
-    lda #%11111111
-    sta DDRB
-
+main_reset:
+    jsr init_via
     jsr init_lcd
     jsr init_sound
     jsr init_ticks
@@ -60,6 +47,17 @@ loop:
     jsr message
     jsr silence_0
     jmp loop
+
+pause:
+    lda #100
+    jmp sleep_blocking
+
+message:
+    pha
+    jsr lcd_clear_display
+    pla
+    jsr lcd_putchar
+    rts
 
 tone_d:
     lda #$8a
@@ -105,16 +103,4 @@ silence_3:
 loud_0:
     lda #$90
     jsr sound_send_data
-    rts
-
-last_message_ticks = $A2
-pause:
-    lda g_ticks
-    sta last_message_ticks
-keep_waiting:
-    sec
-    lda g_ticks
-    sbc last_message_ticks
-    cmp #100
-    bcc keep_waiting
     rts

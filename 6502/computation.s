@@ -40,6 +40,7 @@ g_screen = $200 ; 32 bytes
 
     include via.s
     include ticks.s
+    include sound.s
     include lcd.s
     include screen.s
     include decimal.s
@@ -47,6 +48,7 @@ g_screen = $200 ; 32 bytes
 reset_main:
     jsr init_via
     jsr init_ticks
+    jsr init_sound ; silence
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
