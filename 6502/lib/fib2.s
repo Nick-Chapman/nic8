@@ -1,5 +1,4 @@
-;;; REQUIRES: g_arg (byte), g_res (word)
-;;; PROVIDES: fib1
+;;; PROVIDES: fib2
 
 ;;; compute fib purely on stack; don't use globals
 ;;; caller reserves 2 byte space for result (push hi; lo)
@@ -7,7 +6,7 @@
 
 
 fib2_name:
-    .asciiz "Stack arg/res"
+    .asciiz "2: ST -> ST"
     .word fib2_name
 fib2_entry:
     pha ; res-hi

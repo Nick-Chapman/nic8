@@ -37,12 +37,14 @@ g_screen = $200 ; 32 bytes
     ;; various implementations of fib
     include fib1.s
     include fib2.s
+    include fib3.s
 
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
     .word fib1_entry
     .word fib2_entry
+    .word fib3_entry
 version_table_end:
 
 reset_main:
@@ -64,41 +66,71 @@ example:
     jsr pause
     jsr pause
     jsr screen_newline
-    lda #10
-    pha
+    lda #20 ; Compute fib(N) for N = 20...
+    pha ; keep N on the stack
 
 example_loop:
 
+    ;; Access N from the stack without popping it..
     tsx
     lda $101,x
 
-    jsr decimal_put_byte
+    jsr decimal_put_byte ; ..so we can print it
     lda #'-'
     jsr screen_putchar
     jsr print_screen
 
     ;; All versions have same interface: byte argument in A; 2 bytes space on stack for result
-    tsx
-    lda $101,x
-    pha
-    pha
-    jsr version_dispatch
-    pla
-    plx
 
-    jsr decimal_put_word
+    pha ; reserve 2-bytes for timing-result
+    pha
+    jsr start_timer
+    pha ; reserve 2-bytes for FIB-result
+    pha
+    tsx
+    lda $105,x ; Access N again (now under 4 bytes), to setup the argument to fib (in acc)
+    jsr version_dispatch
+    jsr stop_timer
+
+    pla ; result-LO into A, and
+    plx ; result-HI into X, which..
+    jsr decimal_put_word ; ..is the calling convention to print a word
     lda #' '
     jsr screen_putchar
+
+    lda #'('
+    jsr screen_putchar
+    pla ; timer-LO into A, and
+    plx ; timer-HI into X, which..
+    jsr decimal_put_word ; ..as before
+    lda #')'
+    jsr screen_putchar
+
     jsr print_screen
     jsr pause
     jsr screen_newline
     jsr print_screen
 
     tsx
-    inc $101,x
+    inc $101,x ; increment N (in place) on stack
 
     jmp example_loop
 
+start_timer:
+    tsx
+    lda g_ticks
+    sta $103,x ; timing-word under: 2-bytes return-addr
+    lda #0
+    sta $104,x
+    rts
+
+stop_timer:
+    tsx
+    lda g_ticks
+    sec
+    sbc $105,x ; timing-word under: 2-bytes return-addr, 2-bytes fib-result
+    sta $105,x
+    rts
 
 version_dispatch:
     jmp (g_selected_version_ptr)
@@ -111,6 +143,7 @@ select_version:
     lda #0
     sta g_selected_version_index ; select first version
 after_reset_to_version0:
+    lda g_selected_version_index
     inc g_selected_version_index ; next version on reset
     asl
     tay
