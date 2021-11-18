@@ -40,6 +40,7 @@ g_screen = $200 ; 32 bytes
     include fib3.s
     include fib4.s
     include fib5.s
+    include fib6.s
 
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
@@ -49,6 +50,7 @@ version_table:
     .word fib3_entry
     .word fib4_entry
     .word fib5_entry
+    .word fib6_entry
 version_table_end:
 
 reset_main:
