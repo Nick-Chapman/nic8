@@ -41,6 +41,7 @@ g_screen = $200 ; 32 bytes
     include fib4.s
     include fib5.s
     include fib6.s
+    include fib7.s
 
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
@@ -51,6 +52,7 @@ version_table:
     .word fib4_entry
     .word fib5_entry
     .word fib6_entry
+    .word fib7_entry
 version_table_end:
 
 reset_main:
@@ -72,7 +74,7 @@ example:
     jsr pause
     jsr pause
     jsr screen_newline
-    lda #20 ; Compute fib(N) for N = 20...
+    lda #0 ; Compute fib(N) for N = 20...
     pha ; keep N on the stack
 
 example_loop:
