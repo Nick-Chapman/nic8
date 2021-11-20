@@ -1,24 +1,92 @@
 
-;;; So, finally. CPS version... which allocates stack frames on a heap.
-;;; I'm worried this will be really hard to get working
-;;; Even before attemping to write the GC!
+;;; CPS version of fib. Allocates stack frames on a heap. No GC yet. But soon!
 
-;;; arguments/results of functions/continutaion are in ZP vars: 0,1,...
-;;; L/H are lo/hi bytes of a 16 bit value
+load_frame_var0: .macro
+    lda (fp)
+.endmacro
+
+load_frame_var: .macro N
+    ldy #\N
+    lda (fp),y
+.endmacro
+
+store_heap0: .macro
+    sta (hp)
+.endmacro
+
+store_heap: .macro N
+    ldy #\N
+    sta (hp),y
+.endmacro
+
+store_heap_next: .macro ; TODO: elim! - saves just 1-byte; no quicker; less regular
+    iny
+    sta (hp),y
+.endmacro
+
+copy_code_pointer_to_heap0: .macro code
+    lda #<\code
+    store_heap0
+    lda #>\code
+    store_heap 1
+.endmacro
+
+copy_word: .macro source, dest
+    lda \source
+    sta \dest
+    lda \source + 1
+    sta \dest + 1
+.endmacro
+
+copy_word_from_frame0: .macro dest
+    load_frame_var0
+    sta \dest
+    load_frame_var 1
+    sta \dest + 1
+.endmacro
+
+copy_word_frame_to_heap: .macro F, H
+    load_frame_var \F
+    store_heap \H
+    load_frame_var \F+1
+    store_heap \H+1
+.endmacro
+
+copy_word_local_to_heap: .macro L, H
+    lda \L
+    store_heap \H
+    lda \L+1
+    store_heap \H+1
+.endmacro
+
+copy_byte_local_to_heap_next: .macro L
+    lda \L
+    store_heap_next
+.endmacro
+
+copy_word_local_to_heap_next: .macro L
+    lda \L
+    store_heap_next
+    lda \L+1
+    store_heap_next
+.endmacro
+
+;;; arguments/results to functions/continutaion are in ZP vars: 0,1,...
+;;; code pointers and 16 bit values are little endian lo;hi
 
 ;;; Heap at top of available memory - only have 16k available of my 32k SRAM :(
+;;; heap grows downwards. TODO: must be upwards for GC-scavenge
 HEAP_TOP = $4000
 
 ;;; Heap pointer and frame pointer in ZP
 hp = 200
 fp = 202
 cp = 204
+n = 206 ; number of words. easy to avoid (passing N is acc) when heap grows upwards
 
-;;; allocate [n] words in the heap; adjusting HP -- TODO: this should be a macro!
-n = 206
+;;; TODO: alloc_check
+;;; allocate [n] words in the heap; adjusting hp -- TODO: better a macro?
 alloc:
-    ;lda #'a'
-    ;jsr debug
     sec
     lda hp
     sbc n
@@ -28,46 +96,30 @@ alloc:
 alloc_done:
     rts
 
-;debug:
-;    jsr screen_putchar
-;    jsr print_screen
-;    rts
-
 fib7_name:
     .string "7: CPS/Heap"
     .word fib7_name
 fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta 0
-    ;lda #'e'
-    ;jsr debug
     ;; initialize heap
     lda #<HEAP_TOP
     sta hp
     lda #>HEAP_TOP
     sta hp + 1
-    ;; allocate final continuation
+    ;; allocate final continuation -- TODO: no need for this to be heap allocated
     lda #2
     sta n
     jsr alloc
-    ;; fill in the allocated structure
-    lda #<fib7_done
-    sta (hp)
-    lda #>fib7_done
-    ldy #1
-    sta (hp),y
+    ;; fill in closure
+    copy_code_pointer_to_heap0 fib7_done
     ;; setup args
-    lda hp
-    sta 1
-    lda hp + 1
-    sta 2
-    jmp fib7_recurse
+    copy_word hp, 1
+    jmp fib7_recurse ; TODO: setup fp to static closure to allow GC
 
 ;;; RL RH -->
 fib7_done:
-    ;lda #'d'
-    ;jsr debug
-    ;; move final results from ZP vars to pre-allocated space on stack
+    ;; move final result to pre-allocated space on stack
     tsx
     lda 0
     sta $103,x
@@ -76,126 +128,79 @@ fib7_done:
     rts ; return to original caller
 
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
+;;; TODO: static closure can go here
+;;; TODO: descriptor will go here to allow GC
 fib7_recurse:
-    ;lda #'r'
-    ;jsr debug
     ;; access N
     lda 0
     sec
     cmp #2
-    bcc fib7_base
+    bcc fib7_base ; N<2 ?
     ;; allocate cont1
     lda #5
     sta n
     jsr alloc
     ;; fill in closure
-    lda #<fib7_cont1
-    sta (hp)
-    lda #>fib7_cont1
-    ldy #1
-    sta (hp),y
-    lda 0
-    iny
-    sta (hp),y
-    lda 1
-    iny
-    sta (hp),y
-    lda 2
-    iny
-    sta (hp),y
+    copy_code_pointer_to_heap0 fib7_cont1
+    copy_byte_local_to_heap_next 0
+    copy_word_local_to_heap_next 1
     ;; setup args
-    ;; decrement N --> 0
-    lda 0
+    lda 0 ; N
     sec
-    sbc #1
+    sbc #1 ; N-1
     sta 0
-    lda hp
-    sta 1
-    lda hp + 1
-    sta 2
+    copy_word hp, 1
     jmp fib7_recurse
 
-
-;;; N(acc) KL KH --> K [N 0]
+;;; N KL KH --> K [N #0]
 fib7_base:
-    ;lda #'b'
-    ;jsr debug
     ;; move K into fp
-    lda 1
-    sta fp
-    lda 2
-    sta fp + 1
+    copy_word 1,fp
     ;; RL is N (already in 0)
     lda #0
     sta 1 ; setup RH
     jmp enter_fp
 
+;;; THE closure calling convention (better as a macro?) TODO: move up to top
 enter_fp:
-    ;lda #'E'
-    ;jsr debug
-    lda (fp)
-    sta cp
-    ldy #1
-    lda (fp),y
-    sta cp + 1
+    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
     jmp (cp)
 
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [AL AH KL KH]
+;;; TODO: descriptor will go here to allow GC
 fib7_cont1:
     ;; allocate cont2
     lda #6
     sta n
     jsr alloc
     ;; fill in closure
-    lda #<fib7_cont2
-    sta (hp)
-    lda #>fib7_cont2
-    ldy #1
-    sta (hp),y
-    lda 0 ; AL
-    ldy #2
-    sta (hp),y
-    lda 1 ; AH
-    ldy #3
-    sta (hp),y
-    ldy #3
-    lda (fp),y ; KL
-    ldy #4
-    sta (hp),y
-    ldy #4
-    lda (fp),y ; KH
-    ldy #5
-    sta (hp),y
+    copy_code_pointer_to_heap0 fib7_cont2
+    copy_word_local_to_heap 0, 2 ; A
+    copy_word_frame_to_heap 3, 4 ; K
     ;; setup args
-    ldy #2
-    lda (fp),y ; N
+    load_frame_var 2 ; N
     sec
-    sbc #2
+    sbc #2 ; N-2
     sta 0
-    lda hp
-    sta 1
-    lda hp + 1
-    sta 2
+    copy_word hp,1
     jmp fib7_recurse
 
 ;;; [. . AL AH KL KH] BL BH --> RL RH (where R = A + B)
+;;; TODO: descriptor will go here to allow GC
 fib7_cont2:
     ;; 16-bit addition
     clc
-    ldy #2
-    lda (fp),y ; AL
+    ;; TODO: macro for 16 bit addition?
+    load_frame_var 2 ; AL
     adc 0 ; BL
     sta 0 ; RL
-    ldy #3
-    lda (fp),y ; AH
+    load_frame_var 3 ; AH
     adc 1 ; BH
     sta 1 ; RH
     ;; return to caller
-    ldy #4
-    lda (fp),y ; KL
-    pha
-    ldy #5
-    lda (fp),y ; KH
+    load_frame_var 4 ; KL
+    pha ; TODO: use temp instead of pha for more regular code
+    load_frame_var 5 ; KH
     sta fp + 1
     pla
     sta fp
