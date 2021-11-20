@@ -40,6 +40,13 @@ copy_word_from_frame0: .macro dest
     sta \dest + 1
 .endmacro
 
+copy_word_from_frame: .macro F, L
+    load_frame_var \F
+    sta \L
+    load_frame_var \F+1
+    sta \L + 1
+.endmacro
+
 copy_word_frame_to_heap: .macro F, H
     load_frame_var \F
     store_heap \H
@@ -188,7 +195,7 @@ fib7_cont1:
     copy_word hp,1
     jmp fib7_recurse
 
-;;; [. . KL HL AL AH] BL BH --> RL RH (where R = A + B)
+;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
 ;;; TODO: descriptor will go here to allow GC
     .text "fib7_cont2"
     .word 0, 0
@@ -204,10 +211,6 @@ fib7_cont2:
     adc 1 ; BH
     sta 1 ; RH
     ;; return to caller
-    load_frame_var 2 ; KL
-    pha ; TODO: use temp instead of pha for more regular code
-    load_frame_var 3 ; KH
-    sta fp + 1
-    pla
-    sta fp
+    copy_word_from_frame 2, 2 ; K
+    copy_word 2, fp
     jmp enter_fp
