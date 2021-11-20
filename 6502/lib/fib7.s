@@ -19,11 +19,6 @@ store_heap: .macro N
     sta (hp),y
 .endmacro
 
-store_heap_next: .macro ; TODO: elim! - saves just 1-byte; no quicker; less regular
-    iny
-    sta (hp),y
-.endmacro
-
 copy_code_pointer_to_heap0: .macro code
     lda #<\code
     store_heap0
@@ -59,16 +54,16 @@ copy_word_local_to_heap: .macro L, H
     store_heap \H+1
 .endmacro
 
-copy_byte_local_to_heap_next: .macro L
+copy_byte_local_to_heap: .macro L, H
     lda \L
-    store_heap_next
+    store_heap \H
 .endmacro
 
-copy_word_local_to_heap_next: .macro L
+copy_word_local_to_heap: .macro L, H
     lda \L
-    store_heap_next
+    store_heap \H
     lda \L+1
-    store_heap_next
+    store_heap \H+1
 .endmacro
 
 ;;; arguments/results to functions/continutaion are in ZP vars: 0,1,...
@@ -79,10 +74,10 @@ copy_word_local_to_heap_next: .macro L
 HEAP_TOP = $4000
 
 ;;; Heap pointer and frame pointer in ZP
-hp = 200
-fp = 202
-cp = 204
-n = 206 ; number of words. easy to avoid (passing N is acc) when heap grows upwards
+hp = $f0
+fp = $f2
+cp = $f4
+n =  $f6 ; number of words. easy to avoid (passing N is acc) when heap grows upwards
 
 ;;; TODO: alloc_check
 ;;; allocate [n] words in the heap; adjusting hp -- TODO: better a macro?
@@ -117,6 +112,7 @@ fib7_entry:
     copy_word hp, 1
     jmp fib7_recurse ; TODO: setup fp to static closure to allow GC
 
+;;; No descriptor needed here, because we are done!
 ;;; RL RH -->
 fib7_done:
     ;; move final result to pre-allocated space on stack
@@ -130,6 +126,9 @@ fib7_done:
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
 ;;; TODO: static closure can go here
 ;;; TODO: descriptor will go here to allow GC
+    .text "fib7_recurse"
+    .word 0, 0
+    .byte 3
 fib7_recurse:
     ;; access N
     lda 0
@@ -142,8 +141,8 @@ fib7_recurse:
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_cont1
-    copy_byte_local_to_heap_next 0
-    copy_word_local_to_heap_next 1
+    copy_byte_local_to_heap 0, 2
+    copy_word_local_to_heap 1, 3
     ;; setup args
     lda 0 ; N
     sec
@@ -168,6 +167,9 @@ enter_fp:
 
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [AL AH KL KH]
 ;;; TODO: descriptor will go here to allow GC
+    .text "fib7_cont1"
+    .word 0, 0
+    .byte 2
 fib7_cont1:
     ;; allocate cont2
     lda #6
@@ -185,8 +187,12 @@ fib7_cont1:
     copy_word hp,1
     jmp fib7_recurse
 
+;;; TODO: need to swap A and K so heap-pointer word K comes first
 ;;; [. . AL AH KL KH] BL BH --> RL RH (where R = A + B)
 ;;; TODO: descriptor will go here to allow GC
+    .text "fib7_cont2"; help human inspection of machine code!
+    .word 0, 0
+    .byte 2
 fib7_cont2:
     ;; 16-bit addition
     clc
@@ -205,3 +211,5 @@ fib7_cont2:
     pla
     sta fp
     jmp enter_fp
+
+    .text "fib7 *end*"
