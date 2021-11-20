@@ -79,26 +79,35 @@ copy_word_local_to_heap: .macro L, H
 ;;; Only have 16k available of my 32k SRAM :(
 ;;; heap grows upwards for GC-scavenge
 HEAP_START = $800
+HEAP_END = $4000
 
 ;;; Heap pointer and frame pointer in ZP
 hp = $f0
 fp = $f2
 cp = $f4
-n =  $f6 ; number of words. easy to avoid (passing N is acc) when heap grows upwards
+clo = $f6 ; pointer to (space for) the closure just allocated
 
-clo = $f8 ; pointer to (space for) the closure just allocated
-
-;;; TODO: alloc_check
-;;; allocate [n] words in the heap; adjusting hp -- TODO: better a macro?
+;;; allocate [N(acc)] bytes in the heap; adjusting hp -- TODO: better a macro?
 alloc:
     clc
-    lda hp
-    adc n
+    adc hp
     sta hp
     bcc alloc_done
-    inc hp + 1
+    lda hp + 1
+    inc
+    cmp #>HEAP_END ; hi nibble of head end
+    beq heap_exhausted
+    sta hp + 1
 alloc_done:
     rts
+
+heap_exhausted:
+    lda #'!'
+    jsr screen_putchar
+    jsr print_screen
+spin:
+    jmp spin
+
 
 ;;; THE closure calling convention (TODO: better as a macro?)
 enter_fp:
@@ -120,7 +129,6 @@ fib7_entry:
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     copy_word hp, clo
     lda #2
-    sta n
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_done
@@ -154,7 +162,6 @@ fib7_recurse:
     ;; allocate cont1
     copy_word hp, clo
     lda #5
-    sta n
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_cont1
@@ -186,7 +193,6 @@ fib7_cont1:
     ;; allocate cont2
     copy_word hp, clo
     lda #6
-    sta n
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_cont2
