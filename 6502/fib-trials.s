@@ -78,7 +78,7 @@ example:
     jsr pause
     jsr pause
     jsr screen_newline
-    lda #0 ; Compute fib(N) for N = 20...
+    lda #11 ; Compute fib(N) for N = 20...
     pha ; keep N on the stack
 
 example_loop:
