@@ -11,12 +11,12 @@ load_frame_var: .macro N
 .endmacro
 
 store_heap0: .macro
-    sta (hp)
+    sta (clo)
 .endmacro
 
-store_heap: .macro N
+store_heap: .macro N ; must follow alloc
     ldy #\N
-    sta (hp),y
+    sta (clo),y
 .endmacro
 
 copy_code_pointer_to_heap0: .macro code
@@ -76,9 +76,9 @@ copy_word_local_to_heap: .macro L, H
 ;;; arguments/results to functions/continutaion are in ZP vars: 0,1,...
 ;;; code pointers and 16 bit values are little endian lo;hi
 
-;;; Heap at top of available memory - only have 16k available of my 32k SRAM :(
-;;; heap grows downwards. TODO: must be upwards for GC-scavenge
-HEAP_TOP = $4000
+;;; Only have 16k available of my 32k SRAM :(
+;;; heap grows upwards for GC-scavenge
+HEAP_START = $800
 
 ;;; Heap pointer and frame pointer in ZP
 hp = $f0
@@ -86,15 +86,17 @@ fp = $f2
 cp = $f4
 n =  $f6 ; number of words. easy to avoid (passing N is acc) when heap grows upwards
 
+clo = $f8 ; pointer to (space for) the closure just allocated
+
 ;;; TODO: alloc_check
 ;;; allocate [n] words in the heap; adjusting hp -- TODO: better a macro?
 alloc:
-    sec
+    clc
     lda hp
-    sbc n
+    adc n
     sta hp
-    bcs alloc_done
-    dec hp + 1
+    bcc alloc_done
+    inc hp + 1
 alloc_done:
     rts
 
@@ -111,18 +113,19 @@ fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta 0
     ;; initialize heap
-    lda #<HEAP_TOP
+    lda #<HEAP_START
     sta hp
-    lda #>HEAP_TOP
+    lda #>HEAP_START
     sta hp + 1
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
+    copy_word hp, clo
     lda #2
     sta n
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_done
     ;; setup args
-    copy_word hp, 1
+    copy_word clo, 1
     jmp fib7_recurse ; TODO: setup fp to static closure to allow GC
 
 ;;; No descriptor needed here, because we are done!
@@ -149,6 +152,7 @@ fib7_recurse:
     cmp #2
     bcc fib7_base ; N<2 ?
     ;; allocate cont1
+    copy_word hp, clo
     lda #5
     sta n
     jsr alloc
@@ -161,7 +165,7 @@ fib7_recurse:
     sec
     sbc #1 ; N-1
     sta 0
-    copy_word hp, 1
+    copy_word clo, 1
     jmp fib7_recurse
 
 ;;; N KL KH --> K [N #0]
@@ -180,6 +184,7 @@ fib7_base:
     .byte 2
 fib7_cont1:
     ;; allocate cont2
+    copy_word hp, clo
     lda #6
     sta n
     jsr alloc
@@ -192,7 +197,7 @@ fib7_cont1:
     sec
     sbc #2 ; N-2
     sta 0
-    copy_word hp,1
+    copy_word clo,1
     jmp fib7_recurse
 
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
