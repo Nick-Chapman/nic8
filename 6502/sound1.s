@@ -8,7 +8,6 @@
     .org $8000
 
 g_ticks = $50
-g_sleep_ticks = $51
 
     include via.s
     include ticks.s

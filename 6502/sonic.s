@@ -8,7 +8,6 @@
 
 ;;; bytes
 g_ticks = $50
-g_sleep_ticks = $51
 g_song_count = $52
 
 ;;; words
@@ -18,6 +17,7 @@ g_ptr = $70
     include ticks.s
     include sound.s
     include lcd.s
+    include sleep.s
 
 main_reset:
 
@@ -51,7 +51,7 @@ after_reset_song_0:
     lda g_song_count
     jsr print_hex_number
     lda #100 ; 1sec pause
-    jsr sleep
+    jsr sleep_blocking
 
     ;; skip over header
     clc
@@ -79,25 +79,10 @@ author:
 play_music_loop:
 
     lda #2 ;; music packet every 1/50s (but we tick every 1/100)
-    jsr sleep
+    jsr sleep_blocking
     jsr send_packet
     jmp play_music_loop
 
-sleep1:
-    lda #50
-    jmp sleep ;tail
-
-;;; sleep for N (in accumulator) 1/50s ticks (so max time 2.5secs)
-sleep:
-    clc
-    adc g_ticks
-    sta g_sleep_ticks
-sleep_wait:
-    sec
-    lda g_sleep_ticks
-    sbc g_ticks
-    bne sleep_wait
-    rts
 
 send_packet:
     ;; g_ptr points to the #bytes to send
