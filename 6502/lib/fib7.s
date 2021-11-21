@@ -20,33 +20,33 @@ put_hex_byte:
 digits: .ascii "0123456789abcdef"
 
 
-tiny_pause:
-    pha
-    lda #20
-    jsr sleep_blocking
-    pla
-    rts
+;; tiny_pause:
+;;     pha
+;;     lda #20
+;;     jsr sleep_blocking
+;;     pla
+;;     rts
 
 print_char: .macro CHAR
     pha
     lda #\CHAR
     jsr screen_putchar
     jsr print_screen
-    jsr tiny_pause
+    ;jsr tiny_pause
     pla
 .endmac
 
-print_hex_word: .macro L
-    lda #'['
-    jsr screen_putchar
-    lda \L + 1
-    jsr put_hex_byte
-    lda \L
-    jsr put_hex_byte
-    lda #']'
-    jsr screen_putchar
-    jsr print_screen
-.endmac
+;; print_hex_word: .macro L
+;;     lda #'['
+;;     jsr screen_putchar
+;;     lda \L + 1
+;;     jsr put_hex_byte
+;;     lda \L
+;;     jsr put_hex_byte
+;;     lda #']'
+;;     jsr screen_putchar
+;;     jsr print_screen
+;; .endmac
 
 load_frame_var0: .macro
     lda (fp)
@@ -134,11 +134,23 @@ copy_word_local_to_heap: .macro L, H
 ;;; Only have 16k available of my 32k SRAM :(
 ;;; heap grows upwards for GC-scavenge
 ;;; Two spaces (A/B). Each space is 7k
-SPACE_A_START = $800
-SPACE_A_END = $2400
 
-SPACE_B_START = $2400
-SPACE_B_END = $4000
+
+;;; 2x 7k heap space...
+;;;
+;; SPACE_A_START = $800
+;; SPACE_A_END = $2400
+;; SPACE_B_START = $2400
+;; SPACE_B_END = $4000
+
+
+;;; 2x 1k heap space...
+;;;
+SPACE_A_START = $1000
+SPACE_A_END = $1400
+SPACE_B_START = $2000
+SPACE_B_END = $2400
+
 
 stop:
     print_char '!'
@@ -146,8 +158,8 @@ spin:
     jmp spin
 
 set_heap_space_a:
-    print_char 'A'
-    copy_code_pointer_to_local wipe_space_b, wipe_old_space
+    ;print_char 'A'
+    ;copy_code_pointer_to_local wipe_space_b, wipe_old_space
     copy_code_pointer_to_local set_heap_space_b, space_switcher
     lda #<SPACE_A_START
     sta hp
@@ -158,8 +170,8 @@ set_heap_space_a:
     rts
 
 set_heap_space_b:
-    print_char 'B'
-    copy_code_pointer_to_local wipe_space_a, wipe_old_space
+    ;print_char 'B'
+    ;copy_code_pointer_to_local wipe_space_a, wipe_old_space
     copy_code_pointer_to_local set_heap_space_a, space_switcher
     lda #<SPACE_B_START
     sta hp
@@ -169,51 +181,53 @@ set_heap_space_b:
     sta heap_end_page
     rts
 
-wipe_space_a:
-    print_char 'a'
-    lda #0
-    sta temp
-    lda #>SPACE_A_START
-    sta temp + 1
-outer_loop$:
-    lda temp + 1
-    ldy $0
-inner_loop$:
-    lda $ee
-    sta (temp),y
-    iny
-    bne inner_loop$
-    lda temp + 1
-    inc
-    sta temp + 1
-    cmp #>SPACE_A_END
-    bne outer_loop$
-    rts
+;; wipe_space_a:
+;;     ;print_char 'a'
+;;     lda #0
+;;     sta temp
+;;     lda #>SPACE_A_START
+;;     sta temp + 1
+;; outer_loop$:
+;;     lda temp + 1
+;;     ldy $0
+;; inner_loop$:
+;;     lda $ee
+;;     sta (temp),y
+;;     iny
+;;     bne inner_loop$
+;;     lda temp + 1
+;;     inc
+;;     sta temp + 1
+;;     cmp #>SPACE_A_END
+;;     bne outer_loop$
+;;     rts
 
-wipe_space_b:
-    print_char 'b'
-    lda #0
-    sta temp
-    lda #>SPACE_B_START
-    sta temp + 1
-outer_loop$:
-    lda temp + 1
-    ldy $0
-inner_loop$:
-    lda $ee
-    sta (temp),y
-    iny
-    bne inner_loop$
-    lda temp + 1
-    inc
-    sta temp + 1
-    cmp #>SPACE_B_END
-    bne outer_loop$
-    rts
+;; wipe_space_b:
+;;     ;print_char 'b'
+;;     lda #0
+;;     sta temp
+;;     lda #>SPACE_B_START
+;;     sta temp + 1
+;; outer_loop$:
+;;     lda temp + 1
+;;     ldy $0
+;; inner_loop$:
+;;     lda $ee
+;;     sta (temp),y
+;;     iny
+;;     bne inner_loop$
+;;     lda temp + 1
+;;     inc
+;;     sta temp + 1
+;;     cmp #>SPACE_B_END
+;;     bne outer_loop$
+;;     rts
 
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
     sta n_bytes
+    copy_word hp, clo
+    lda n_bytes
     clc
     adc hp
     sta hp
@@ -231,7 +245,14 @@ heap_exhausted:
     lda n_bytes
     jmp alloc_again
 
+;;; This inner alloc must succeed !
+;;; i.e. we do the exhaustion check, and it must not fail.
+;;; We call it from the evacuation routines
+;;; And also, for the pending alloc which cause GC to be initiated.
 alloc_again:
+    pha
+    copy_word hp, clo
+    pla
     clc
     adc hp
     sta hp
@@ -248,10 +269,6 @@ heap_exhausted_still:
     print_char '*'
     jmp stop
 
-;;; THE closure calling convention (TODO: just inline))
-enter_fp:
-    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
-    jmp (cp)
 
 
 fib7_name:
@@ -260,12 +277,22 @@ fib7_name:
 fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta 0
+
+    ;; ;; How deep is the page-1 stack?
+    ;; lda #'<'
+    ;; jsr screen_putchar
+    ;; tsx
+    ;; txa
+    ;; jsr put_hex_byte
+    ;; lda #'>'
+    ;; jsr screen_putchar
+    ;; jsr print_screen
+
     ;; initialize heap
-    jsr wipe_space_a
-    jsr wipe_space_b
+    ;jsr wipe_space_a
+    ;jsr wipe_space_b
     jsr set_heap_space_a
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
-    copy_word hp, clo
     lda #2
     jsr alloc
     ;; fill in closure
@@ -278,7 +305,7 @@ fib7_entry:
 
 ;;; RL RH -->
     .text "fib7_done"
-    .word evacuate2, scavenge_nothing_of2
+    .word rootargs_impossible, evacuate2, scavenge_nothing_of2
     .byte 2
 fib7_done:
     ;; move final result to pre-allocated space on stack
@@ -293,10 +320,17 @@ fib7_done:
 fib7_recurse_static_closure:
     .word fib7_recurse
 
+;;; fib7 is a top level function
+;;; and so we have a static closure
+;;; and so, we do nothing if asked to evacuate - just return the same static clo
+;;; and because we didn't evacuate (we never were in the heap, and we still aren't)
+;;; it is impossible that this static closure will be subject to scavenging
+;;; (i.e. that process where we walk along the new-heap
+;;; using the low-water 'lw' pointer.. until catches up with 'hp')
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
     .text "fib7_recurse"
-    .word evacuate_do_nothing, scavenge_error_if_called
-    .byte 3
+    .word rootargs_at1, evacuate_do_nothing, scavenge_impossible
+    .byte 3 ; TODO: This 'arg-count' byte is used nowhere!
 fib7_recurse:
     ;; access N
     lda 0
@@ -304,7 +338,6 @@ fib7_recurse:
     cmp #2
     bcc fib7_base ; N<2 ?
     ;; allocate cont1
-    copy_word hp, clo
     lda #5
     jsr alloc
     ;; fill in closure
@@ -327,17 +360,17 @@ fib7_base:
     ;; RL is N (already in 0)
     lda #0
     sta 1 ; setup RH
-    jmp enter_fp
+    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    jmp (cp) ; enter_fp
 
 ;;; TODO: switch N/K to standard order
 ;;; (doesn't matter while we have specific scavenge routines for each-shape)
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [KL KH AL AH]
     .text "fib7_cont1"
-    .word evacuate6, scavenge_at3_of6
+    .word rootargs_none, evacuate6, scavenge_at3_of6
     .byte 2
 fib7_cont1:
     ;; allocate cont2
-    copy_word hp, clo
     lda #6
     jsr alloc
     ;; fill in closure
@@ -353,9 +386,13 @@ fib7_cont1:
     copy_code_pointer_to_local fib7_recurse_static_closure, fp
     jmp fib7_recurse
 
+;;; We say rootargs_impossible here rather than rootargs_none
+;;; because GC should never be initiated whilst the closure is set as 'fp'
+;;; because no allocation occurs here!
+;;;
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
     .text "fib7_cont2"
-    .word evacuate5, scavenge_at2_of5 ; evaluate counted in bytes; scavenge in words
+    .word rootargs_impossible, evacuate5, scavenge_at2_of5
     .byte 2
 fib7_cont2:
     ;; 16-bit addition
@@ -370,26 +407,58 @@ fib7_cont2:
     ;; return to caller
     copy_word_from_frame 2, 2 ; K
     copy_word 2, fp
-    jmp enter_fp
+    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    jmp (cp) ; enter_fp
 
+
+;;; ----------------------------------------------------------------------
+;;; GC stuff below here...
+
+;;; double indirect jump to 'cp' (using 'temp')
+jump_cp: .macro
+    lda (cp)
+    sta temp
+    ldy #1
+    lda (cp),y
+    sta temp + 1
+    jmp (temp)
+.endmacro
+
+get_code_pointer_offset_function: .macro HP, N
+    lda (\HP)
+    sec
+    sbc #\N ; negative offset from code-pointer
+    sta cp
+    ldy #1
+    lda (\HP),y
+    sta cp + 1
+    bcs _done$
+    dec cp + 1
+_done$:
+.endmacro
 
 gc_start:
-    print_char 'G'
+    print_char '{' ;G
     jsr switch_space
     copy_word hp, lw
-    jmp scavenge_roots ; TODO: dont jump. remove scavenge_roots label
 
+    ;; TODO: should roots be evacuated by 'fp' ?
+    jsr evacuate_roots
 
-scavenge_roots:
-    ;; scavenge 'fp'
+    ;; evacuate 'fp'...
     copy_word fp, ev
     jsr evacuate
     copy_word clo, fp
-    ;; TODO: scavenge all local var pairs which are heap-pointers.
-    ;; We need to know which ones they are!
-    ;; And it depends on our current context; as determined by the 'fp'
-    ;; idea: have a function per closure...
-    ;; TODO: dont just fall through, but jump to gc_loop
+
+    jmp gc_loop
+
+
+switch_space:
+    jmp (space_switcher)
+
+evacuate_roots:
+    get_code_pointer_offset_function fp, 7
+    jump_cp
 
 
 ;;; keep scavenging until 'lw' catches up with 'hp'
@@ -405,54 +474,49 @@ cmp_byte2$:
     beq gc_finished
     jmp scavenge
 
-switch_space: ; TODO: move to just below call
-    jmp (space_switcher)
 
 gc_finished:
-    print_char 'X'
+    print_char '}' ;X
     ;; TODO: report how many bytes collected, or just the hp will do!
-    print_hex_word hp
-    jmp (wipe_old_space) ; fill 28 pages with $ee
+    ;print_hex_word hp
+    ;jmp stop
+    ;jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
 
 
-;;; double indirect jump to 'cp' (using 'temp')
-jump_cp: .macro
-    lda (cp)
-    sta temp
-    ldy #1
-    lda (cp),y
-    sta temp + 1
-    jmp (temp)
-.endmacro
-
-
-get_code_pointer_offset_function: .macro HP, N
-    lda (\HP)
-    sec
-    sbc #\N ; negative offset from code-pointer
-    sta cp
-    ldy #1
-    lda (\HP),y
-    sta cp + 1
-    bcs _done$
-    dec cp + 1
-_done$:
-.endmacro
-
-evacuate:
-    ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
-    print_char 'e'
-    print_hex_word ev
-    get_code_pointer_offset_function ev, 5
-    jump_cp
-
 scavenge:
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
-    print_char 's'
+    ;print_char 's'
     ;print_hex_word lw
     get_code_pointer_offset_function lw, 3
     jump_cp
+
+evacuate:
+    ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
+    ;print_char 'e'
+    ;print_hex_word ev
+    get_code_pointer_offset_function ev, 5
+    ;; TODO: after evacuation, we ought to set a fowarding pointer
+    ;; to preserve pointer sharing
+    ;; But I don't think sharing is ever possible in my examples so far
+    jump_cp
+
+;;; ----------------------------------------------------------------------
+;;; scavenge rootargs... (those which are known to be pointers)
+
+rootargs_none:
+    rts
+
+rootargs_impossible:
+    print_char 'R'
+    jmp stop
+    rts
+
+rootargs_at1:
+    copy_word 1, ev
+    jsr evacuate
+    copy_word clo, 1
+    rts
 
 ;;; ----------------------------------------------------------------------
 
@@ -504,10 +568,9 @@ scavenge_nothing_of2:
     shift_low_water 2
     jmp gc_loop
 
-scavenge_error_if_called:
-    print_char 'Q'
-spin$:
-    jmp spin$
+scavenge_impossible:
+    print_char 'S'
+    jmp stop
 
 ;;; ----------------------------------------------------------------------
 ;;; evacuate routines assume 'ev' to be set, and should in turn set 'clo'
@@ -524,18 +587,16 @@ evacuate_byte: .macro N
 
     .text "evacuate2"
 evacuate2:
-    copy_word hp, clo
     lda #2
-    jsr alloc
+    jsr alloc_again
     evacuate_byte 0
     evacuate_byte 1
     rts
 
     .text "evacuate5"
 evacuate5:
-    copy_word hp, clo
     lda #5
-    jsr alloc
+    jsr alloc_again
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
@@ -545,9 +606,8 @@ evacuate5:
 
     .text "evacuate6"
 evacuate6:
-    copy_word hp, clo ; TODO: do this as part of alloc, not each alloc caller
     lda #6
-    jsr alloc
+    jsr alloc_again
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
@@ -558,7 +618,5 @@ evacuate6:
 
     .text "evacuate_do_nothing"
 evacuate_do_nothing:
-    print_char '-'
-    jsr stop ; never yet seen this called, so stop
-    ;; TODO: set clo!
+    copy_word ev, clo
     rts

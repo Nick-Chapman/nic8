@@ -18,7 +18,7 @@ heap_end_page = $f8 ; (byte)
 n_bytes = $f9 ; number of bytes to allocate (byte)
 space_switcher = $fa
 temp = $fc
-wipe_old_space = $fe
+;wipe_old_space = $fe
 ev = $77 ; word being evacuated
 lw = $88 ; low water mark in to-heap; the point from which we scavenge
 
@@ -91,7 +91,7 @@ example:
     jsr pause
     jsr pause
     jsr screen_newline
-    lda #15 ; Compute fib(N) for N = 20...
+    lda #10 ; Compute fib(N) for N = ...
     pha ; keep N on the stack
 
 example_loop:
@@ -100,10 +100,6 @@ example_loop:
     tsx
     lda $101,x
 
-    cmp #16
-    bne _1$
-    jmp stop
-_1$:
     jsr decimal_put_byte ; ..so we can print it
     lda #'-'
     jsr screen_putchar
@@ -127,21 +123,30 @@ _1$:
     lda #' '
     jsr screen_putchar
 
-    lda #'('
-    jsr screen_putchar
+    ;; lda #'('
+    ;; jsr screen_putchar
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
-    jsr decimal_put_word ; ..as before
-    lda #')'
-    jsr screen_putchar
+    ;; jsr decimal_put_word ; ..as before
+    ;; lda #')'
+    ;; jsr screen_putchar
 
-    jsr print_screen
-    jsr pause
-    jsr screen_newline
     jsr print_screen
 
     tsx
+
+    lda $101,x
+    cmp #12
+    bne _1$
+    jmp stop
+_1$:
+
     inc $101,x ; increment N (in place) on stack
+
+    jsr pause
+    jsr pause
+    jsr screen_newline
+    jsr print_screen
 
     jmp example_loop
 
