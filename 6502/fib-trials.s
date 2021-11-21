@@ -8,6 +8,20 @@
 
     .org $8000
 
+;;; Globals for fib7 GC
+;;; Heap pointer and frame pointer in ZP
+hp = $f0
+fp = $f2
+cp = $f4
+clo = $f6 ; pointer to (space for) the closure just allocated
+heap_end_page = $f8 ; (byte)
+n_bytes = $f9 ; number of bytes to allocate (byte)
+space_switcher = $fa
+temp = $fc
+wipe_old_space = $fe
+ev = $77 ; word being evacuated
+lw = $88 ; low water mark in to-heap; the point from which we scavenge
+
 ;;; bytes
 g_arg = $50 ; used by fib1
 g_ticks = $51
@@ -19,9 +33,10 @@ g_selected_version_index = $54
 g_res = $70 ; used by fib1
 g_divisor = $72
 g_mod10 = $74
-g_selected_version_ptr = $76
-g_id_ptr = $78
-g_mptr = $80
+
+g_selected_version_ptr = $90
+g_id_ptr = $92
+g_mptr = $94
 
 ;;; buffers
 g_screen = $200 ; 32 bytes
@@ -35,9 +50,7 @@ g_screen = $200 ; 32 bytes
     include decimal.s
 
     ;; various implementations of fib
-    .text "<fib1..."
-    include fib1.s
-    .text "...fib1>"
+    ;; include fib1.s
     ;; include fib2.s
     ;; include fib3.s
     ;; include fib4.s
@@ -50,7 +63,7 @@ g_screen = $200 ; 32 bytes
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
-    .word fib1_entry
+    ;; .word fib1_entry
     ;; .word fib2_entry
     ;; .word fib3_entry
     ;; .word fib4_entry
@@ -78,7 +91,7 @@ example:
     jsr pause
     jsr pause
     jsr screen_newline
-    lda #11 ; Compute fib(N) for N = 20...
+    lda #15 ; Compute fib(N) for N = 20...
     pha ; keep N on the stack
 
 example_loop:
@@ -87,6 +100,10 @@ example_loop:
     tsx
     lda $101,x
 
+    cmp #16
+    bne _1$
+    jmp stop
+_1$:
     jsr decimal_put_byte ; ..so we can print it
     lda #'-'
     jsr screen_putchar
@@ -208,3 +225,21 @@ put_string_loop:
     jmp put_string_loop
 put_string_done:
     rts
+
+
+
+;;; TODO: remove this!
+eeee_evacuate:
+    print_char '1'
+    jmp stop
+eeee_scavenge:
+    print_char '2'
+    jmp stop
+eeee_code:
+    print_char '3'
+    jmp stop
+
+    .org ($eeee - 5)
+    .word eeee_evacuate, eeee_scavenge
+    .byte 7
+    jmp eeee_code
