@@ -50,7 +50,7 @@ g_screen = $200 ; 32 bytes
     include decimal.s
 
     ;; various implementations of fib
-    ;; include fib1.s
+    include fib1.s
     ;; include fib2.s
     ;; include fib3.s
     ;; include fib4.s
@@ -63,7 +63,7 @@ g_screen = $200 ; 32 bytes
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
-    ;; .word fib1_entry
+    .word fib1_entry
     ;; .word fib2_entry
     ;; .word fib3_entry
     ;; .word fib4_entry
@@ -88,7 +88,7 @@ example:
     jsr select_version
     jsr put_version_name
     jsr print_screen
-    jsr pause
+    ;jsr pause
     jsr pause
     jsr screen_newline
     lda #10 ; Compute fib(N) for N = ...
@@ -104,6 +104,7 @@ example_loop:
     lda #'-'
     jsr screen_putchar
     jsr print_screen
+    jsr pause
 
     ;; All versions have same interface: byte argument in A; 2 bytes space on stack for result
 
@@ -136,7 +137,7 @@ example_loop:
     tsx
 
     lda $101,x
-    cmp #12
+    cmp #50
     bne _1$
     jmp stop
 _1$:

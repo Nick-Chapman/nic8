@@ -1,28 +1,28 @@
 
 ;;; CPS version of fib. Allocates stack frames on a heap. No GC yet. But soon!
 
-put_hex_byte:
-    pha
-    lsr
-    lsr
-    lsr
-    lsr
-    tax
-    lda digits,x
-    jsr screen_putchar
-    pla
-    and #%1111
-    tax
-    lda digits,x
-    jsr screen_putchar
-    rts
+;; put_hex_byte:
+;;     pha
+;;     lsr
+;;     lsr
+;;     lsr
+;;     lsr
+;;     tax
+;;     lda digits,x
+;;     jsr screen_putchar
+;;     pla
+;;     and #%1111
+;;     tax
+;;     lda digits,x
+;;     jsr screen_putchar
+;;     rts
 
-digits: .ascii "0123456789abcdef"
+;; digits: .ascii "0123456789abcdef"
 
 
 ;; tiny_pause:
 ;;     pha
-;;     lda #20
+;;     lda #3
 ;;     jsr sleep_blocking
 ;;     pla
 ;;     rts
@@ -37,15 +37,17 @@ print_char: .macro CHAR
 .endmac
 
 ;; print_hex_word: .macro L
-;;     lda #'['
-;;     jsr screen_putchar
+;;     ;lda #'['
+;;     ;jsr screen_putchar
 ;;     lda \L + 1
 ;;     jsr put_hex_byte
 ;;     lda \L
 ;;     jsr put_hex_byte
-;;     lda #']'
-;;     jsr screen_putchar
+;;     ;lda #']'
+;;     ;jsr screen_putchar
 ;;     jsr print_screen
+;;     lda #5
+;;     jsr sleep_blocking
 ;; .endmac
 
 load_frame_var0: .macro
@@ -135,22 +137,23 @@ copy_word_local_to_heap: .macro L, H
 ;;; heap grows upwards for GC-scavenge
 ;;; Two spaces (A/B). Each space is 7k
 
-
-;;; 2x 7k heap space...
-;;;
-;; SPACE_A_START = $800
-;; SPACE_A_END = $2400
-;; SPACE_B_START = $2400
-;; SPACE_B_END = $4000
-
+;;; 2x 256k heap space...
+;; SPACE_A_START = $1000
+;; SPACE_A_END = $1100
+;; SPACE_B_START = $2000
+;; SPACE_B_END = $2100
 
 ;;; 2x 1k heap space...
-;;;
-SPACE_A_START = $1000
-SPACE_A_END = $1400
-SPACE_B_START = $2000
-SPACE_B_END = $2400
+;; SPACE_A_START = $1000
+;; SPACE_A_END = $1400
+;; SPACE_B_START = $2000
+;; SPACE_B_END = $2400
 
+;;; 2x 7k heap space...
+SPACE_A_START = $800
+SPACE_A_END = $2400
+SPACE_B_START = $2400
+SPACE_B_END = $4000
 
 stop:
     print_char '!'
@@ -355,19 +358,21 @@ fib7_recurse:
 
 ;;; N KL KH --> K [N #0]
 fib7_base:
+    ;print_char "."
     ;; move K into fp
     copy_word 1,fp
     ;; RL is N (already in 0)
     lda #0
     sta 1 ; setup RH
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    ;print_hex_word 0
     jmp (cp) ; enter_fp
 
 ;;; TODO: switch N/K to standard order
 ;;; (doesn't matter while we have specific scavenge routines for each-shape)
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [KL KH AL AH]
     .text "fib7_cont1"
-    .word rootargs_none, evacuate6, scavenge_at3_of6
+    .word rootargs_none, evacuate5, scavenge_at3_of5
     .byte 2
 fib7_cont1:
     ;; allocate cont2
@@ -392,9 +397,14 @@ fib7_cont1:
 ;;;
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
     .text "fib7_cont2"
-    .word rootargs_impossible, evacuate5, scavenge_at2_of5
+    .word rootargs_impossible, evacuate6, scavenge_at2_of6
     .byte 2
 fib7_cont2:
+    ;; jsr screen_newline
+    ;; print_hex_word 0
+    ;; print_char '+'
+    ;; copy_word_from_frame 4, temp
+    ;; print_hex_word temp
     ;; 16-bit addition
     clc
     ;; macro for 16 bit addition?
@@ -408,6 +418,8 @@ fib7_cont2:
     copy_word_from_frame 2, 2 ; K
     copy_word 2, fp
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    ;print_char '='
+    ;print_hex_word 0
     jmp (cp) ; enter_fp
 
 
@@ -438,7 +450,8 @@ _done$:
 .endmacro
 
 gc_start:
-    print_char '{' ;G
+    ;print_char '{' ;G
+    print_char '%' ;G
     jsr switch_space
     copy_word hp, lw
 
@@ -476,7 +489,7 @@ cmp_byte2$:
 
 
 gc_finished:
-    print_char '}' ;X
+    ;print_char '}' ;X
     ;; TODO: report how many bytes collected, or just the hp will do!
     ;print_hex_word hp
     ;jmp stop
@@ -551,16 +564,16 @@ scavange_cell_at : .macro N
     sta (lw),y
 .endmacro
 
-    .text "scavenge_at2_of5"
-scavenge_at2_of5:
+    .text "scavenge_at2_of6"
+scavenge_at2_of6:
     scavange_cell_at 2
-    shift_low_water 5
+    shift_low_water 6
     jmp gc_loop
 
-    .text "scavenge_at3_of6"
-scavenge_at3_of6:
+    .text "scavenge_at3_of5"
+scavenge_at3_of5:
     scavange_cell_at 3
-    shift_low_water 6
+    shift_low_water 5
     jmp gc_loop
 
     .text "scavenge_nothing_of2"
