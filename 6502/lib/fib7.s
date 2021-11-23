@@ -451,7 +451,7 @@ _done$:
 
 gc_start:
     ;print_char '{' ;G
-    print_char '%' ;G
+    ;print_char '%' ;G
     jsr switch_space
     copy_word hp, lw
 

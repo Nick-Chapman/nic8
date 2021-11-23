@@ -51,11 +51,11 @@ g_screen = $200 ; 32 bytes
 
     ;; various implementations of fib
     include fib1.s
-    ;; include fib2.s
-    ;; include fib3.s
-    ;; include fib4.s
-    ;; include fib5.s
-    ;; include fib6.s
+    include fib2.s
+    include fib3.s
+    include fib4.s
+    include fib5.s
+    include fib6.s
     .text "<fib7..."
     include fib7.s
     .text "...fib7>"
@@ -64,11 +64,11 @@ num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
     .word fib1_entry
-    ;; .word fib2_entry
-    ;; .word fib3_entry
-    ;; .word fib4_entry
-    ;; .word fib5_entry
-    ;; .word fib6_entry
+    .word fib2_entry
+    .word fib3_entry
+    .word fib4_entry
+    .word fib5_entry
+    .word fib6_entry
     .word fib7_entry
 version_table_end:
 
@@ -124,13 +124,13 @@ example_loop:
     lda #' '
     jsr screen_putchar
 
-    ;; lda #'('
-    ;; jsr screen_putchar
+    lda #'('
+    jsr screen_putchar
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
-    ;; jsr decimal_put_word ; ..as before
-    ;; lda #')'
-    ;; jsr screen_putchar
+    jsr decimal_put_word ; ..as before
+    lda #')'
+    jsr screen_putchar
 
     jsr print_screen
 
