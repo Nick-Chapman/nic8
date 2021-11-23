@@ -22,6 +22,7 @@ temp = $fc
 ev = $77 ; word being evacuated
 lw = $88 ; low water mark in to-heap; the point from which we scavenge
 gc_count = $8a
+heap_start = $8c
 
 ;;; bytes
 g_arg = $50 ; used by fib1

@@ -74,6 +74,7 @@ print_decimal_word: .macro L
     lda \L
     ldx \L + 1
     jsr decimal_put_word
+    jsr print_screen
     plx
     pla
 .endmacro
@@ -83,6 +84,16 @@ copy16_literal_to_var: .macro lit, V
     sta \V
     lda #>\lit
     sta \V + 1
+.endmacro
+
+sub16 : .macro A, B, RES
+    sec
+    lda \A
+    sbc \B
+    sta \RES
+    lda \A + 1
+    sbc \B + 1
+    sta \RES + 1
 .endmacro
 
 inc16_var: .macro V
@@ -336,6 +347,7 @@ fib7_entry:
     ;jsr wipe_space_a
     ;jsr wipe_space_b
     jsr set_heap_space_a
+    copy_word hp, heap_start
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     lda #2
     jsr alloc
@@ -498,6 +510,7 @@ gc_start:
 
     ;print_char '%' ;G
     jsr switch_space
+    copy_word hp, heap_start
     copy_word hp, lw
 
     ;; TODO: should roots be evacuated by 'fp' ?
@@ -534,14 +547,17 @@ cmp_byte2$:
     beq gc_finished
     jmp scavenge
 
-
 gc_finished:
-    print_char '}' ;X
-    ;; TODO: report how many bytes collected, or just the hp will do!
+    print_char ':'
     ;print_hex_word hp
+    ;print_char '-'
+    ;print_hex_word heap_start
+    ;print_char '='
+    sub16 hp, heap_start, temp
+    print_decimal_word temp
+    print_char '}'
     ;jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
-
 
 scavenge:
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
