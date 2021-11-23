@@ -213,7 +213,7 @@ SPACE_B_END = $4000
 
 set_heap_space_a:
     ;print_char 'A'
-    ;copy_code_pointer_to_local wipe_space_b, wipe_old_space
+    copy_code_pointer_to_local wipe_space_b, wipe_old_space
     copy_code_pointer_to_local set_heap_space_b, space_switcher
     lda #<SPACE_A_START
     sta hp
@@ -225,7 +225,7 @@ set_heap_space_a:
 
 set_heap_space_b:
     ;print_char 'B'
-    ;copy_code_pointer_to_local wipe_space_a, wipe_old_space
+    copy_code_pointer_to_local wipe_space_a, wipe_old_space
     copy_code_pointer_to_local set_heap_space_a, space_switcher
     lda #<SPACE_B_START
     sta hp
@@ -235,47 +235,47 @@ set_heap_space_b:
     sta heap_end_page
     rts
 
-;; wipe_space_a:
-;;     ;print_char 'a'
-;;     lda #0
-;;     sta temp
-;;     lda #>SPACE_A_START
-;;     sta temp + 1
-;; outer_loop$:
-;;     lda temp + 1
-;;     ldy $0
-;; inner_loop$:
-;;     lda $ee
-;;     sta (temp),y
-;;     iny
-;;     bne inner_loop$
-;;     lda temp + 1
-;;     inc
-;;     sta temp + 1
-;;     cmp #>SPACE_A_END
-;;     bne outer_loop$
-;;     rts
+wipe_space_a:
+    ;print_char 'a'
+    lda #0
+    sta temp
+    lda #>SPACE_A_START
+    sta temp + 1
+outer_loop$:
+    lda temp + 1
+    ldy $0
+inner_loop$:
+    lda $ee
+    sta (temp),y
+    iny
+    bne inner_loop$
+    lda temp + 1
+    inc
+    sta temp + 1
+    cmp #>SPACE_A_END
+    bne outer_loop$
+    rts
 
-;; wipe_space_b:
-;;     ;print_char 'b'
-;;     lda #0
-;;     sta temp
-;;     lda #>SPACE_B_START
-;;     sta temp + 1
-;; outer_loop$:
-;;     lda temp + 1
-;;     ldy $0
-;; inner_loop$:
-;;     lda $ee
-;;     sta (temp),y
-;;     iny
-;;     bne inner_loop$
-;;     lda temp + 1
-;;     inc
-;;     sta temp + 1
-;;     cmp #>SPACE_B_END
-;;     bne outer_loop$
-;;     rts
+wipe_space_b:
+    ;print_char 'b'
+    lda #0
+    sta temp
+    lda #>SPACE_B_START
+    sta temp + 1
+outer_loop$:
+    lda temp + 1
+    ldy $0
+inner_loop$:
+    lda $ee
+    sta (temp),y
+    iny
+    bne inner_loop$
+    lda temp + 1
+    inc
+    sta temp + 1
+    cmp #>SPACE_B_END
+    bne outer_loop$
+    rts
 
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
@@ -344,8 +344,8 @@ fib7_entry:
     copy16_literal_to_var 0, gc_count ; TODO: 0
 
     ;; initialize heap
-    ;jsr wipe_space_a
-    ;jsr wipe_space_b
+    jsr wipe_space_a
+    jsr wipe_space_b
     jsr set_heap_space_a
     copy_word hp, heap_start
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
@@ -556,7 +556,7 @@ gc_finished:
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
-    ;jmp (wipe_old_space) ; fill 28 pages with $ee
+    jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
 
 scavenge:
