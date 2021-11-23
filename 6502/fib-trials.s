@@ -21,6 +21,7 @@ temp = $fc
 ;wipe_old_space = $fe
 ev = $77 ; word being evacuated
 lw = $88 ; low water mark in to-heap; the point from which we scavenge
+gc_count = $8a
 
 ;;; bytes
 g_arg = $50 ; used by fib1
@@ -50,12 +51,12 @@ g_screen = $200 ; 32 bytes
     include decimal.s
 
     ;; various implementations of fib
-    include fib1.s
-    include fib2.s
-    include fib3.s
-    include fib4.s
-    include fib5.s
-    include fib6.s
+    ;; include fib1.s
+    ;; include fib2.s
+    ;; include fib3.s
+    ;; include fib4.s
+    ;; include fib5.s
+    ;; include fib6.s
     .text "<fib7..."
     include fib7.s
     .text "...fib7>"
@@ -63,12 +64,12 @@ g_screen = $200 ; 32 bytes
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
-    .word fib1_entry
-    .word fib2_entry
-    .word fib3_entry
-    .word fib4_entry
-    .word fib5_entry
-    .word fib6_entry
+    ;; .word fib1_entry
+    ;; .word fib2_entry
+    ;; .word fib3_entry
+    ;; .word fib4_entry
+    ;; .word fib5_entry
+    ;; .word fib6_entry
     .word fib7_entry
 version_table_end:
 
@@ -89,9 +90,8 @@ example:
     jsr put_version_name
     jsr print_screen
     ;jsr pause
-    jsr pause
     jsr screen_newline
-    lda #10 ; Compute fib(N) for N = ...
+    lda #19 ; Compute fib(N) for N = ...
     pha ; keep N on the stack
 
 example_loop:
@@ -104,7 +104,7 @@ example_loop:
     lda #'-'
     jsr screen_putchar
     jsr print_screen
-    jsr pause
+    ;jsr pause
 
     ;; All versions have same interface: byte argument in A; 2 bytes space on stack for result
 
@@ -121,35 +121,40 @@ example_loop:
     pla ; result-LO into A, and
     plx ; result-HI into X, which..
     jsr decimal_put_word ; ..is the calling convention to print a word
-    lda #' '
-    jsr screen_putchar
 
-    lda #'('
-    jsr screen_putchar
+    ;; lda #'('
+    ;; jsr screen_putchar
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
-    jsr decimal_put_word ; ..as before
-    lda #')'
-    jsr screen_putchar
+    ;; jsr decimal_put_word ; ..as before
+    ;; lda #')'
+    ;; jsr screen_putchar
 
     jsr print_screen
 
     tsx
 
     lda $101,x
-    cmp #50
+    cmp #19
     bne _1$
-    jmp stop
+    jmp finish
 _1$:
 
     inc $101,x ; increment N (in place) on stack
 
     jsr pause
-    jsr pause
+    lda #' '
+    jsr screen_putchar
     jsr screen_newline
     jsr print_screen
 
     jmp example_loop
+
+finish:
+    print_char '$'
+    jsr print_screen
+spin:
+    jmp spin
 
 start_timer:
     tsx
@@ -236,14 +241,11 @@ put_string_done:
 
 ;;; TODO: remove this!
 eeee_evacuate:
-    print_char '1'
-    jmp stop
+    panic '1'
 eeee_scavenge:
-    print_char '2'
-    jmp stop
+    panic '2'
 eeee_code:
-    print_char '3'
-    jmp stop
+    panic '3'
 
     .org ($eeee - 5)
     .word eeee_evacuate, eeee_scavenge

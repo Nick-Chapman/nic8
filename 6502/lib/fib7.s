@@ -1,23 +1,40 @@
 
+;;; TODO: move this panic macro to a new file; take a string, not just a char
+
+panic_stop:
+    pha
+    lda #'!'
+    jsr screen_putchar
+    pla
+    jsr screen_putchar
+    jsr print_screen
+panic_spin:
+    jmp panic_spin
+
+panic: .macro CHAR
+    lda #\CHAR
+    jmp panic_stop
+.endmac
+
 ;;; CPS version of fib. Allocates stack frames on a heap. No GC yet. But soon!
 
-;; put_hex_byte:
-;;     pha
-;;     lsr
-;;     lsr
-;;     lsr
-;;     lsr
-;;     tax
-;;     lda digits,x
-;;     jsr screen_putchar
-;;     pla
-;;     and #%1111
-;;     tax
-;;     lda digits,x
-;;     jsr screen_putchar
-;;     rts
+put_hex_byte: ; TODO: review this code. wrote it a long time ago!
+    pha
+    lsr
+    lsr
+    lsr
+    lsr
+    tax
+    lda digits,x
+    jsr screen_putchar
+    pla
+    and #%1111
+    tax
+    lda digits,x
+    jsr screen_putchar
+    rts
 
-;; digits: .ascii "0123456789abcdef"
+digits: .ascii "0123456789abcdef"
 
 
 ;; tiny_pause:
@@ -36,19 +53,46 @@ print_char: .macro CHAR
     pla
 .endmac
 
-;; print_hex_word: .macro L
-;;     ;lda #'['
-;;     ;jsr screen_putchar
-;;     lda \L + 1
-;;     jsr put_hex_byte
-;;     lda \L
-;;     jsr put_hex_byte
-;;     ;lda #']'
-;;     ;jsr screen_putchar
-;;     jsr print_screen
-;;     lda #5
-;;     jsr sleep_blocking
-;; .endmac
+print_hex_word: .macro L
+    ;lda #'['
+    ;jsr screen_putchar
+    lda \L + 1
+    jsr put_hex_byte
+    lda \L
+    jsr put_hex_byte
+    ;lda #']'
+    ;jsr screen_putchar
+    jsr print_screen
+    ;lda #5
+    ;jsr sleep_blocking
+.endmac
+
+
+print_decimal_word: .macro L
+    pha
+    phx
+    lda \L
+    ldx \L + 1
+    jsr decimal_put_word
+    plx
+    pla
+.endmacro
+
+copy16_literal_to_var: .macro lit, V
+    lda #<\lit
+    sta \V
+    lda #>\lit
+    sta \V + 1
+.endmacro
+
+inc16_var: .macro V
+    ;; can I use inc? does this set the carry flag. No1
+    ;; but that's ok because it does set zero!
+    inc \V
+    bne _done$
+    inc \V + 1
+_done$:
+.endmacro
 
 load_frame_var0: .macro
     lda (fp)
@@ -75,7 +119,7 @@ copy_code_pointer_to_heap0: .macro code
     store_heap 1
 .endmacro
 
-copy_code_pointer_to_local: .macro code, L
+copy_code_pointer_to_local: .macro code, L ; TODO: same as copy16_literal_to_var
     lda #<\code
     sta \L
     lda #>\code
@@ -155,10 +199,6 @@ SPACE_A_END = $2400
 SPACE_B_START = $2400
 SPACE_B_END = $4000
 
-stop:
-    print_char '!'
-spin:
-    jmp spin
 
 set_heap_space_a:
     ;print_char 'A'
@@ -269,8 +309,7 @@ _$:
     rts
 
 heap_exhausted_still:
-    print_char '*'
-    jmp stop
+    panic 'H'
 
 
 
@@ -290,6 +329,8 @@ fib7_entry:
     ;; lda #'>'
     ;; jsr screen_putchar
     ;; jsr print_screen
+
+    copy16_literal_to_var 0, gc_count ; TODO: 0
 
     ;; initialize heap
     ;jsr wipe_space_a
@@ -450,7 +491,11 @@ _done$:
 .endmacro
 
 gc_start:
-    ;print_char '{' ;G
+    print_char '{' ;G
+
+    inc16_var gc_count
+    print_decimal_word gc_count
+
     ;print_char '%' ;G
     jsr switch_space
     copy_word hp, lw
@@ -462,6 +507,8 @@ gc_start:
     copy_word fp, ev
     jsr evacuate
     copy_word clo, fp
+
+    ;panic 'q'
 
     jmp gc_loop
 
@@ -489,10 +536,9 @@ cmp_byte2$:
 
 
 gc_finished:
-    ;print_char '}' ;X
+    print_char '}' ;X
     ;; TODO: report how many bytes collected, or just the hp will do!
     ;print_hex_word hp
-    ;jmp stop
     ;jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
 
@@ -521,9 +567,7 @@ rootargs_none:
     rts
 
 rootargs_impossible:
-    print_char 'R'
-    jmp stop
-    rts
+    panic 'R'
 
 rootargs_at1:
     copy_word 1, ev
@@ -582,8 +626,7 @@ scavenge_nothing_of2:
     jmp gc_loop
 
 scavenge_impossible:
-    print_char 'S'
-    jmp stop
+    panic 'S'
 
 ;;; ----------------------------------------------------------------------
 ;;; evacuate routines assume 'ev' to be set, and should in turn set 'clo'
