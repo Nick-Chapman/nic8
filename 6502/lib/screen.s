@@ -19,7 +19,7 @@ each_pat_char:
     rts
 
 ;; print screen to the underlying lcd
-print_screen:
+print_screen: ; TODO: rename flush
     pha
     ;; copy screen to lcd
     jsr lcd_return_home

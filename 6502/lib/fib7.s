@@ -213,7 +213,7 @@ SPACE_B_END = $4000
 
 set_heap_space_a:
     ;print_char 'A'
-    copy_code_pointer_to_local wipe_space_b, wipe_old_space
+    ;copy_code_pointer_to_local wipe_space_b, wipe_old_space
     copy_code_pointer_to_local set_heap_space_b, space_switcher
     lda #<SPACE_A_START
     sta hp
@@ -225,7 +225,7 @@ set_heap_space_a:
 
 set_heap_space_b:
     ;print_char 'B'
-    copy_code_pointer_to_local wipe_space_a, wipe_old_space
+    ;copy_code_pointer_to_local wipe_space_a, wipe_old_space
     copy_code_pointer_to_local set_heap_space_a, space_switcher
     lda #<SPACE_B_START
     sta hp
@@ -556,7 +556,7 @@ gc_finished:
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
-    jmp (wipe_old_space) ; fill 28 pages with $ee
+    ;jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
 
 scavenge:

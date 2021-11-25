@@ -2,12 +2,13 @@
 ;;; (1) coded using normal control stack -- DONE
 ;;; (2) coded in CPS style, using heap -- TODO
 
-    .org $fffc
-    .word reset_main
-    .word ticks_irq
+    org $fffc
+    word reset_main
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
+;;; TODO: use g_ prefix was (most) globals
 ;;; Globals for fib7 GC
 ;;; Heap pointer and frame pointer in ZP
 hp = $f0
@@ -15,26 +16,26 @@ fp = $f2
 cp = $f4
 clo = $f6 ; pointer to (space for) the closure just allocated
 heap_end_page = $f8 ; (byte)
-n_bytes = $f9 ; number of bytes to allocate (byte)
+n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
 space_switcher = $fa
 temp = $fc
-wipe_old_space = $fe
+;; wipe_old_space = $fe
 ev = $77 ; word being evacuated
 lw = $88 ; low water mark in to-heap; the point from which we scavenge
 gc_count = $8a
 heap_start = $8c
 
 ;;; bytes
-g_arg = $50 ; used by fib1
+;; g_arg = $50 ; used by fib1
 g_ticks = $51
-g_sleep_ticks = $52
+;; g_sleep_ticks = $52
 g_screen_pointer = $53
 g_selected_version_index = $54
 
 ;;; words
-g_res = $70 ; used by fib1
-g_divisor = $72
-g_mod10 = $74
+;; g_res = $70 ; used by fib1
+g_divisor = $72 ; decimal.s
+g_mod10 = $74 ; decimal.s
 
 g_selected_version_ptr = $90
 g_id_ptr = $92
@@ -51,6 +52,11 @@ g_screen = $200 ; 32 bytes
     include sleep.s
     include decimal.s
 
+    ;include print.s
+    ;include panic.s
+    ;include macs.s
+    ;include gc.s
+
     ;; various implementations of fib
     ;; include fib1.s
     ;; include fib2.s
@@ -58,20 +64,20 @@ g_screen = $200 ; 32 bytes
     ;; include fib4.s
     ;; include fib5.s
     ;; include fib6.s
-    .text "<fib7..."
+    text "<fib7..."
     include fib7.s
-    .text "...fib7>"
+    text "...fib7>"
 
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
-    ;; .word fib1_entry
-    ;; .word fib2_entry
-    ;; .word fib3_entry
-    ;; .word fib4_entry
-    ;; .word fib5_entry
-    ;; .word fib6_entry
-    .word fib7_entry
+    ;; word fib1_entry
+    ;; word fib2_entry
+    ;; word fib3_entry
+    ;; word fib4_entry
+    ;; word fib5_entry
+    ;; word fib6_entry
+    word fib7_entry
 version_table_end:
 
 reset_main:
@@ -237,18 +243,3 @@ put_string_loop:
     jmp put_string_loop
 put_string_done:
     rts
-
-
-
-;;; TODO: remove this!
-eeee_evacuate:
-    panic '1'
-eeee_scavenge:
-    panic '2'
-eeee_code:
-    panic '3'
-
-    .org ($eeee - 5)
-    .word eeee_evacuate, eeee_scavenge
-    .byte 7
-    jmp eeee_code
