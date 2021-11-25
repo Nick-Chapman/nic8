@@ -52,10 +52,10 @@ g_screen = $200 ; 32 bytes
     include sleep.s
     include decimal.s
 
-    ;include print.s
-    ;include panic.s
-    ;include macs.s
-    ;include gc.s
+    include print.s
+    include panic.s
+    include macs.s
+    include gc.s
 
     ;; various implementations of fib
     ;; include fib1.s
