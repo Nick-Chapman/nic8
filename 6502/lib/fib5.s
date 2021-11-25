@@ -5,8 +5,8 @@
 STACK = $700
 
 fib5_name:
-    .string "5: Forth MEM"
-    .word fib5_name
+    string "5: Forth MEM"
+    word fib5_name
 fib5_entry:
 
     ;; Stack in ZP, starting at top ($ff) and growing downwards

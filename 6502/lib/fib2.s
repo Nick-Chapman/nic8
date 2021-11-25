@@ -6,8 +6,8 @@
 
 
 fib2_name:
-    .asciiz "2: ST -> ST"
-    .word fib2_name
+    asciiz "2: ST -> ST"
+    word fib2_name
 fib2_entry:
     pha ; res-hi
     pha ; res-lo

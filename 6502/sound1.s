@@ -1,11 +1,11 @@
 
 ;;; first attempts to drive 76489 sound chip
 
-    .org $fffc
-    .word main_reset
-    .word ticks_irq
+    org $fffc
+    word main_reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 g_ticks = $50
 

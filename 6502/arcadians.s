@@ -1,11 +1,11 @@
 
 ;;; Play the start music from the BBC Micro's Arcadians
 
-    .org $fffc
-    .word main_reset
-    .word ticks_irq
+    org $fffc
+    word main_reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 ;;; bytes
 g_ticks = $50
@@ -39,7 +39,7 @@ print_message_loop:
 print_message_done:
     rts
 
-message: .asciiz "** Arcadians ** "
+message: asciiz "** Arcadians ** "
 
 play_music:
     lda #(data & $ff)       ;lo
@@ -102,4 +102,4 @@ spin:
 
 data:
     include arc-data.s
-    .byte 0, 0                     ;FINISH
+    byte 0, 0                     ;FINISH

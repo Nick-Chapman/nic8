@@ -1,9 +1,9 @@
 
-    .org $fffc
-    .word reset
-    .word 0
+    org $fffc
+    word reset
+    word 0
 
-    .org $8000
+    org $8000
 
 PORTB = $6000 ; 7 MSBs for lcd
 DDRB = $6002

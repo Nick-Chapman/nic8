@@ -6,8 +6,8 @@
 ;;; (So the entry shim does nothing)
 
 fib3_name:
-    .asciiz "3: A -> ST"
-    .word fib3_name
+    asciiz "3: A -> ST"
+    word fib3_name
 fib3_entry:
     pha ; res-hi
     pha ; res-lo

@@ -19,11 +19,11 @@
 ;;; - perhaps manipulate screen-contents in memory DONE
 ;;; - with sep thread which keeps LCD up to date with mem (see pre-serial.s)
 
-    .org $fffc
-    .word reset_main
-    .word ticks_irq
+    org $fffc
+    word reset_main
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 ;;; bytes
 g_ticks = $50

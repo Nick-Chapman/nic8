@@ -1,9 +1,9 @@
 
-    .org $fffc
-    .word main_reset
-    .word ticks_irq
+    org $fffc
+    word main_reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 ;;; bytes
 g_ticks = $50
@@ -108,22 +108,22 @@ spin:
 H = 25 ;1/4s
 
 data:
-    .byte (H*0), '-', 4, $9f, $bf, $df, $ff ;silence c#0, c#1, c#2, c#3
-    .byte (H*3), '+', 2, $90, $b0           ;volume-on c#0, c#1
-    .byte (H*0), 'c', 2, $87, $07           ;c
-    .byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
-    .byte (H*1), 'd', 2, $8a, $06           ;d
-    .byte (H*1), 'e', 2, $8f, $05           ;e
-    .byte (H*1), 'f', 2, $89, $05           ;f
-    .byte (H*1), 'g', 2, $80, $05           ;g
-    .byte (H*0), 'G', 2, $af, $09           ;low g on c#1
-    .byte (H*3), '-', 1, $9f                ;silence c#0
-    .byte (H*1), '+', 1, $90                ;volume-on c#0
-    .byte (H*0), 'g', 2, $80, $05           ;g
-    .byte (H*1), 'f', 2, $89, $05           ;f
-    .byte (H*1), 'e', 2, $8f, $05           ;e
-    .byte (H*1), 'd', 2, $8a, $06           ;d
-    .byte (H*1), 'c', 2, $87, $07           ;c
-    .byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
-    .byte (H*5), '-', 2, $9f, $bf           ;silence c#0, c#1
-    .byte (H*0), '!', 0                     ;FINISH
+    byte (H*0), '-', 4, $9f, $bf, $df, $ff ;silence c#0, c#1, c#2, c#3
+    byte (H*3), '+', 2, $90, $b0           ;volume-on c#0, c#1
+    byte (H*0), 'c', 2, $87, $07           ;c
+    byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
+    byte (H*1), 'd', 2, $8a, $06           ;d
+    byte (H*1), 'e', 2, $8f, $05           ;e
+    byte (H*1), 'f', 2, $89, $05           ;f
+    byte (H*1), 'g', 2, $80, $05           ;g
+    byte (H*0), 'G', 2, $af, $09           ;low g on c#1
+    byte (H*3), '-', 1, $9f                ;silence c#0
+    byte (H*1), '+', 1, $90                ;volume-on c#0
+    byte (H*0), 'g', 2, $80, $05           ;g
+    byte (H*1), 'f', 2, $89, $05           ;f
+    byte (H*1), 'e', 2, $8f, $05           ;e
+    byte (H*1), 'd', 2, $8a, $06           ;d
+    byte (H*1), 'c', 2, $87, $07           ;c
+    byte (H*0), 'C', 2, $af, $0e           ;low c on c#1
+    byte (H*5), '-', 2, $9f, $bf           ;silence c#0, c#1
+    byte (H*0), '!', 0                     ;FINISH

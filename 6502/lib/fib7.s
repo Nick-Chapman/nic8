@@ -11,10 +11,10 @@ panic_stop:
 panic_spin:
     jmp panic_spin
 
-panic: .macro CHAR
+panic: macro CHAR
     lda #\CHAR
     jmp panic_stop
-.endmac
+endmac
 
 ;;; CPS version of fib. Allocates stack frames on a heap. No GC yet. But soon!
 
@@ -34,7 +34,7 @@ put_hex_byte: ; TODO: review this code. wrote it a long time ago!
     jsr screen_putchar
     rts
 
-digits: .ascii "0123456789abcdef"
+digits: ascii "0123456789abcdef"
 
 
 ;; tiny_pause:
@@ -44,16 +44,16 @@ digits: .ascii "0123456789abcdef"
 ;;     pla
 ;;     rts
 
-print_char: .macro CHAR
+print_char: macro CHAR
     pha
     lda #\CHAR
     jsr screen_putchar
     jsr print_screen
     ;jsr tiny_pause
     pla
-.endmac
+endmac
 
-print_hex_word: .macro L
+print_hex_word: macro L
     ;lda #'['
     ;jsr screen_putchar
     lda \L + 1
@@ -65,10 +65,10 @@ print_hex_word: .macro L
     jsr print_screen
     ;lda #5
     ;jsr sleep_blocking
-.endmac
+endmac
 
 
-print_decimal_word: .macro L
+print_decimal_word: macro L
     pha
     phx
     lda \L
@@ -77,16 +77,16 @@ print_decimal_word: .macro L
     jsr print_screen
     plx
     pla
-.endmacro
+endmacro
 
-copy16_literal_to_var: .macro lit, V
+copy16_literal_to_var: macro lit, V
     lda #<\lit
     sta \V
     lda #>\lit
     sta \V + 1
-.endmacro
+endmacro
 
-sub16 : .macro A, B, RES
+sub16 : macro A, B, RES
     sec
     lda \A
     sbc \B
@@ -94,95 +94,95 @@ sub16 : .macro A, B, RES
     lda \A + 1
     sbc \B + 1
     sta \RES + 1
-.endmacro
+endmacro
 
-inc16_var: .macro V
+inc16_var: macro V
     ;; can I use inc? does this set the carry flag. No1
     ;; but that's ok because it does set zero!
     inc \V
     bne _done$
     inc \V + 1
 _done$:
-.endmacro
+endmacro
 
-load_frame_var0: .macro
+load_frame_var0: macro
     lda (fp)
-.endmacro
+endmacro
 
-load_frame_var: .macro N
+load_frame_var: macro N
     ldy #\N
     lda (fp),y
-.endmacro
+endmacro
 
-store_heap0: .macro
+store_heap0: macro
     sta (clo)
-.endmacro
+endmacro
 
-store_heap: .macro N ; must follow alloc
+store_heap: macro N ; must follow alloc
     ldy #\N
     sta (clo),y
-.endmacro
+endmacro
 
-copy_code_pointer_to_heap0: .macro code
+copy_code_pointer_to_heap0: macro code
     lda #<\code
     store_heap0
     lda #>\code
     store_heap 1
-.endmacro
+endmacro
 
-copy_code_pointer_to_local: .macro code, L ; TODO: same as copy16_literal_to_var
+copy_code_pointer_to_local: macro code, L ; TODO: same as copy16_literal_to_var
     lda #<\code
     sta \L
     lda #>\code
     sta \L + 1
-.endmacro
+endmacro
 
-copy_word: .macro source, dest
+copy_word: macro source, dest
     lda \source
     sta \dest
     lda \source + 1
     sta \dest + 1
-.endmacro
+endmacro
 
-copy_word_from_frame0: .macro dest
+copy_word_from_frame0: macro dest
     load_frame_var0
     sta \dest
     load_frame_var 1
     sta \dest + 1
-.endmacro
+endmacro
 
-copy_word_from_frame: .macro F, L
+copy_word_from_frame: macro F, L
     load_frame_var \F
     sta \L
     load_frame_var \F+1
     sta \L + 1
-.endmacro
+endmacro
 
-copy_word_frame_to_heap: .macro F, H
+copy_word_frame_to_heap: macro F, H
     load_frame_var \F
     store_heap \H
     load_frame_var \F+1
     store_heap \H+1
-.endmacro
+endmacro
 
-copy_word_local_to_heap: .macro L, H
+copy_word_local_to_heap: macro L, H
     lda \L
     store_heap \H
     lda \L+1
     store_heap \H+1
-.endmacro
+endmacro
 
-copy_byte_local_to_heap: .macro L, H
+copy_byte_local_to_heap: macro L, H
     lda \L
     store_heap \H
-.endmacro
+endmacro
 
-copy_word_local_to_heap: .macro L, H
+copy_word_local_to_heap: macro L, H
     lda \L
     store_heap \H
     lda \L+1
     store_heap \H+1
-.endmacro
+endmacro
 
 
 ;;; arguments/results to functions/continutaion are in ZP vars: 0,1,...
@@ -325,8 +325,8 @@ heap_exhausted_still:
 
 
 fib7_name:
-    .string "7: CPS/Heap"
-    .word fib7_name
+    string "7: CPS/Heap"
+    word fib7_name
 fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta 0
@@ -360,9 +360,9 @@ fib7_entry:
 
 
 ;;; RL RH -->
-    .text "fib7_done"
-    .word rootargs_impossible, evacuate2, scavenge_nothing_of2
-    .byte 2
+    text "fib7_done"
+    word rootargs_impossible, evacuate2, scavenge_nothing_of2
+    byte 2
 fib7_done:
     ;; move final result to pre-allocated space on stack
     tsx
@@ -374,7 +374,7 @@ fib7_done:
 
 
 fib7_recurse_static_closure:
-    .word fib7_recurse
+    word fib7_recurse
 
 ;;; fib7 is a top level function
 ;;; and so we have a static closure
@@ -384,9 +384,9 @@ fib7_recurse_static_closure:
 ;;; (i.e. that process where we walk along the new-heap
 ;;; using the low-water 'lw' pointer.. until catches up with 'hp')
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
-    .text "fib7_recurse"
-    .word rootargs_at1, evacuate_do_nothing, scavenge_impossible
-    .byte 3 ; TODO: This 'arg-count' byte is used nowhere!
+    text "fib7_recurse"
+    word rootargs_at1, evacuate_do_nothing, scavenge_impossible
+    byte 3 ; TODO: This 'arg-count' byte is used nowhere!
 fib7_recurse:
     ;; access N
     lda 0
@@ -424,9 +424,9 @@ fib7_base:
 ;;; TODO: switch N/K to standard order
 ;;; (doesn't matter while we have specific scavenge routines for each-shape)
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [KL KH AL AH]
-    .text "fib7_cont1"
-    .word rootargs_none, evacuate5, scavenge_at3_of5
-    .byte 2
+    text "fib7_cont1"
+    word rootargs_none, evacuate5, scavenge_at3_of5
+    byte 2
 fib7_cont1:
     ;; allocate cont2
     lda #6
@@ -449,9 +449,9 @@ fib7_cont1:
 ;;; because no allocation occurs here!
 ;;;
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
-    .text "fib7_cont2"
-    .word rootargs_impossible, evacuate6, scavenge_at2_of6
-    .byte 2
+    text "fib7_cont2"
+    word rootargs_impossible, evacuate6, scavenge_at2_of6
+    byte 2
 fib7_cont2:
     ;; jsr screen_newline
     ;; print_hex_word 0
@@ -480,16 +480,16 @@ fib7_cont2:
 ;;; GC stuff below here...
 
 ;;; double indirect jump to 'cp' (using 'temp')
-jump_cp: .macro
+jump_cp: macro
     lda (cp)
     sta temp
     ldy #1
     lda (cp),y
     sta temp + 1
     jmp (temp)
-.endmacro
+endmacro
 
-get_code_pointer_offset_function: .macro HP, N
+get_code_pointer_offset_function: macro HP, N
     lda (\HP)
     sec
     sbc #\N ; negative offset from code-pointer
@@ -500,7 +500,7 @@ get_code_pointer_offset_function: .macro HP, N
     bcs _done$
     dec cp + 1
 _done$:
-.endmacro
+endmacro
 
 gc_start:
     print_char '{' ;G
@@ -593,7 +593,7 @@ rootargs_at1:
 
 ;;; ----------------------------------------------------------------------
 
-shift_low_water: .macro N
+shift_low_water: macro N
     lda lw
     clc
     adc #\N
@@ -601,12 +601,12 @@ shift_low_water: .macro N
     bcc _done$
     inc lw + 1
 _done$:
-.endmacro
+endmacro
 
 ;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
 ;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
-scavange_cell_at : .macro N
+scavange_cell_at : macro N
     ldy #\N
     lda (lw),y
     sta ev
@@ -622,21 +622,21 @@ scavange_cell_at : .macro N
     lda clo + 1
     ldy #\N + 1
     sta (lw),y
-.endmacro
+endmacro
 
-    .text "scavenge_at2_of6"
+    text "scavenge_at2_of6"
 scavenge_at2_of6:
     scavange_cell_at 2
     shift_low_water 6
     jmp gc_loop
 
-    .text "scavenge_at3_of5"
+    text "scavenge_at3_of5"
 scavenge_at3_of5:
     scavange_cell_at 3
     shift_low_water 5
     jmp gc_loop
 
-    .text "scavenge_nothing_of2"
+    text "scavenge_nothing_of2"
 scavenge_nothing_of2:
     shift_low_water 2
     jmp gc_loop
@@ -651,13 +651,13 @@ scavenge_impossible:
 ;;; have special-case routines dispatch to that
 ;;; OR, have the common routine discover the N via offset from the code-pointer
 
-evacuate_byte: .macro N
+evacuate_byte: macro N
     ldy #\N
     lda (ev),y
     store_heap \N
-.endmacro
+endmacro
 
-    .text "evacuate2"
+    text "evacuate2"
 evacuate2:
     lda #2
     jsr alloc_again
@@ -665,7 +665,7 @@ evacuate2:
     evacuate_byte 1
     rts
 
-    .text "evacuate5"
+    text "evacuate5"
 evacuate5:
     lda #5
     jsr alloc_again
@@ -676,7 +676,7 @@ evacuate5:
     evacuate_byte 4
     rts
 
-    .text "evacuate6"
+    text "evacuate6"
 evacuate6:
     lda #6
     jsr alloc_again
@@ -688,7 +688,7 @@ evacuate6:
     evacuate_byte 5
     rts
 
-    .text "evacuate_do_nothing"
+    text "evacuate_do_nothing"
 evacuate_do_nothing:
     copy_word ev, clo
     rts

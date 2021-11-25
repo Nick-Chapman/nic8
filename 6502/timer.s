@@ -1,11 +1,11 @@
 
 ;;; Example of using VIA timer & interrupts
 
-    .org $fffc
-    .word main_reset
-    .word ticks_irq
+    org $fffc
+    word main_reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 g_number = $A0
 g_ticks = $A1
@@ -57,4 +57,4 @@ print_number:
     jsr lcd_putchar
     rts
 
-digits: .ascii "0123456789abcdef"
+digits: ascii "0123456789abcdef"

@@ -7,11 +7,11 @@
 ;;; --DONE
 ;;; have message strings generated on fly from a number
 
-    .org $fffc
-    .word reset
-    .word 0
+    org $fffc
+    word reset
+    word 0
 
-    .org $8000
+    org $8000
 
 PORTB = $6000 ; 7 MSBs for lcd
 DDRB = $6002
@@ -51,26 +51,26 @@ spin:
     jmp spin
 
 messages:
-    .word message1
-    .word message2
-    .word message3
-    .word message4
-    .word message5
-    .word message6
-    .word message7
-    .word message8
-    .word message9
-    .byte 0
+    word message1
+    word message2
+    word message3
+    word message4
+    word message5
+    word message6
+    word message7
+    word message8
+    word message9
+    byte 0
 
-message1: .asciiz "Hello, world!"
-message2: .asciiz "This is fun!"
-message3: .asciiz "Third message."
-message4: .asciiz "4th message."
-message5: .asciiz "* This message *                        * over 2 lines *"
-message6: .asciiz "ABCDE"
-message7: .asciiz " BCD"
-message8: .asciiz "  C"
-message9: .asciiz "**last message**"
+message1: asciiz "Hello, world!"
+message2: asciiz "This is fun!"
+message3: asciiz "Third message."
+message4: asciiz "4th message."
+message5: asciiz "* This message *                        * over 2 lines *"
+message6: asciiz "ABCDE"
+message7: asciiz " BCD"
+message8: asciiz "  C"
+message9: asciiz "**last message**"
 
 pause:
     ldy #100                    ; 1 second

@@ -3,8 +3,8 @@
 
 ;;; TODO: use local labels!
 fib1_name:
-    .string "1: ZP -> ZP"
-    .word fib1_name
+    string "1: ZP -> ZP"
+    word fib1_name
 fib1_entry:
     sta g_arg
     jsr fib1_recurse

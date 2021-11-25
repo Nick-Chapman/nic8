@@ -1,11 +1,11 @@
 
 ;;; Message for Hannah...
 
-    .org $fffc
-    .word reset
-    .word ticks_irq
+    org $fffc
+    word reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 g_ticks = $A0
 

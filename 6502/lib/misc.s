@@ -17,4 +17,4 @@ put_hex:
     jsr scrolling_putchar
     rts
 
-digits: .ascii "0123456789abcdef"
+digits: ascii "0123456789abcdef"

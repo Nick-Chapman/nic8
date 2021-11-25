@@ -34,8 +34,8 @@ pop2:
 
 
 fib6_name:
-    .string "6: Forth: (sp)"
-    .word fib6_name
+    string "6: Forth: (sp)"
+    word fib6_name
 fib6_entry:
 
     ;; 16-bit quantities are pushed: push-HI, push-LO

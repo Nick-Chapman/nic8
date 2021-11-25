@@ -1,8 +1,8 @@
 ;;; PROVIDES: fib4
 
 fib4_name:
-    .string "4: Forth ZP"
-    .word fib4_name
+    string "4: Forth ZP"
+    word fib4_name
 fib4_entry:
 
     ;; Stack in ZP, starting at top ($ff) and growing downwards

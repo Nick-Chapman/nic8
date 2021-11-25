@@ -1,10 +1,10 @@
 ;;; Play Sonic music found at bitshifters
 
-    .org $fffc
-    .word main_reset
-    .word ticks_irq
+    org $fffc
+    word main_reset
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 ;;; bytes
 g_ticks = $50
@@ -140,32 +140,32 @@ print_hex_number:
     jsr lcd_putchar
     rts
 
-digits: .ascii "0123456789abcdef"
+digits: ascii "0123456789abcdef"
 
 num_songs_minus_1 = (((song_table_end - song_table) >> 1) - 1)
 
 song_table:
-    .word sonic1
-    .word sonic2
-    .word sonic3
-    .word sonic4
-    .word sonic5
-    .word sonic6
-    .word sonic7
+    word sonic1
+    word sonic2
+    word sonic3
+    word sonic4
+    word sonic5
+    word sonic6
+    word sonic7
 song_table_end
 
 sonic1:
-    .incbin sonic-data/sonic1.raw
+    incbin sonic-data/sonic1.raw
 sonic2:
-    .incbin sonic-data/sonic2.raw
+    incbin sonic-data/sonic2.raw
 sonic3:
-    .incbin sonic-data/sonic3.raw
+    incbin sonic-data/sonic3.raw
 sonic4:
-    .incbin sonic-data/sonic4.raw
+    incbin sonic-data/sonic4.raw
 sonic5:
-    .incbin sonic-data/sonic5.raw
+    incbin sonic-data/sonic5.raw
 sonic6:
-    .incbin sonic-data/sonic6.raw
+    incbin sonic-data/sonic6.raw
 sonic7:
-    .incbin sonic-data/sonic7.raw
+    incbin sonic-data/sonic7.raw
 ;;; upto 16!

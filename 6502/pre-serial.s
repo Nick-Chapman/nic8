@@ -1,11 +1,11 @@
 
 ;;; setup dev framework code for serial link -- hmm, didn't actually make much progress on the serial stuff!
 
-    .org $fffc
-    .word reset_main
-    .word ticks_irq
+    org $fffc
+    word reset_main
+    word ticks_irq
 
-    .org $8000
+    org $8000
 
 ;;; bytes
 g_ticks = $50
@@ -107,9 +107,9 @@ increment_message_ptr_done:
     rts
 
 message:
-    .str "zero one two"
-    .str "three four"
-    .str "five six"
-    .str "seven eight nine"
-    .string "ten eleven twelve thirteen fourteen fifteen sixteen"
-    .byte 0
+    str "zero one two"
+    str "three four"
+    str "five six"
+    str "seven eight nine"
+    string "ten eleven twelve thirteen fourteen fifteen sixteen"
+    byte 0
