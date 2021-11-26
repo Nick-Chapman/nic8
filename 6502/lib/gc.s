@@ -5,51 +5,61 @@ SPACE_A_END = $2400
 SPACE_B_START = $2400
 SPACE_B_END = $4000
 
+
+;; ;;; Client entry points
+;; init_gc:
+;;     jsr gc.set_heap_space_a
+;;     copy_word hp, heap_start
+;;     rts
+
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
-    sta n_bytes
+    sta n_bytes ; TODO: put this on stack to avoid global
     copy_word hp, clo
     lda n_bytes
     clc
     adc hp
     sta hp
-    bcc _$
+    bcc .ok
     lda hp + 1
     inc
     cmp heap_end_page
-    beq heap_exhausted
+    beq .heap_exhausted
     sta hp + 1
-_$:
+.ok:
     rts
 
-heap_exhausted:
-    jsr gc_start
+.heap_exhausted:
+    jsr gc.start
     lda n_bytes
-    jmp alloc_again
+    jmp .again
 
 ;;; This inner alloc must succeed !
 ;;; i.e. we do the exhaustion check, and it must not fail.
 ;;; We call it from the evacuation routines
 ;;; And also, for the pending alloc which cause GC to be initiated.
-alloc_again:
+
+.again: ; TODO: avoid code repetition w.r.t alloc
     pha
     copy_word hp, clo
     pla
     clc
     adc hp
     sta hp
-    bcc _$
+    bcc .again_done
     lda hp + 1
     inc
     cmp heap_end_page
-    beq heap_exhausted_still
+    beq .heap_exhausted_still
     sta hp + 1
-_$:
+.again_done:
     rts
 
-heap_exhausted_still:
+.heap_exhausted_still:
     panic 'H'
 
+
+;;; macro for internal use
 get_code_pointer_offset_function: macro HP, N
     lda (\HP)
     sec
@@ -58,11 +68,12 @@ get_code_pointer_offset_function: macro HP, N
     ldy #1
     lda (\HP),y
     sta cp + 1
-    bcs _done$
+    bcs .get_cp_offset_done
     dec cp + 1
-_done$:
+.get_cp_offset_done:
 endmacro
 
+;;; macro for internal use
 ;;; double indirect jump to 'cp' (using 'temp')
 jump_cp: macro
     lda (cp)
@@ -73,58 +84,52 @@ jump_cp: macro
     jmp (temp)
 endmacro
 
+
 evacuate_roots:
     get_code_pointer_offset_function fp, 7
     jump_cp
 
-scavenge:
+
+gc_scavenge:
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
     ;print_char 's'
     ;print_hex_word lw
     get_code_pointer_offset_function lw, 3
     jump_cp
 
-evacuate:
+gc_evacuate:
     ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
-    ;print_char 'e'
-    ;print_hex_word ev
     get_code_pointer_offset_function ev, 5
-    ;; TODO: after evacuation, we ought to set a fowarding pointer
-    ;; to preserve pointer sharing
+    ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
     ;; But I don't think sharing is ever possible in my examples so far
     jump_cp
 
-gc_start:
-    print_char '{' ;G
+gc: ; private namespace marker
 
+.start:
+    print_char '{'
     inc16_var gc_count
     print_decimal_word gc_count
-
-    ;print_char '%' ;G
-    jsr switch_space
+    jsr .switch_space
     copy_word hp, heap_start
     copy_word hp, lw
-
-    ;; TODO: should roots be evacuated by 'fp' ?
     jsr evacuate_roots
-
-    ;; evacuate 'fp'...
+    ;; evacuate 'fp'... ; TODO: fp=0, and treat like any other root
     copy_word fp, ev
-    jsr evacuate
+    jsr gc_evacuate
     copy_word clo, fp
+    jmp .scavenge_loop
 
-    ;panic 'q'
-
-    jmp gc_loop
-
-
-switch_space:
+.switch_space:
     jmp (space_switcher)
 
-set_heap_space_a:
-    ;print_char 'A'
-    ;copy_code_pointer_to_local wipe_space_b, wipe_old_space
-    copy_code_pointer_to_local set_heap_space_b, space_switcher
+;;; This inner alloc must succeed !
+;;; i.e. we do the exhaustion check, and it must not fail.
+;;; We call it from the evacuation routines
+;;; And also, for the pending alloc which cause GC to be initiated.
+
+.set_heap_space_a:
+    copy_code_pointer_to_local .set_heap_space_b, space_switcher
     lda #<SPACE_A_START
     sta hp
     lda #>SPACE_A_START
@@ -133,10 +138,8 @@ set_heap_space_a:
     sta heap_end_page
     rts
 
-set_heap_space_b:
-    ;print_char 'B'
-    ;copy_code_pointer_to_local wipe_space_a, wipe_old_space
-    copy_code_pointer_to_local set_heap_space_a, space_switcher
+.set_heap_space_b:
+    copy_code_pointer_to_local .set_heap_space_a, space_switcher
     lda #<SPACE_B_START
     sta hp
     lda #>SPACE_B_START
@@ -145,55 +148,50 @@ set_heap_space_b:
     sta heap_end_page
     rts
 
-
 ;;; keep scavenging until 'lw' catches up with 'hp'
 ;;; scavenge routines jump back here when thet are done
-gc_loop:
+.scavenge_loop:
     lda lw
     cmp hp
-    beq cmp_byte2$
-    jmp scavenge
-cmp_byte2$:
+    beq .scavenge_loop_cmp_second_byte
+    jmp gc_scavenge
+.scavenge_loop_cmp_second_byte:
     lda lw + 1
     cmp hp + 1
-    beq gc_finished
-    jmp scavenge
+    beq gc.finished
+    jmp gc_scavenge
 
-gc_finished:
+.finished:
     print_char ':'
-    ;print_hex_word hp
-    ;print_char '-'
-    ;print_hex_word heap_start
-    ;print_char '='
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
-    ;jmp (wipe_old_space) ; fill 28 pages with $ee
     rts
+
+;;; Macros for external use: TODO: better as subs?
 
 shift_low_water: macro N
     lda lw
     clc
     adc #\N
     sta lw
-    bcc _done$
+    bcc .shift_low_water_done
     inc lw + 1
-_done$:
+.shift_low_water_done:
 endmacro
-
 
 ;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
 ;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
-scavange_cell_at : macro N
-    ldy #\N
+scavenge_cell_at: macro N
+    ldy #\N ; TODO: use word macros to do copy: into ev; back from clo
     lda (lw),y
     sta ev
     ldy #\N + 1
     lda (lw),y
     sta ev + 1
     ;; now 'ev is setup
-    jsr evacuate
+    jsr gc_evacuate
     ;; repoint the scavenged word to the relocated closure
     lda clo
     ldy #\N

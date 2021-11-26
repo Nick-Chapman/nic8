@@ -21,7 +21,8 @@ fib7_entry:
     ;; initialize heap
     ;jsr wipe_space_a
     ;jsr wipe_space_b
-    jsr set_heap_space_a
+	;; TODO: extract gc_init
+    jsr gc.set_heap_space_a
     copy_word hp, heap_start
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     lda #2
@@ -53,7 +54,7 @@ rootargs_impossible:
     text "evacuate2"
 evacuate2:
     lda #2
-    jsr alloc_again
+    jsr alloc.again
     evacuate_byte 0
     evacuate_byte 1
     rts
@@ -61,7 +62,7 @@ evacuate2:
     text "scavenge_nothing_of2"
 scavenge_nothing_of2:
     shift_low_water 2
-    jmp gc_loop
+    jmp gc.scavenge_loop
 
 
 
@@ -104,7 +105,7 @@ fib7_recurse:
 
 rootargs_at1:
     copy_word 1, ev
-    jsr evacuate
+    jsr gc_evacuate
     copy_word clo, 1
     rts
 
@@ -158,7 +159,7 @@ rootargs_none:
     text "evacuate5"
 evacuate5:
     lda #5
-    jsr alloc_again
+    jsr alloc.again
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
@@ -168,9 +169,9 @@ evacuate5:
 
     text "scavenge_at3_of5"
 scavenge_at3_of5:
-    scavange_cell_at 3
+    scavenge_cell_at 3
     shift_low_water 5
-    jmp gc_loop
+    jmp gc.scavenge_loop
 
 
 ;;; We say rootargs_impossible here rather than rootargs_none
@@ -211,7 +212,7 @@ rootargs_impossible2:
     text "evacuate6"
 evacuate6:
     lda #6
-    jsr alloc_again
+    jsr alloc.again
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
@@ -224,7 +225,7 @@ evacuate6:
 
     text "scavenge_at2_of6"
 scavenge_at2_of6:
-    scavange_cell_at 2
+    scavenge_cell_at 2
     shift_low_water 6
-    jmp gc_loop
+    jmp gc.scavenge_loop
     
