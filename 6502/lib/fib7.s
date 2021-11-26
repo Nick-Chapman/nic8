@@ -4,42 +4,30 @@ fib7_name:
     word fib7_name
 fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
-    sta 0
+    sta 0 ; N
+    copy16_literal_to_var 0, gc_count
 
-    ;; ;; How deep is the page-1 stack?
-    ;; lda #'<'
-    ;; jsr screen_putchar
-    ;; tsx
-    ;; txa
-    ;; jsr put_hex_byte
-    ;; lda #'>'
-    ;; jsr screen_putchar
-    ;; jsr print_screen
-
-    copy16_literal_to_var 0, gc_count ; TODO: 0
-
-    ;; initialize heap
-    ;jsr wipe_space_a
-    ;jsr wipe_space_b
-	;; TODO: extract gc_init
+    ;;jsr init_gc ; TODO: move to general init code
     jsr gc.set_heap_space_a
     copy_word hp, heap_start
+
+
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     lda #2
     jsr alloc
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib7_done
+    copy_code_pointer_to_heap0 fib7_done.code
     ;; setup args
     copy_word clo, 1
-    copy_code_pointer_to_local fib7_recurse_static_closure, fp
-    jmp fib7_recurse
+    copy_code_pointer_to_local fib7_recurse.static_closure, fp
+    jmp fib7_recurse.code
 
 
 ;;; RL RH -->
-    text "fib7_done"
-    word rootargs_impossible, evacuate2, scavenge_nothing_of2
-    byte 2
 fib7_done:
+    word .roots, .evac, .scav ; TODO capture common pattern for def/.code
+    byte 2
+.code:
     ;; move final result to pre-allocated space on stack
     tsx
     lda 0
@@ -47,28 +35,20 @@ fib7_done:
     lda 1
     sta $104,x
     rts ; return to original caller
-
-rootargs_impossible:
+.roots:
     panic 'R'
-
-    text "evacuate2"
-evacuate2:
+.evac:
     lda #2
-    jsr alloc.again
+    jsr alloc.again ; TODO: stop using private entry point
     evacuate_byte 0
     evacuate_byte 1
     rts
-
-    text "scavenge_nothing_of2"
-scavenge_nothing_of2:
+.scav:
     shift_low_water 2
-    jmp gc.scavenge_loop
+    ; TODO: move call to scavenge_loop into shift_low_water
+    jmp gc.scavenge_loop ; TODO: stop using private entry
 
 
-
-
-fib7_recurse_static_closure:
-    word fib7_recurse
 
 ;;; fib7 is a top level function
 ;;; and so we have a static closure
@@ -78,10 +58,10 @@ fib7_recurse_static_closure:
 ;;; (i.e. that process where we walk along the new-heap
 ;;; using the low-water 'lw' pointer.. until catches up with 'hp')
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
-    text "fib7_recurse"
-    word rootargs_at1, evacuate_do_nothing, scavenge_impossible
-    byte 3 ; TODO: This 'arg-count' byte is used nowhere!
 fib7_recurse:
+    word .roots, .evac, .scav
+    byte 3 ; TODO: This 'arg-count' byte is used nowhere!
+.code:
     ;; access N
     lda 0
     sec
@@ -91,7 +71,7 @@ fib7_recurse:
     lda #5
     jsr alloc
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib7_cont1
+    copy_code_pointer_to_heap0 fib7_cont1.code
     copy_byte_local_to_heap 0, 2
     copy_word_local_to_heap 1, 3
     ;; setup args
@@ -100,22 +80,21 @@ fib7_recurse:
     sbc #1 ; N-1
     sta 0
     copy_word clo, 1
-    copy_code_pointer_to_local fib7_recurse_static_closure, fp
-    jmp fib7_recurse
-
-rootargs_at1:
-    copy_word 1, ev
+    copy_code_pointer_to_local fib7_recurse.static_closure, fp
+    jmp fib7_recurse.code ; AGGH, was another bug here
+.roots:
+    copy_word 1, ev ; TODO capture this pattern: ev->evac->clo
     jsr gc_evacuate
     copy_word clo, 1
     rts
-
-    text "evacuate_do_nothing"
-evacuate_do_nothing:
+.evac:
     copy_word ev, clo
     rts
-
-scavenge_impossible:
+.scav:
     panic 'S'
+.static_closure:
+    word fib7_recurse.code
+
 
 ;;; N KL KH --> K [N #0]
 fib7_base:
@@ -126,22 +105,21 @@ fib7_base:
     lda #0
     sta 1 ; setup RH
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
-    ;print_hex_word 0
-    jmp (cp) ; enter_fp
+    jmp (cp)
 
 
 ;;; TODO: switch N/K to standard order
 ;;; (doesn't matter while we have specific scavenge routines for each-shape)
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [KL KH AL AH]
-    text "fib7_cont1"
-    word rootargs_none, evacuate5, scavenge_at3_of5
-    byte 2
 fib7_cont1:
+    word .roots, .evac, .scav
+    byte 2
+.code:
     ;; allocate cont2
     lda #6
     jsr alloc
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib7_cont2
+    copy_code_pointer_to_heap0 fib7_cont2.code ; TODO: alloc/fill via macro?
     copy_word_frame_to_heap 3, 2 ; K
     copy_word_local_to_heap 0, 4 ; A
     ;; setup args
@@ -150,47 +128,35 @@ fib7_cont1:
     sbc #2 ; N-2
     sta 0
     copy_word clo,1
-    copy_code_pointer_to_local fib7_recurse_static_closure, fp
-    jmp fib7_recurse
-    
-rootargs_none:
+    copy_code_pointer_to_local fib7_recurse.static_closure, fp
+    jmp fib7_recurse.code ; AGGH, and here.. and that the final one!
+.roots:
     rts
-
-    text "evacuate5"
-evacuate5:
+.evac:
     lda #5
-    jsr alloc.again
+    jsr alloc.again ; TODO: stop using private entry point
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
     evacuate_byte 3
     evacuate_byte 4
     rts
-
-    text "scavenge_at3_of5"
-scavenge_at3_of5:
+.scav:
     scavenge_cell_at 3
     shift_low_water 5
-    jmp gc.scavenge_loop
-
+    jmp gc.scavenge_loop ; TODO: stop using private entry
 
 ;;; We say rootargs_impossible here rather than rootargs_none
 ;;; because GC should never be initiated whilst the closure is set as 'fp'
 ;;; because no allocation occurs here!
 ;;;
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
-    text "fib7_cont2"
-    word rootargs_impossible2, evacuate6, scavenge_at2_of6
-    byte 2
 fib7_cont2:
-    ;; jsr screen_newline
-    ;; print_hex_word 0
-    ;; print_char '+'
-    ;; copy_word_from_frame 4, temp
-    ;; print_hex_word temp
-    ;; 16-bit addition
+    word .roots, .evac, .scav
+    byte 2
+.code:
     clc
-    ;; macro for 16 bit addition?
+    ;; TODO: use macro for 16 bit addition - already written!
     load_frame_var 4 ; AL
     adc 0 ; BL
     sta 0 ; RL
@@ -201,18 +167,12 @@ fib7_cont2:
     copy_word_from_frame 2, 2 ; K
     copy_word 2, fp
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
-    ;print_char '='
-    ;print_hex_word 0
-    jmp (cp) ; enter_fp
-
-rootargs_impossible2:
+    jmp (cp)
+.roots:
     panic 'R'
-
-
-    text "evacuate6"
-evacuate6:
+.evac:
     lda #6
-    jsr alloc.again
+    jsr alloc.again ; TODO: stop using private entry point
     evacuate_byte 0
     evacuate_byte 1
     evacuate_byte 2
@@ -220,12 +180,7 @@ evacuate6:
     evacuate_byte 4
     evacuate_byte 5
     rts
-
-
-
-    text "scavenge_at2_of6"
-scavenge_at2_of6:
+.scav:
     scavenge_cell_at 2
     shift_low_water 6
-    jmp gc.scavenge_loop
-    
+    jmp gc.scavenge_loop ; TODO: stop using private entry
