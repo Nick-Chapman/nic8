@@ -1,43 +1,6 @@
 ;;; TODO: sort out stuff in here.
 
-;;; put byte passed in accumulator as 2 digit hex number
-put_hex:
-    pha
-    lsr
-    lsr
-    lsr
-    lsr
-    tax
-    lda digits,x
-    jsr scrolling_putchar
-    pla
-    and #%1111
-    tax
-    lda digits,x
-    jsr scrolling_putchar
-    rts
-
-digits: ascii "0123456789abcdef"
-
 ;;; left-over from fib7 split...
-
-put_hex_byte: ; TODO: review this code. wrote it a long time ago!
-    pha
-    lsr
-    lsr
-    lsr
-    lsr
-    tax
-    lda digits,x
-    jsr screen_putchar
-    pla
-    and #%1111
-    tax
-    lda digits,x
-    jsr screen_putchar
-    rts
-
-digits: ascii "0123456789abcdef"
 
 tiny_pause:
     pha
@@ -45,21 +8,6 @@ tiny_pause:
     jsr sleep_blocking
     pla
     rts
-
-print_hex_word: macro L
-    ;lda #'['
-    ;jsr screen_putchar
-    lda \L + 1
-    jsr put_hex_byte
-    lda \L
-    jsr put_hex_byte
-    ;lda #']'
-    ;jsr screen_putchar
-    jsr print_screen
-    ;lda #5
-    ;jsr sleep_blocking
-endmac
-
 
 copy_word_local_to_heap: macro L, H
     lda \L
@@ -108,3 +56,44 @@ inner_loop$:
     cmp #>SPACE_B_END
     bne outer_loop$
     rts
+
+
+
+
+
+;; wipe_mem: ; wipe 62 pages: $0200 -- $3fff, with value $ee
+;;     print_char 'w'
+;;     lda #0
+;;     sta temp
+;;     lda #2
+;;     sta temp + 1
+;; outer_loop$:
+;;     lda temp + 1
+;;     ldy $0
+;; inner_loop$:
+;;     lda $ee
+;;     sta (temp),y
+;;     iny
+;;     bne inner_loop$
+;;     lda temp + 1
+;;     inc
+;;     sta temp + 1
+;;     cmp #$40
+;;     bne outer_loop$
+
+;;     print_char 'x'
+;;     rts
+
+
+;; eeee_roots:
+;;     panic 'W'
+;; eeee_evacuate:
+;;     panic 'X'
+;; eeee_scavenge:
+;;     panic 'Y'
+;; eeee_code:
+;;     panic 'Z'
+
+;;     org ($eeee - 6)
+;;     word eeee_roots, eeee_evacuate, eeee_scavenge
+;;     jmp eeee_code

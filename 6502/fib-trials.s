@@ -26,14 +26,15 @@ gc_count = $8a
 heap_start = $8c
 
 ;;; bytes
-;; g_arg = $50 ; used by fib1
+gc_debug = $4f
+g_arg = $50 ; used by fib1
 g_ticks = $51
 ;; g_sleep_ticks = $52
 g_screen_pointer = $53
 g_selected_version_index = $54
 
 ;;; words
-;; g_res = $70 ; used by fib1
+g_res = $70 ; used by fib1
 g_divisor = $72 ; decimal.s
 g_mod10 = $74 ; decimal.s
 
@@ -58,26 +59,25 @@ g_screen = $200 ; 32 bytes
     include gc.s
 
     ;; various implementations of fib
-    ;; include fib1.s
-    ;; include fib2.s
-    ;; include fib3.s
-    ;; include fib4.s
-    ;; include fib5.s
-    ;; include fib6.s
-    text "<fib7..."
+    include fib1.s
+    include fib2.s
+    include fib3.s
+    include fib4.s
+    include fib5.s
+    include fib6.s
     include fib7.s
-    text "...fib7>"
 
 num_versions_minus_1 = (((version_table_end - version_table) >> 1) - 1)
 
 version_table:
-    ;; word fib1_entry
-    ;; word fib2_entry
-    ;; word fib3_entry
-    ;; word fib4_entry
-    ;; word fib5_entry
-    ;; word fib6_entry
+    word fib1_entry
+    word fib2_entry
+    word fib3_entry
+    word fib4_entry
+    word fib5_entry
+    word fib6_entry
     word fib7_entry
+    word fib7_debug_entry
 version_table_end:
 
 reset_main:
@@ -98,7 +98,7 @@ example:
     jsr print_screen
     ;jsr pause
     jsr screen_newline
-    lda #19 ; Compute fib(N) for N = ...
+    lda #10 ; Compute fib(N) for N = ...
     pha ; keep N on the stack
 
 example_loop:
@@ -129,20 +129,20 @@ example_loop:
     plx ; result-HI into X, which..
     jsr decimal_put_word ; ..is the calling convention to print a word
 
-    ;; lda #'('
-    ;; jsr screen_putchar
+    lda #'('
+    jsr screen_putchar
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
-    ;; jsr decimal_put_word ; ..as before
-    ;; lda #')'
-    ;; jsr screen_putchar
+    jsr decimal_put_word ; ..as before
+    lda #')'
+    jsr screen_putchar
 
     jsr print_screen
 
     tsx
 
     lda $101,x
-    cmp #19
+    cmp #50
     bne _1$
     jmp finish
 _1$:

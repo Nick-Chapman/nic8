@@ -10,6 +10,8 @@ SPACE_B_END = $4000
 ;;; Client entry points
 
 init_gc:
+    lda #0
+    sta gc_debug
     jsr gc.set_heap_space_a
     copy_word hp, heap_start
     rts
@@ -156,9 +158,7 @@ gc: ; private namespace marker
     jump_cp
 
 .start:
-    print_char '{'
-    inc16_var gc_count
-    print_decimal_word gc_count
+    jsr .debug_start_gc
     jsr .switch_space
     copy_word hp, heap_start
     copy_word hp, lw
@@ -209,14 +209,29 @@ gc: ; private namespace marker
     cmp hp + 1
     beq gc.finished
     jmp .gc_scavenge
-
 .finished:
+    jsr .debug_end_gc
+    rts
+
+.debug_start_gc:
+    lda gc_debug
+    beq .return
+    print_char '{'
+    inc16_var gc_count
+    print_decimal_word gc_count
+    rts
+
+.debug_end_gc:
+    lda gc_debug
+    beq .return
     print_char ':'
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
     rts
 
+.return
+    rts
 
 .evacuate_sub: ; N passed in Y; N>=1
 .ev_loop:
