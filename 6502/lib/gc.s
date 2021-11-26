@@ -87,20 +87,18 @@ endmacro
 
 
 evacuate_roots:
-    get_code_pointer_offset_function fp, 7
+    get_code_pointer_offset_function fp, 6
     jump_cp
 
 
 gc_scavenge:
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
-    ;print_char 's'
-    ;print_hex_word lw
-    get_code_pointer_offset_function lw, 3
+    get_code_pointer_offset_function lw, 2
     jump_cp
 
 gc_evacuate:
     ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
-    get_code_pointer_offset_function ev, 5
+    get_code_pointer_offset_function ev, 4
     ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
     ;; But I don't think sharing is ever possible in my examples so far
     jump_cp

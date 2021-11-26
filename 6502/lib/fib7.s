@@ -21,7 +21,6 @@ fib7_entry:
 ;;; RL RH -->
 fib7_done:
     word .roots, .evac, .scav ; TODO capture common pattern for def/.code
-    byte 2
 .code:
     ;; move final result to pre-allocated space on stack
     tsx
@@ -52,7 +51,6 @@ fib7_done:
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
 fib7_recurse:
     word .roots, .evac, .scav
-    byte 3 ; TODO: This 'arg-count' byte is used nowhere!
 .code:
     ;; access N
     lda 0
@@ -104,7 +102,6 @@ fib7_base:
 ;;; [. . N KL KH] AL AH -->  fib7 [N-2 JL JH] where J is fib7_cont2 [KL KH AL AH]
 fib7_cont1:
     word .roots, .evac, .scav
-    byte 2
 .code:
     ;; allocate cont2
     lda #6
@@ -143,7 +140,6 @@ fib7_cont1:
 ;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
 fib7_cont2:
     word .roots, .evac, .scav
-    byte 2
 .code:
     clc
     ;; TODO: use macro for 16 bit addition - already written!
