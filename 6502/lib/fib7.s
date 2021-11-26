@@ -6,12 +6,7 @@ fib7_entry:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta 0 ; N
     copy16_literal_to_var 0, gc_count
-
-    ;;jsr init_gc ; TODO: move to general init code
-    jsr gc.set_heap_space_a
-    copy_word hp, heap_start
-
-
+    jsr init_gc ; As part ofthe fib-trials, we init GC on each entry
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     lda #2
     jsr alloc
@@ -20,7 +15,7 @@ fib7_entry:
     ;; setup args
     copy_word clo, 1
     copy_code_pointer_to_local fib7_recurse.static_closure, fp
-    jmp fib7_recurse.code
+    jmp fib7_recurse.code ; TODO: Use a standard entry protocol, 'enter'
 
 
 ;;; RL RH -->
@@ -44,9 +39,7 @@ fib7_done:
     evacuate_byte 1
     rts
 .scav:
-    shift_low_water 2
-    ; TODO: move call to scavenge_loop into shift_low_water
-    jmp gc.scavenge_loop ; TODO: stop using private entry
+    scavenge_done 2
 
 
 
@@ -55,8 +48,7 @@ fib7_done:
 ;;; and so, we do nothing if asked to evacuate - just return the same static clo
 ;;; and because we didn't evacuate (we never were in the heap, and we still aren't)
 ;;; it is impossible that this static closure will be subject to scavenging
-;;; (i.e. that process where we walk along the new-heap
-;;; using the low-water 'lw' pointer.. until catches up with 'hp')
+
 ;;; [] N KL KH --> fib7 [N-1 JL JH] where J is fib7_cont1 [N KL KH]
 fib7_recurse:
     word .roots, .evac, .scav
@@ -80,8 +72,9 @@ fib7_recurse:
     sbc #1 ; N-1
     sta 0
     copy_word clo, 1
+    ;; TODO: extract standard entry protocol, 'enter'
     copy_code_pointer_to_local fib7_recurse.static_closure, fp
-    jmp fib7_recurse.code ; AGGH, was another bug here
+    jmp fib7_recurse.code
 .roots:
     copy_word 1, ev ; TODO capture this pattern: ev->evac->clo
     jsr gc_evacuate
@@ -98,12 +91,10 @@ fib7_recurse:
 
 ;;; N KL KH --> K [N #0]
 fib7_base:
-    ;print_char "."
-    ;; move K into fp
-    copy_word 1,fp
-    ;; RL is N (already in 0)
+    copy_word 1,fp ; K
+    ;; N (low-byte of result) is already in 0
     lda #0
-    sta 1 ; setup RH
+    sta 1 ; zero high-byte of result
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
     jmp (cp)
 
@@ -129,7 +120,7 @@ fib7_cont1:
     sta 0
     copy_word clo,1
     copy_code_pointer_to_local fib7_recurse.static_closure, fp
-    jmp fib7_recurse.code ; AGGH, and here.. and that the final one!
+    jmp fib7_recurse.code
 .roots:
     rts
 .evac:
@@ -143,8 +134,7 @@ fib7_cont1:
     rts
 .scav:
     scavenge_cell_at 3
-    shift_low_water 5
-    jmp gc.scavenge_loop ; TODO: stop using private entry
+    scavenge_done 5
 
 ;;; We say rootargs_impossible here rather than rootargs_none
 ;;; because GC should never be initiated whilst the closure is set as 'fp'
@@ -182,5 +172,4 @@ fib7_cont2:
     rts
 .scav:
     scavenge_cell_at 2
-    shift_low_water 6
-    jmp gc.scavenge_loop ; TODO: stop using private entry
+    scavenge_done 6

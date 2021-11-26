@@ -6,11 +6,12 @@ SPACE_B_START = $2400
 SPACE_B_END = $4000
 
 
-;; ;;; Client entry points
-;; init_gc:
-;;     jsr gc.set_heap_space_a
-;;     copy_word hp, heap_start
-;;     rts
+;;; Client entry points
+
+init_gc:
+    jsr gc.set_heap_space_a
+    copy_word hp, heap_start
+    rts
 
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
@@ -170,14 +171,15 @@ gc: ; private namespace marker
 
 ;;; Macros for external use: TODO: better as subs?
 
-shift_low_water: macro N
+scavenge_done: macro N
     lda lw
     clc
     adc #\N
     sta lw
-    bcc .shift_low_water_done
+    bcc .scavenge_done_done
     inc lw + 1
-.shift_low_water_done:
+.scavenge_done_done:
+    jmp gc.scavenge_loop
 endmacro
 
 ;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
