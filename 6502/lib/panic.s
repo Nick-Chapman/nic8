@@ -1,17 +1,18 @@
 
-;;; TODO: move this panic macro to a new file; take a string, not just a char
+;;; TODO: take a string, not just a char
 
-panic_stop:
+panic: macro CHAR
+    lda #\CHAR
+    jmp panic.stop
+endmacro
+
+panic:
+.stop:
     pha
     lda #'!'
     jsr screen_putchar
     pla
     jsr screen_putchar
     jsr print_screen
-panic_spin:
-    jmp panic_spin
-
-panic: macro CHAR
-    lda #\CHAR
-    jmp panic_stop
-endmac
+.spin:
+    jmp .spin

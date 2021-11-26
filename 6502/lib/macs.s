@@ -1,3 +1,5 @@
+;;; TODO: rename file to word-macs ?
+;;; TODO: unify, and name consitently
 
 copy_word: macro source, dest
     lda \source
@@ -13,7 +15,7 @@ copy16_literal_to_var: macro lit, V
     sta \V + 1
 endmacro
 
-copy_code_pointer_to_heap0: macro code
+copy_code_pointer_to_heap0: macro code ; TODO: avoid special case for 0
     lda #<\code
     store_heap0
     lda #>\code
@@ -27,16 +29,16 @@ copy_code_pointer_to_local: macro code, L ; TODO: same as copy16_literal_to_var
     sta \L + 1
 endmacro
 
-store_heap0: macro
+store_heap0: macro ; TODO: avoid special case for 0
     sta (clo)
 endmacro
 
 store_heap: macro N ; must follow alloc
     ldy #\N
-    sta (clo),y
+    sta (clo),y ; TODO: unify (fp) and (hp) versions
 endmacro
 
-load_frame_var0: macro
+load_frame_var0: macro ; TODO: avoid special case
     lda (fp)
 endmacro
 
@@ -57,7 +59,7 @@ copy_word_local_to_heap: macro L, H
     store_heap \H+1
 endmacro
 
-copy_word_from_frame0: macro dest
+copy_word_from_frame0: macro dest ; TODO: avoid special case
     load_frame_var0
     sta \dest
     load_frame_var 1
@@ -78,6 +80,7 @@ copy_word_frame_to_heap: macro F, H
     store_heap \H+1
 endmacro
 
+;;; Arithmetic
 sub16 : macro A, B, RES
     sec
     lda \A
@@ -89,8 +92,8 @@ sub16 : macro A, B, RES
 endmacro
 
 inc16_var: macro V
-    ;; can I use inc? does this set the carry flag. No1
-    ;; but that's ok because it does set zero!
+    ;; can I use inc? Does this set the carry flag. No!
+    ;; But that's ok because it does set zero.
     inc \V
     bne _done$
     inc \V + 1
