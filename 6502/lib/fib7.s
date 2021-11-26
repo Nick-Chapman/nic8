@@ -32,11 +32,7 @@ fib7_done:
 .roots:
     panic 'R'
 .evac:
-    lda #2
-    jsr alloc.again ; TODO: stop using private entry point
-    evacuate_byte 0
-    evacuate_byte 1
-    rts
+    evacuate 2
 .scav:
     scavenge_done 2
 
@@ -74,9 +70,7 @@ fib7_recurse:
     copy_code_pointer_to_local fib7_recurse.static_closure, fp
     jmp fib7_recurse.code
 .roots:
-    copy_word 1, ev ; TODO capture this pattern: ev->evac->clo
-    jsr gc_evacuate
-    copy_word clo, 1
+    gc_root_at 1
     rts
 .evac:
     copy_word ev, clo
@@ -121,14 +115,7 @@ fib7_cont1:
 .roots:
     rts
 .evac:
-    lda #5
-    jsr alloc.again ; TODO: stop using private entry point
-    evacuate_byte 0
-    evacuate_byte 1
-    evacuate_byte 2
-    evacuate_byte 3
-    evacuate_byte 4
-    rts
+    evacuate 5
 .scav:
     scavenge_cell_at 3
     scavenge_done 5
@@ -157,15 +144,7 @@ fib7_cont2:
 .roots:
     panic 'R'
 .evac:
-    lda #6
-    jsr alloc.again ; TODO: stop using private entry point
-    evacuate_byte 0
-    evacuate_byte 1
-    evacuate_byte 2
-    evacuate_byte 3
-    evacuate_byte 4
-    evacuate_byte 5
-    rts
+    evacuate 6
 .scav:
     scavenge_cell_at 2
     scavenge_done 6

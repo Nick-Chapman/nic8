@@ -1,3 +1,4 @@
+;;; PROVIDES: init_gc, alloc, evacuate, scavenge_cell_at, scavenge_done
 
 ;;; 2x 7k heap space...
 SPACE_A_START = $800
@@ -12,6 +13,55 @@ init_gc:
     jsr gc.set_heap_space_a
     copy_word hp, heap_start
     rts
+
+;;; Macros for external use
+
+gc_root_at: macro N
+    copy_word \N, ev
+    jsr gc.dispatch_evacuate
+    copy_word clo, \N
+endmacro
+
+evacuate: macro N
+    lda #\N
+    pha
+    jsr alloc.again
+    ply
+    jsr gc.evacuate_sub
+    rts
+endmacro
+
+;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
+;;; We will call evacuate on the cell (2 byte pointer) at offset-N
+;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
+scavenge_cell_at: macro N
+    ldy #\N ; TODO: use word macros to do copy: into ev; back from clo
+    lda (lw),y
+    sta ev
+    ldy #\N + 1
+    lda (lw),y
+    sta ev + 1
+    ;; now 'ev is setup
+    jsr gc.dispatch_evacuate
+    ;; repoint the scavenged word to the relocated closure
+    lda clo
+    ldy #\N
+    sta (lw),y
+    lda clo + 1
+    ldy #\N + 1
+    sta (lw),y
+endmacro
+
+scavenge_done: macro N
+    lda lw
+    clc
+    adc #\N
+    sta lw
+    bcc .scavenge_done_done
+    inc lw + 1
+.scavenge_done_done:
+    jmp gc.scavenge_loop
+endmacro
 
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
@@ -69,9 +119,9 @@ get_code_pointer_offset_function: macro HP, N
     ldy #1
     lda (\HP),y
     sta cp + 1
-    bcs .get_cp_offset_done
+    bcs .\@
     dec cp + 1
-.get_cp_offset_done:
+.\@:
 endmacro
 
 ;;; macro for internal use
@@ -86,24 +136,24 @@ jump_cp: macro
 endmacro
 
 
-evacuate_roots:
+gc: ; private namespace marker
+
+
+.evacuate_roots:
     get_code_pointer_offset_function fp, 6
     jump_cp
 
-
-gc_scavenge:
+.gc_scavenge:
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
     get_code_pointer_offset_function lw, 2
     jump_cp
 
-gc_evacuate:
+.dispatch_evacuate:
     ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
     get_code_pointer_offset_function ev, 4
     ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
     ;; But I don't think sharing is ever possible in my examples so far
     jump_cp
-
-gc: ; private namespace marker
 
 .start:
     print_char '{'
@@ -112,10 +162,10 @@ gc: ; private namespace marker
     jsr .switch_space
     copy_word hp, heap_start
     copy_word hp, lw
-    jsr evacuate_roots
+    jsr .evacuate_roots
     ;; evacuate 'fp'... ; TODO: fp=0, and treat like any other root
     copy_word fp, ev
-    jsr gc_evacuate
+    jsr .dispatch_evacuate
     copy_word clo, fp
     jmp .scavenge_loop
 
@@ -153,12 +203,12 @@ gc: ; private namespace marker
     lda lw
     cmp hp
     beq .scavenge_loop_cmp_second_byte
-    jmp gc_scavenge
+    jmp .gc_scavenge
 .scavenge_loop_cmp_second_byte:
     lda lw + 1
     cmp hp + 1
     beq gc.finished
-    jmp gc_scavenge
+    jmp .gc_scavenge
 
 .finished:
     print_char ':'
@@ -167,42 +217,13 @@ gc: ; private namespace marker
     print_char '}'
     rts
 
-;;; Macros for external use: TODO: better as subs?
 
-scavenge_done: macro N
-    lda lw
-    clc
-    adc #\N
-    sta lw
-    bcc .scavenge_done_done
-    inc lw + 1
-.scavenge_done_done:
-    jmp gc.scavenge_loop
-endmacro
-
-;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
-;;; We will call evacuate on the cell (2 byte pointer) at offset-N
-;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
-scavenge_cell_at: macro N
-    ldy #\N ; TODO: use word macros to do copy: into ev; back from clo
-    lda (lw),y
-    sta ev
-    ldy #\N + 1
-    lda (lw),y
-    sta ev + 1
-    ;; now 'ev is setup
-    jsr gc_evacuate
-    ;; repoint the scavenged word to the relocated closure
-    lda clo
-    ldy #\N
-    sta (lw),y
-    lda clo + 1
-    ldy #\N + 1
-    sta (lw),y
-endmacro
-
-evacuate_byte: macro N
-    ldy #\N
-    lda (ev),y
-    store_heap \N
-endmacro
+.evacuate_sub: ; N passed in Y; N>=1
+.ev_loop:
+    dey
+    php
+    lda (ev),y ; copy from old closure in FROM-space
+    sta (clo),y ; into newly allocated closure in TO-space
+    plp
+    bne .ev_loop
+    rts
