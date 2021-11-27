@@ -27,9 +27,9 @@ init_ticks:
     sta g_ticks
     lda #%01000000 ; continuous interrupts from Timer1
     sta ACR
-    lda #(clks_per_tick & $ff)
+    lda #<clks_per_tick
     sta T1CL
-    lda #(clks_per_tick >> 8)
+    lda #>clks_per_tick
     sta T1CH
     lda #%11000000 ; enable Timer1 interrupt
     sta IER
