@@ -154,18 +154,10 @@ song_table:
     word sonic7
 song_table_end
 
-sonic1:
-    incbin sonic-data/sonic1.raw
-sonic2:
-    incbin sonic-data/sonic2.raw
-sonic3:
-    incbin sonic-data/sonic3.raw
-sonic4:
-    incbin sonic-data/sonic4.raw
-sonic5:
-    incbin sonic-data/sonic5.raw
-sonic6:
-    incbin sonic-data/sonic6.raw
-sonic7:
-    incbin sonic-data/sonic7.raw
-;;; upto 16!
+sonic1: incbin sonic1.raw
+sonic2: incbin sonic2.raw
+sonic3: incbin sonic3.raw
+sonic4: incbin sonic4.raw
+sonic5: incbin sonic5.raw
+sonic6: incbin sonic6.raw
+sonic7: incbin sonic7.raw
