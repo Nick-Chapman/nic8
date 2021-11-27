@@ -1,5 +1,5 @@
 
-apps = first hello messages timer hannah sound1 sound2 arcadians sonic computation pre-serial fib-trials forever-fib
+apps = first hello messages timer hannah sound1 sound2 arcadians sonic computation pre-serial fib-trials forever-fib try-nmi
 libs = decimal gc lcd macs panic print screen sleep sound ticks via
 
 all: $(patsubst %, rom/%.bin, $(apps))
