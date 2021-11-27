@@ -28,7 +28,6 @@ g_nmi_count = $e6
 g_screen = $200 ; 32 bytes
 
 nmi:
-    print_char '.'
     inc g_nmi_count
     bne .done
     inc g_nmi_count + 1
@@ -51,14 +50,14 @@ reset_main:
     jsr init_screen
     jsr init_nmi
 .loop:
+    jsr screen_return_home
     print_decimal_word g_nmi_count
     jsr pause
-    print_char ' '
     jmp .loop
 
 pause:
     pha
-    lda #100
+    lda #5
     jsr sleep_blocking
     pla
     rts
