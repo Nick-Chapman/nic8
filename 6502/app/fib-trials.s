@@ -95,7 +95,7 @@ reset_main:
 example:
     jsr select_version
     jsr put_version_name
-    jsr print_screen
+    jsr screen_flush
     ;jsr pause
     jsr screen_newline
     lda #10 ; Compute fib(N) for N = ...
@@ -110,7 +110,7 @@ example_loop:
     jsr decimal_put_byte ; ..so we can print it
     lda #'-'
     jsr screen_putchar
-    jsr print_screen
+    jsr screen_flush
     ;jsr pause
 
     ;; All versions have same interface: byte argument in A; 2 bytes space on stack for result
@@ -137,7 +137,7 @@ example_loop:
     lda #')'
     jsr screen_putchar
 
-    jsr print_screen
+    jsr screen_flush
 
     tsx
 
@@ -153,13 +153,13 @@ _1$:
     lda #' '
     jsr screen_putchar
     jsr screen_newline
-    jsr print_screen
+    jsr screen_flush
 
     jmp example_loop
 
 finish:
     print_char '$'
-    jsr print_screen
+    jsr screen_flush
 spin:
     jmp spin
 

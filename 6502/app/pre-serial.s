@@ -35,24 +35,24 @@ reset_main:
     jmp example
 
 example:
-    jsr print_screen_now
+    jsr screen_flush_now
     jsr init_put_message
 example_loop:
-    jsr print_screen_when_time
+    jsr screen_flush_when_time
     jsr put_next_message_char_when_time
     jmp example_loop
 
 spin:
     jmp spin
 
-print_screen_when_time:
+screen_flush_when_time:
     lda g_next_screen_print
     sec
     sbc g_ticks
-    beq print_screen_now
+    beq screen_flush_now
     rts
-print_screen_now:
-    jsr print_screen
+screen_flush_now:
+    jsr screen_flush
     lda g_ticks
     clc
     adc #5 ; 20 times/sec

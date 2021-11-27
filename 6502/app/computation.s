@@ -62,25 +62,25 @@ spin:
 example:
     jsr init_number
     jsr init_ds_stack
-    jsr print_screen_now
+    jsr screen_flush_now
 example_loop:
     jsr put_number_dec
     jsr put_dot
-    jsr print_screen_when_time
+    jsr screen_flush_when_time
     jsr push_number
     jsr ds_increment
     jsr pull_number
     jmp example_loop
 
 next_screen_print = $33
-print_screen_when_time:
+screen_flush_when_time:
     lda next_screen_print
     sec
     sbc g_ticks
-    beq print_screen_now
+    beq screen_flush_now
     rts
-print_screen_now:
-    jsr print_screen
+screen_flush_now:
+    jsr screen_flush
     lda g_ticks
     clc
     adc #5 ; 20 times/sec

@@ -99,7 +99,7 @@ fib_iter2:
     jsr decimal_put_word
     lda #' '
     jsr screen_putchar
-    jsr print_screen
+    jsr screen_flush
     load_frame_var 2 ; I
     inc
     sta 0 ; I+1
