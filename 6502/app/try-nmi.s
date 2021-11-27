@@ -3,7 +3,7 @@
     org $fffa
     word nmi
     word reset_main
-    word ticks_irq
+    word irq
 
     org $8000
 
@@ -16,26 +16,49 @@
     include print.s
 
 ;;; bytes
-g_ticks = $d0
+g_nmi_blocked = $d1
 
 ;;; words
 g_divisor = $e0 ; decimal.s
 g_mod10 = $e2 ; decimal.s
 g_screen_pointer = $e4
 g_nmi_count = $e6
+g_ticks = $e8 ; 16 bit tick (10 minutes!)
+g_temp = $ea
 
 ;;; buffers
 g_screen = $200 ; 32 bytes
 
 nmi:
+    pha
+    lda g_nmi_blocked
+    bne .done
+    lda #25 ; debounce time
+    sta g_nmi_blocked
     inc g_nmi_count
     bne .done
     inc g_nmi_count + 1
-.done:
+    .done:
+    pla
+    rti
+
+irq: ; copy & extend version in ticks.s
+    pha
+    bit T1CL ; acknowledge interrupt
+    inc g_ticks
+    bne .unblock
+    inc g_ticks + 1
+.unblock:
+    lda g_nmi_blocked
+    beq .done
+    dec g_nmi_blocked
+    .done:
+    pla
     rti
 
 init_nmi:
     lda #0
+    sta g_nmi_blocked
     sta g_nmi_count
     sta g_nmi_count + 1
     rts
@@ -49,15 +72,22 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     jsr init_nmi
+    stz g_ticks + 1
 .loop:
+    lda g_ticks
+    sta g_temp
+    lda g_ticks + 1
+    sta g_temp + 1
     jsr screen_return_home
     print_decimal_word g_nmi_count
+    print_char ' '
+    print_decimal_word g_temp
     jsr pause
     jmp .loop
 
 pause:
     pha
-    lda #5
+    lda #9
     jsr sleep_blocking
     pla
     rts
