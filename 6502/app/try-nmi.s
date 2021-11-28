@@ -38,7 +38,7 @@ nmi:
     inc g_nmi_count
     bne .done
     inc g_nmi_count + 1
-    .done:
+.done:
     pla
     rti
 
@@ -52,7 +52,7 @@ irq: ; copy & extend version in ticks.s
     lda g_nmi_blocked
     beq .done
     dec g_nmi_blocked
-    .done:
+.done:
     pla
     rti
 
