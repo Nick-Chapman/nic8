@@ -82,12 +82,14 @@ reset_main:
     print_decimal_word g_nmi_count
     print_char ' '
     print_decimal_word g_temp
+    lda #0
+    jsr screen_flush
     jsr pause
     jmp .loop
 
 pause:
     pha
-    lda #9
+    lda #10
     jsr sleep_blocking
     pla
     rts
