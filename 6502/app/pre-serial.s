@@ -66,7 +66,7 @@ reset_main:
     jsr init_sound ; silence
     jsr init_lcd
     jsr lcd_clear_display
-    jsr init_screens
+    jsr init_mscreen
 
     ;; write fixed messages to screen #2 and #3
     lda #2

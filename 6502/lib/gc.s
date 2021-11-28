@@ -12,6 +12,8 @@ SPACE_B_END = $4000
 init_gc:
     lda #0
     sta gc_debug
+    sta gc_count
+    sta gc_count + 1
     jsr gc.set_heap_space_a
     copy_word hp, heap_start
     rts
@@ -68,6 +70,10 @@ endmacro
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
 alloc:
     sta n_bytes ; TODO: put this on stack to avoid global
+
+    ;; HACK trigger flush screen from allocation
+    jsr screen_flush_when_time
+
     copy_word hp, clo
     lda n_bytes
     clc
@@ -214,20 +220,31 @@ gc: ; private namespace marker
     rts
 
 .debug_start_gc:
+    ;; if gc_debug is non-zero, then it contains the screen# to print to
     lda gc_debug
     beq .return
+    ldx g_selected_screen
+    phx
+    sta g_selected_screen
     print_char '{'
     inc16_var gc_count
     print_decimal_word gc_count
+    plx
+    stx g_selected_screen
     rts
 
 .debug_end_gc:
     lda gc_debug
     beq .return
+    ldx g_selected_screen
+    phx
+    sta g_selected_screen
     print_char ':'
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
+    plx
+    stx g_selected_screen
     rts
 
 .return

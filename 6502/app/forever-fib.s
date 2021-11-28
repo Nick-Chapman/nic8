@@ -3,56 +3,115 @@
 ;;; Purpose is to motivate a clean interface to the GC alloc.
 ;;; And to understand exactly what invariants are placed on user code.
 
-    org $fffc
+    org $fffa
+    word nmi
     word reset_main
-    word ticks_irq
+    word irq
 
     org $8000
 
 ;;; bytes
-heap_end_page = $f8
-n_bytes = $f9
-g_ticks = $51
-gc_debug = $4f
+heap_end_page = $30
+n_bytes = $31
+g_ticks = $32
+gc_debug = $33
+g_selected_screen = $34
+g_nmi_count = $35
+g_nmi_blocked = $36
+g_next_screen_flush = $37
 
 ;;; words
-hp = $f0
-fp = $f2
-cp = $f4
-clo = $f6
-ev = $77
-lw = $88
-space_switcher = $fa
-temp = $fc
-gc_count = $8a
-heap_start = $8c
-g_divisor = $72 ; decimal.s
-g_mod10 = $74 ; decimal.s
-g_screen_pointer = $53
+hp = $40
+fp = $42
+cp = $44
+clo = $46
+ev = $48
+lw = $4a
+space_switcher = $4c
+temp = $4e
+gc_count = $50
+heap_start = $52
+g_divisor = $54 ; decimal.s
+g_mod10 = $56 ; decimal.s
+
+;;; quad
+g_screen_pointers = $80
 
 ;;; buffers
-g_screen = $200 ; 32 bytes
+g_screens = $200 ; 4*32 bytes
 
     include via.s
     include ticks.s
     include lcd.s
-    include screen.s
+    include mscreen.s
     include decimal.s
     include print.s
     include panic.s
     include macs.s
     include gc.s
 
+nmi:
+    pha
+    lda g_nmi_blocked
+    bne .done
+    lda #25 ; debounce time
+    sta g_nmi_blocked
+    inc g_nmi_count
+.done:
+    pla
+    rti
+
+irq: ; copy & extend version in ticks.s
+    pha
+    bit T1CL ; acknowledge interrupt
+    inc g_ticks
+    lda g_nmi_blocked
+    beq .done
+    dec g_nmi_blocked
+.done:
+    pla
+    rti
+
+init_nmi:
+    stz g_nmi_blocked
+    stz g_nmi_count
+    rts
+
 reset_main:
     ldx #$ff
     txs
     jsr init_via
     jsr init_ticks
+    jsr init_nmi
     jsr init_lcd
     jsr lcd_clear_display
-    jsr init_screen
+    jsr init_mscreen
     jsr init_gc
+
+    ;; send GC debug to screen #1
+    lda #1
+    sta gc_debug
+
+    jsr screen_flush_now
+
     jmp start_example
+
+
+screen_flush_when_time:
+    lda g_next_screen_flush
+    sec
+    sbc g_ticks
+    beq screen_flush_now
+    rts
+screen_flush_now:
+    lda g_nmi_count
+    and #%1 ; use nmi-count to pick screen #0 or #1
+    jsr screen_flush
+    lda g_ticks
+    clc
+    adc #5 ; 20 times/sec
+    sta g_next_screen_flush
+    rts
 
 
 start_example:
@@ -99,7 +158,7 @@ fib_iter2:
     jsr decimal_put_word
     lda #' '
     jsr screen_putchar
-    jsr screen_flush
+    ;jsr screen_flush
     load_frame_var 2 ; I
     inc
     sta 0 ; I+1

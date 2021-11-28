@@ -17,7 +17,7 @@ init_screen_pointers:
     sta g_screen_pointers + 3
     rts
 
-init_screens:
+init_mscreen:
     stz g_selected_screen
     jsr init_screen_pointers
     ldx #0

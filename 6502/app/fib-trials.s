@@ -33,6 +33,12 @@ g_ticks = $51
 g_screen_pointer = $53
 g_selected_version_index = $54
 
+;;; hack for nmi, mscreen & GC triggering screen flush
+g_selected_screen = $55
+g_nmi_count = $56
+screen_flush_when_time:
+    rts
+
 ;;; words
 g_res = $70 ; used by fib1
 g_divisor = $72 ; decimal.s
