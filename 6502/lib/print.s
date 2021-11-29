@@ -5,7 +5,6 @@ print_char: macro CHAR
     pha
     lda #\CHAR
     jsr screen_putchar
-    ;jsr screen_flush ; TODO: move this flush call to a sep task
     pla
 endmacro
 
@@ -15,7 +14,16 @@ print_decimal_word: macro L
     lda \L
     ldx \L + 1
     jsr decimal_put_word
-    ;jsr screen_flush ; TODO: move this flush call to a sep task
+    plx
+    pla
+endmacro
+
+print_decimal_byte: macro L
+    pha
+    phx
+    lda \L
+    ldx #0
+    jsr decimal_put_word
     plx
     pla
 endmacro
@@ -48,5 +56,4 @@ print_hex_word: macro L
     jsr put_hex_byte
     lda #']'
     jsr screen_putchar
-    ;jsr screen_flush
 endmac

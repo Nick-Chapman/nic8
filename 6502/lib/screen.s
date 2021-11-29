@@ -18,8 +18,12 @@ init_screen:
     bne .each_char
     rts
 
+screen_flush_selected: macro
+    jsr screen_flush_sub
+endmacro
+
 ;; print screen to the underlying lcd
-screen_flush:
+screen_flush_sub:
     pha
     ;; copy screen to lcd
     jsr lcd_return_home

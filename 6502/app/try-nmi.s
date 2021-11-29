@@ -83,7 +83,7 @@ reset_main:
     print_char ' '
     print_decimal_word g_temp
     lda #0
-    jsr screen_flush
+    screen_flush_selected
     jsr pause
     jmp .loop
 

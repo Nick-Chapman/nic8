@@ -17,7 +17,7 @@ init_screen_pointers:
     sta g_screen_pointers + 3
     rts
 
-init_mscreen:
+init_screen:
     stz g_selected_screen
     jsr init_screen_pointers
     ldx #0
@@ -30,7 +30,18 @@ init_mscreen:
     bne .each_char
     rts
 
-;; print screen to the underlying lcd
+;; screen_flush: macro ; doesn't work unless acc is setup
+;;     jsr screen_flush_sub
+;; endmacro
+
+screen_flush_selected: macro ; whatever is the selected screen
+    pha
+    lda g_selected_screen
+    jsr screen_flush
+    pla
+endmacro
+
+;; flush screen (# passed in acc) to the underlying lcd
 screen_flush:
     pha
     ;; copy screen to lcd

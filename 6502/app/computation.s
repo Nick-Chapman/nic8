@@ -80,7 +80,7 @@ screen_flush_when_time:
     beq screen_flush_now
     rts
 screen_flush_now:
-    jsr screen_flush
+    screen_flush_selected
     lda g_ticks
     clc
     adc #5 ; 20 times/sec

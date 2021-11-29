@@ -13,6 +13,6 @@ panic:
     jsr screen_putchar
     pla
     jsr screen_putchar
-    jsr screen_flush
+    screen_flush_selected
 .spin:
     jmp .spin

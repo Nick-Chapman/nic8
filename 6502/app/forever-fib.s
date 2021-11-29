@@ -85,7 +85,7 @@ reset_main:
     jsr init_nmi
     jsr init_lcd
     jsr lcd_clear_display
-    jsr init_mscreen
+    jsr init_screen
     jsr init_gc
 
     ;; send GC debug to screen #1
