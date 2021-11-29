@@ -125,7 +125,7 @@ return_to_start_line2:
     sta g_screen_pointers,y
     rts
 
-return_to_home:
+screen_return_home:
     ldy g_selected_screen
     lda starts,y
     sta g_screen_pointers,y

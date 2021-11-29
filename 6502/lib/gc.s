@@ -226,6 +226,7 @@ gc: ; private namespace marker
     ldx g_selected_screen
     phx
     sta g_selected_screen
+    jsr screen_return_home
     print_char '{'
     inc16_var gc_count
     print_decimal_word gc_count
@@ -240,6 +241,7 @@ gc: ; private namespace marker
     phx
     sta g_selected_screen
     print_char ':'
+    jsr screen_newline
     sub16 hp, heap_start, temp
     print_decimal_word temp
     print_char '}'
