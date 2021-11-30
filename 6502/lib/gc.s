@@ -222,34 +222,41 @@ gc: ; private namespace marker
 .debug_start_gc:
     ;; if gc_debug is non-zero, then it contains the screen# to print to
     lda gc_debug
-    beq .return
+    beq .return1
     ldx g_selected_screen
     phx
     sta g_selected_screen
     jsr screen_return_home
-    print_char '{'
+    print_char 'G'
+    print_char 'C'
+    print_char ':'
     inc16_var gc_count
     print_decimal_word gc_count
     plx
     stx g_selected_screen
+.return1
     rts
 
 .debug_end_gc:
     lda gc_debug
-    beq .return
+    beq .return2
     ldx g_selected_screen
     phx
     sta g_selected_screen
-    print_char ':'
     jsr screen_newline
+    print_char 'l'
+    print_char 'i'
+    print_char 'v'
+    print_char 'e'
+    print_char ':'
     sub16 hp, heap_start, temp
     print_decimal_word temp
-    print_char '}'
+    print_char ' '
+    print_char ' '
+    print_char ' '
     plx
     stx g_selected_screen
-    rts
-
-.return
+.return2
     rts
 
 .evacuate_sub: ; N passed in Y; N>=1
