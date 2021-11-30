@@ -39,10 +39,14 @@ g_screens = $200 ; 4*32 bytes
 
 
 test_divides: macro A, B
-    lda #\A
+    lda #<\A
     sta 1
-    lda #\B
+    lda #>\A
     sta 2
+    lda #<\B
+    sta 3
+    lda #>\B
+    sta 4
     jsr show_divides
 endmacro
 
@@ -64,6 +68,13 @@ reset_main:
     test_divides 6, 3
     test_divides 7, 3
 
+    test_divides 2000, 399
+    test_divides 2000, 400
+    test_divides 2000, 401
+
+    test_divides 10000, 5
+    test_divides 10001, 5
+
     print_char "$"
     screen_flush_selected
 spin:
@@ -71,12 +82,12 @@ spin:
 
 show_divides:
     print_char ','
-    print_decimal_byte 1
+    print_decimal_word 1
     print_char '/'
-    print_decimal_byte 2
+    print_decimal_word 3
     screen_flush_selected
 
-    copy16_literal_to_var after_divides.static_closure, 3
+    copy16_literal_to_var after_divides.static_closure, 5
     copy16_literal_to_var divides.static_closure, fp
     enter_fp
 

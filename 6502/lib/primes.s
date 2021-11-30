@@ -1,4 +1,40 @@
 
+;;; Number args/locals from 1 (because of plan to have fp as 0)
+
+
+JUMP: macro DEST
+    ;; Maybe switch task here
+    jmp \DEST
+endmacro
+
+enter_fp: macro
+    copy_word_from_frame0 cp
+    JUMP (cp)
+endmacro
+
+True = 1
+False = 0
+
+debug: macro C
+    print_char \C
+    screen_flush_selected
+endmacro
+
+debug_hex_word: macro L
+    print_hex_word \L
+    screen_flush_selected
+endmacro
+
+
+no_evacuate_because_static: macro
+    copy_word ev, clo ;identity because static
+    rts
+endmacro
+
+impossible_scavenge_because_static: macro
+    panic 'S'
+endmacro
+
 ;; primes:
 ;; .code:
 ;; .evac:
@@ -38,62 +74,39 @@
 
 ;;; divides :: Int -> Int -> (Bool -> r) -> r
 ;;; divides i p k =
-;;;   if i < 0 then k False else if i == 0 then k True else divides (i-p) p k
-
 ;;;   if i == 0 then k True else let i' = i-p in if i' < 0 then k False else divides i' p k
 
-
-JUMP: macro DEST
-    ;; Maybe switch task here
-    jmp \DEST
-endmacro
-
-enter_fp: macro
-    copy_word_from_frame0 cp
-    JUMP (cp)
-endmacro
-
-True = 1
-False = 0
-
-debug: macro C
-    print_char \C
-    screen_flush_selected
-endmacro
-
-debug_hex_word: macro L
-    print_hex_word \L
-    screen_flush_selected
-endmacro
-
-;;; Number args/locals from 1 (because of plan to have fp as 0)
-;;; [] i p kl kh
+;;; [] il ih pl ph kl kh
 divides:
     word .roots, .evac, .scav
 .code:
-    lda $1 ;i --TODO: 16 bits
-    beq .baseT
+    lda $1 ;il
+    ora $2 ;ih
+    beq .baseT ;i==0
     sec
-    sbc $2 ;p
+    lda $1 ;il
+    sbc $3 ;pl
+    sta $1 ; (ok to save even if we branch to baseF)
+    lda $2 ;il
+    sbc $4 ;pl
     bmi .baseF
-    sta $1
+    sta $2
     JUMP .code ; divides i' p k
 .baseT:
-    copy_word 3,fp ;k
+    copy_word 5,fp ;k
     lda #True
     sta $1
     enter_fp ; k True
 .baseF:
-    copy_word 3,fp ;k
+    copy_word 5,fp ;k
     lda #False
     sta $1
     enter_fp ; k False
 .roots:
     rts ; no roots
 .evac:
-    copy_word ev, clo ;identity because static
-    rts
+    no_evacuate_because_static
 .scav:
-    panic 'S' ;because static
+    impossible_scavenge_because_static
 .static_closure:
     word .code
