@@ -8,6 +8,19 @@ print_char: macro CHAR
     pla
 endmacro
 
+print_decimal_trip: macro L ; TODO: should these macros be in same file as the subs they call?
+    pha
+    phx
+    phy
+    lda \L
+    ldx \L + 1
+    ldy \L + 2
+    jsr decimal_put_trip
+    ply
+    plx
+    pla
+endmacro
+
 print_decimal_word: macro L
     pha
     phx

@@ -34,6 +34,10 @@ heap_start = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 
+;;; trip
+g_divisor24 = $60 ; decimal24.s
+g_modulus24 = $63 ; decimal24.s
+
 ;;; quad
 g_screen_pointers = $80
 
@@ -45,6 +49,7 @@ g_screens = $200 ; 4*32 bytes
     include lcd.s
     include mscreen.s
     include decimal.s
+    include decimal24.s
     include print.s
     include panic.s
     include macs.s
@@ -151,12 +156,7 @@ fib_iter:
 fib_iter2:
     word .roots, .evac, .scav
 .code:
-    ;; TODO: need 24 bit version of decimal conversion
-    ;; for now, just print the high byte as a separate decimal
-    print_decimal_byte 2 ; RH
-    print_char ','
-    print_decimal_word 0 ; RL,RM
-
+    print_decimal_trip 0 ; RL,RM,RH (24 bit result)
     lda #' '
     jsr screen_putchar
     load_frame_var 2 ; I

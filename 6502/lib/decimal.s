@@ -9,13 +9,13 @@ decimal_put_word:
     stx g_divisor + 1 ;hi
     lda #0
     pha ; marker for print
-each_digit:
+.each_digit:
     lda #0
     sta g_mod10
     sta g_mod10 + 1
     clc
     ldx #16
-each_bit:
+.each_bit:
     rol g_divisor
     rol g_divisor + 1
     rol g_mod10
@@ -26,15 +26,15 @@ each_bit:
     pha ; save
     lda g_mod10 + 1
     sbc #0
-    bcc ignore_result
+    bcc .ignore_result
     sta g_mod10 + 1
     pla
     pha
     sta g_mod10
-ignore_result:
+.ignore_result:
     pla ;drop
     dex
-    bne each_bit
+    bne .each_bit
     rol g_divisor
     rol g_divisor + 1
     clc
@@ -43,13 +43,13 @@ ignore_result:
     pha ;save on stack for reverse print
     lda g_divisor
     ora g_divisor + 1
-    bne each_digit
-put_from_stack:
+    bne .each_digit
+.put_from_stack:
     pla
-    beq done
+    beq .done
     jsr screen_putchar
-    jmp put_from_stack
-done:
+    jmp .put_from_stack
+.done:
     rts
 
 decimal_put_byte:
