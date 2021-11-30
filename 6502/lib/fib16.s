@@ -1,4 +1,4 @@
-
+;;; Original version of (cps) fib -- computes 16 bit results
 
 ;;; [] N KL KH --> fib [N-1 JL JH] where J is fib_cont1 [N KL KH]
 fib_recurse:

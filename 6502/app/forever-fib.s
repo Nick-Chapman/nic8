@@ -171,4 +171,4 @@ fib_iter2:
 .scav:
     scavenge_done 3
 
-    include fib.s
+    include fib16.s

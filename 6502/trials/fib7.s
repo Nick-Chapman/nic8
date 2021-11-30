@@ -52,4 +52,4 @@ fib7_done:
 .scav:
     scavenge_done 2
 
-    include fib.s
+    include fib16.s
