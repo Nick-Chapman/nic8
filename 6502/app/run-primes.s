@@ -69,16 +69,6 @@ reset_main:
 spin:
     jmp spin
 
-print_decimal_byte: macro L
-    pha
-    phx
-    lda \L
-    ldx #0
-    jsr decimal_put_word
-    plx
-    pla
-endmacro
-
 show_divides:
     print_char ','
     print_decimal_byte 1

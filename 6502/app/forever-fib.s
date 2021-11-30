@@ -147,18 +147,18 @@ fib_iter:
     word fib_iter.code
 
 
-;;; TODO: extend to 24 bit results
-
-;;; [. . I] RL RH --> print("$result "); fib_iter [I+1]
+;;; [. . I] RL RM RH --> print("$result "); fib_iter [I+1]
 fib_iter2:
     word .roots, .evac, .scav
 .code:
-    lda 0 ; RL
-    ldx 1 ; RH
-    jsr decimal_put_word
+    ;; TODO: need 24 bit version of decimal conversion
+    ;; for now, just print the high byte as a separate decimal
+    print_decimal_byte 2 ; RH
+    print_char ','
+    print_decimal_word 0 ; RL,RM
+
     lda #' '
     jsr screen_putchar
-    ;jsr screen_flush
     load_frame_var 2 ; I
     inc
     sta 0 ; I+1
@@ -171,4 +171,5 @@ fib_iter2:
 .scav:
     scavenge_done 3
 
-    include fib16.s
+    include fib24.s
+

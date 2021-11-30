@@ -29,7 +29,7 @@ print_decimal_byte: macro L
 endmacro
 
 
-put_hex_byte: ; TODO: review this code. wrote it a long time ago!
+put_hex_byte: ; TODO: review this code. wrote it a long time ago! - should it save/restore x/a?
     pha
     lsr
     lsr
@@ -52,6 +52,15 @@ print_hex_word: macro L
     jsr screen_putchar
     lda \L + 1
     jsr put_hex_byte
+    lda \L
+    jsr put_hex_byte
+    lda #']'
+    jsr screen_putchar
+endmac
+
+print_hex_byte: macro L
+    lda #'['
+    jsr screen_putchar
     lda \L
     jsr put_hex_byte
     lda #']'
