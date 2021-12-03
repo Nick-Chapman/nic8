@@ -40,6 +40,7 @@ gc_root_at: macro N
 endmacro
 
 evacuate: macro N
+    ;print_char 'e' ; DEBUG
     lda #\N
     pha
     jsr alloc.again
@@ -177,6 +178,11 @@ gc: ; private namespace marker
     jump_cp
 
 .start:
+    lda gc_debug
+    ldx g_selected_screen
+    phx ; save caller's selected screen
+    sta g_selected_screen ; set screen for GC debug
+
     jsr .debug_start_gc
     jsr .switch_space
     copy_word hp, heap_start
@@ -230,38 +236,27 @@ gc: ; private namespace marker
     jmp .gc_scavenge
 .finished:
     jsr .debug_end_gc
+    plx ; restore caller's selected screen
+    stx g_selected_screen
     rts
 
 .debug_start_gc:
-    ;; if gc_debug is non-zero, then it contains the screen# to print to
-    lda gc_debug
-    beq .return1
-    ldx g_selected_screen
-    phx
-    sta g_selected_screen
+    newline
+    newline
     jsr screen_return_home
-    print_string 'GC:'
-    inc16_var gc_count
-    print_decimal_word gc_count
-    plx
-    stx g_selected_screen
-.return1
+    print_string 'GC{'
     rts
 
 .debug_end_gc:
-    lda gc_debug
-    beq .return2
-    ldx g_selected_screen
-    phx
-    sta g_selected_screen
-    jsr screen_newline
-    print_string 'bytes:'
+    print_char '}'
+    newline
+    print_char '#'
+    inc16_var gc_count
+    print_decimal_word gc_count
+    print_string ',live:'
     sub16 hp, heap_start, temp
     print_decimal_word temp
-    print_string '   ' ; blank digits
-    plx
-    stx g_selected_screen
-.return2
+    print_string '  ' ; blank digits
     rts
 
 .evacuate_sub: ; N passed in Y; N>=1
