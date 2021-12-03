@@ -54,33 +54,7 @@ g_screens = $200 ; 4*32 bytes
     include panic.s
     include macs.s
     include gc.s
-
-nmi:
-    pha
-    lda g_nmi_blocked
-    bne .done
-    lda #25 ; debounce time
-    sta g_nmi_blocked
-    inc g_nmi_count
-.done:
-    pla
-    rti
-
-irq: ; copy & extend version in ticks.s
-    pha
-    bit T1CL ; acknowledge interrupt
-    inc g_ticks
-    lda g_nmi_blocked
-    beq .done
-    dec g_nmi_blocked
-.done:
-    pla
-    rti
-
-init_nmi:
-    stz g_nmi_blocked
-    stz g_nmi_count
-    rts
+    include nmi_irq.s
 
 reset_main:
     ldx #$ff
@@ -125,51 +99,5 @@ start_example:
     copy_code_pointer_to_local fib_iter.static_closure, fp
     jmp fib_iter.code
 
-
-;; [] I --> print("$I-"); fib [I KL KH] where K is fib_iter2 [. . I]
-fib_iter:
-    word .roots, .evac, .scav
-.code:
-    lda $0
-    ;; allocate & fill in closure
-    lda #3
-    jsr alloc
-    copy_code_pointer_to_heap0 fib_iter2.code
-    copy_byte_local_to_heap 0, 2 ; I
-    ;; setup args & fp
-    ;; 0 already contains I
-    copy_word clo, 1 ; K
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
-    jmp fib_recurse.code
-.roots:
-    rts ; no roots
-.evac:
-    copy_word ev, clo ; TODO: change evac inteface to be ev->ev, then this line wont be needed
-    rts
-.scav:
-    panic 'S' ; static, so scav impossible
-.static_closure:
-    word fib_iter.code
-
-
-;;; [. . I] RL RM RH --> print("$result "); fib_iter [I+1]
-fib_iter2:
-    word .roots, .evac, .scav
-.code:
-    print_decimal_trip 0 ; RL,RM,RH (24 bit result)
-    lda #' '
-    jsr screen_putchar
-    load_frame_var 2 ; I
-    inc
-    sta 0 ; I+1
-    copy_code_pointer_to_local fib_iter.static_closure, fp
-    jmp fib_iter.code
-.roots:
-    rts
-.evac:
-    evacuate 3
-.scav:
-    scavenge_done 3
-
+    include gen-fibs.s ; TODO: move to top
     include fib24.s
-

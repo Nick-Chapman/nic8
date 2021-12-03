@@ -3,11 +3,10 @@
 
 panic: macro CHAR
     lda #\CHAR
-    jmp panic.stop
+    jmp panic_sub
 endmacro
 
-panic:
-.stop:
+panic_sub:
     pha
     lda #'!'
     jsr screen_putchar

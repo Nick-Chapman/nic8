@@ -1,4 +1,4 @@
-;;; Compute fib with 24-bit results
+;;; Original version of (cps) fib -- computes 16 bit results
 
 ;;; [] N KL KH --> fib [N-1 JL JH] where J is fib_cont1 [N KL KH]
 fib_recurse:
@@ -32,34 +32,32 @@ fib_recurse:
     copy_word ev, clo
     rts
 .scav:
-    panic 'S'
+    impossible_scavenge_because_static
 .static_closure:
-    word .code
+    word fib_recurse.code
 
 
-;;; N KL KH --> K [N #0 #0]
+;;; N KL KH --> K [N #0]
 fib_base:
     copy_word 1,fp ; K
     ;; N (low-byte of result) is already in 0
-    stz 1 ; zero medium byte of result
-    stz 2 ; zero high byte of result
+    lda #0
+    sta 1 ; zero high-byte of result
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
     jmp (cp)
 
 
-;;; [. . N KL KH] AL AM AH -->  fib [N-2 JL JH] where J is fib_cont2 [KL KH AL AM AH]
+;;; [. . N KL KH] AL AH -->  fib [N-2 JL JH] where J is fib_cont2 [KL KH AL AH]
 fib_cont1:
     word .roots, .evac, .scav
 .code:
     ;; allocate cont2
-    lda #7
+    lda #6
     jsr alloc
     ;; fill in closure
     copy_code_pointer_to_heap0 fib_cont2.code ; TODO: alloc/fill via macro?
     copy_word_frame_to_heap 3, 2 ; K
-    ;; TODO: want triple-byte ops!
-    copy_word_local_to_heap 0, 4 ; AL,AM
-    copy_byte_local_to_heap 2, 6 ; AH
+    copy_word_local_to_heap 0, 4 ; A
     ;; setup args
     load_frame_var 2 ; N
     sec
@@ -77,7 +75,7 @@ fib_cont1:
     scavenge_done 5
 
 
-;;; [. . KL HL AL AM AH] BL BM BH (TmpL TmpH) --> RL RM RH (where R = A + B)
+;;; [. . KL HL AL AH] BL BH (TmpL TmpH) --> RL RH (where R = A + B)
 fib_cont2:
     word .roots, .evac, .scav
 .code:
@@ -86,21 +84,18 @@ fib_cont2:
     load_frame_var 4 ; AL
     adc 0 ; BL
     sta 0 ; RL
-    load_frame_var 5 ; AM
-    adc 1 ; BM
-    sta 1 ; RM
-    load_frame_var 6 ; AH
-    adc 2 ; BH
-    sta 2 ; RH
+    load_frame_var 5 ; AH
+    adc 1 ; BH
+    sta 1 ; RH
     ;; return to caller
-    copy_word_from_frame 2, 3 ; K (using 3 as a temp)
-    copy_word 3, fp
+    copy_word_from_frame 2, 2 ; K
+    copy_word 2, fp
     copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
     jmp (cp)
 .roots:
-    panic 'R' ; impossible because no allocation in this code
+    impossible_roots
 .evac:
-    evacuate 7
+    evacuate 6
 .scav:
     scavenge_cell_at 2
-    scavenge_done 7
+    scavenge_done 6

@@ -3,7 +3,7 @@ apps = $(patsubst app/%.s, %, $(wildcard app/*.s))
 
 all: $(patsubst %, rom/%.bin, $(apps))
 
-INC = -I lib -I data -I trials -I aoc-input
+INC = -I lib -I data -I trials -I aoc-input -I cps
 OPT = -c02 -esc -Fbin -wfail -maxerrors=0 -quiet -pic
 
 rom/%.bin: app/%.s Makefile .list .deps

@@ -1,6 +1,7 @@
 ;;; REQUIRES: g_ticks
 ;;; PROVIDES: init_ticks, ticks_irq
 
+;;; TODO: deprecate/merge this into nmi_irq.s
 
 ;;; TODO: move these defs to via.s ; better still, merge this file into via.s
 T1CL = $6004

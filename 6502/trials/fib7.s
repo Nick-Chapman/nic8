@@ -46,10 +46,10 @@ fib7_done:
     sta $104,x
     rts ; return to original caller
 .roots:
-    panic 'R'
+    impossible_roots
 .evac:
     evacuate 2
 .scav:
     scavenge_done 2
 
-    include fib16.s
+    include fib16.s ; TODO top

@@ -1,41 +1,4 @@
 
-
-debug: macro C
-    print_char \C
-    screen_flush_selected
-endmacro
-
-debug_hex_word: macro L
-    print_hex_word \L
-    screen_flush_selected
-endmacro
-
-debug_hex_byte: macro L
-    print_hex_byte \L
-    screen_flush_selected
-endmacro
-
-debug_decimal_word: macro L
-    print_decimal_word \L
-    screen_flush_selected
-endmacro
-
-;;; ----------------------------------------------------------------------
-;;; extra GC macros
-
-no_evacuate_because_static: macro
-    copy_word ev, clo ;identity because static
-    rts
-endmacro
-
-impossible_scavenge_because_static: macro
-    panic 'S'
-endmacro
-
-impossible_roots: macro
-    panic 'R'
-endmacro
-
 ;;; ----------------------------------------------------------------------
 ;;; general array access
 copy_word_from_array: macro A, N, L ; A[N] -> L

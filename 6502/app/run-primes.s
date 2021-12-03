@@ -8,17 +8,18 @@
 
     org $8000
 
-    include "via.s"
-    include "ticks.s"
-    include "lcd.s"
-    include "sleep.s"
-    include "mscreen.s"
-    include "decimal.s"
-    include "print.s"
-    include "panic.s"
-    include "macs.s"
-    include "gc.s"
-    include "primes.s"
+    include via.s
+    include ticks.s
+    include lcd.s
+    include sleep.s
+    include mscreen.s
+    include decimal.s
+    include print.s
+    include debug.s
+    include panic.s
+    include macs.s
+    include gc.s
+    include primes.s
 
 screen_flush_when_time: ; TODO
     rts

@@ -20,6 +20,19 @@ init_gc:
 
 ;;; Macros for external use
 
+no_evacuate_because_static: macro
+    copy_word ev, clo
+    rts
+endmacro
+
+impossible_scavenge_because_static: macro
+    panic 'S'
+endmacro
+
+impossible_roots: macro
+    panic 'R'
+endmacro
+
 gc_root_at: macro N
     copy_word \N, ev
     jsr gc.dispatch_evacuate
