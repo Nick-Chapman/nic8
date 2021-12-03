@@ -58,7 +58,6 @@ screen_flush_when_time: ; called by GC alloc
     include screen.s
     include sleep.s
     include decimal.s
-
     include print.s
     include panic.s
     include macs.s
@@ -138,13 +137,11 @@ example_loop:
     plx ; result-HI into X, which..
     jsr decimal_put_word ; ..is the calling convention to print a word
 
-    print_char ' '
-    print_char '('
+    print_string " ("
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
     jsr decimal_put_word ; ..as before
     print_char ')'
-
     screen_flush_selected
 
     tsx
@@ -232,22 +229,4 @@ pause:
     lda #50
     jsr sleep_blocking
     pla
-    rts
-
-put_string:
-    tsx
-    lda $103,x ; string-pointer-word (under return-address-word)
-    sta g_mptr
-    lda $104,x
-    sta g_mptr + 1
-    ldy #0
-.loop:
-    lda (g_mptr),y
-    beq .done
-    phy
-      jsr screen_putchar ; changes y
-    ply
-    iny
-    jmp .loop
-.done:
     rts

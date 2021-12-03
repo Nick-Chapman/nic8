@@ -52,6 +52,7 @@ gc_count = $50
 
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
+g_mptr = $58 ; print.s
 
 g_screen_pointers = $80
 
@@ -191,7 +192,7 @@ reset_main:
     iny
     bne .loop
     ;; dont expect to everer get here!
-    print_char "$"
+    print_string "-DONE$"
     screen_flush_selected
 spin:
     jmp spin

@@ -1,5 +1,9 @@
 
-;;; setup dev framework code for serial link -- hmm, didn't actually make much progress on the serial stuff!
+;;; setup dev framework code for serial link -- no actual progress on the serial stuff!
+
+;;; But this example does demonstate:
+;;; - screen print/wrap/scroll
+;;; - multi-screen support
 
     org $fffa
     word nmi
@@ -15,6 +19,7 @@ g_next_screen_print = $53
 g_time_put_next_message_char = $54
 g_nmi_count = $55
 g_nmi_blocked = $56
+g_mptr = $58 ; print.s
 
 ;;; words
 g_message_ptr = $70
@@ -147,6 +152,7 @@ not_a_space:
 put_next_message_char_done:
     rts
 
+;;; we toggle between screen 0 and 1 on every work in the message
 toggle_screen_write: ; between screen #0 and #1
     pha
     lda g_selected_screen

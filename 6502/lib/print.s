@@ -1,6 +1,12 @@
 
 ;;; macros for screen printing
 
+newline: macro
+    phy
+    jsr screen_newline
+    ply
+endmacro
+
 print_char: macro CHAR
     pha
     lda #\CHAR
@@ -79,3 +85,38 @@ print_hex_byte: macro L
     lda #']'
     jsr screen_putchar
 endmac
+
+
+put_string:
+    tsx
+    lda $103,x ; string-pointer-word (under return-address-word)
+    sta g_mptr
+    lda $104,x
+    sta g_mptr + 1
+    ldy #0
+.loop:
+    lda (g_mptr),y
+    beq .done
+    phy
+      jsr screen_putchar ; changes x,y
+    ply
+    iny
+    jmp .loop
+.done:
+    rts
+
+print_string: macro S
+    jmp .skip\@
+.embedded\@:
+    string \S
+.skip\@:
+    pha
+      lda #>.embedded\@
+      pha
+      lda #<.embedded\@
+      pha
+      jsr put_string
+      pla
+      pla
+    pla
+endmacro

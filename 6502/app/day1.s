@@ -19,8 +19,12 @@ reset_main:
     jsr init_ticks
     jsr init_lcd
     jsr init_screen
+    print_string 'Part1 '
+    screen_flush_selected
     jsr part1
-    print_char ' '
+    newline
+    print_string 'Part2 '
+    screen_flush_selected
     jsr part2
 spin:
     jmp spin
@@ -81,6 +85,7 @@ count = $e
 res = $10
 ptr = $12
 ptr2 = $14
+g_mptr = $58 ; print.s
 
 g_screen_pointers = $80
 g_screens = $200

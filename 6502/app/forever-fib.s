@@ -33,6 +33,7 @@ gc_count = $50
 heap_start = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
+g_mptr = $58 ; print.s
 
 ;;; trip
 g_divisor24 = $60 ; decimal24.s

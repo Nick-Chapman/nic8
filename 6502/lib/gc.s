@@ -240,9 +240,7 @@ gc: ; private namespace marker
     phx
     sta g_selected_screen
     jsr screen_return_home
-    print_char 'G'
-    print_char 'C'
-    print_char ':'
+    print_string 'GC:'
     inc16_var gc_count
     print_decimal_word gc_count
     plx
@@ -257,16 +255,10 @@ gc: ; private namespace marker
     phx
     sta g_selected_screen
     jsr screen_newline
-    print_char 'l'
-    print_char 'i'
-    print_char 'v'
-    print_char 'e'
-    print_char ':'
+    print_string 'bytes:'
     sub16 hp, heap_start, temp
     print_decimal_word temp
-    print_char ' '
-    print_char ' '
-    print_char ' '
+    print_string '   ' ; blank digits
     plx
     stx g_selected_screen
 .return2
