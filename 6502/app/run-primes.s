@@ -12,7 +12,7 @@
     include ticks.s
     include lcd.s
     include sleep.s
-    include mscreen.s
+    include screen.s
     include decimal.s
     include print.s
     include debug.s

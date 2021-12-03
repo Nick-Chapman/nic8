@@ -29,7 +29,7 @@ g_screens = $200 ; 4 * 32 bytes
     include ticks.s
     include sound.s
     include lcd.s
-    include mscreen.s
+    include screen.s
     include print.s
 
 nmi:

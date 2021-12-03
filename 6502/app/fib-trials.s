@@ -55,7 +55,7 @@ screen_flush_when_time: ; called by GC alloc
     include ticks.s
     include sound.s
     include lcd.s
-    include mscreen.s
+    include screen.s
     include sleep.s
     include decimal.s
 

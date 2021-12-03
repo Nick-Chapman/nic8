@@ -46,7 +46,7 @@ g_screens = $200 ; 8x 32 bytes
     include ticks.s
     include sound.s
     include lcd.s
-    include mscreen.s
+    include screen.s
     include decimal.s
 
 reset_main:
