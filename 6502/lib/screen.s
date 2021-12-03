@@ -37,13 +37,15 @@ init_screen:
 screen_flush_selected: macro ; whatever screen is selected for writing
     pha
     lda g_selected_screen
-    jsr screen_flush
+    jsr screen_flush_sub
     pla
 endmacro
 
 ;; flush screen (# passed in acc) to the underlying lcd
-screen_flush:
+screen_flush_sub:
     pha
+    jsr show_screen_number_in_corner
+    pla
     ;; copy screen to lcd
     jsr lcd_return_home
     ldx #0
@@ -74,7 +76,17 @@ screen_flush:
     sec
     cpx #32
     bne .each_line2_char
-    pla
+    rts
+
+show_screen_number_in_corner:
+    tay
+    lda digits,y
+    ldx eol2s,y
+    dex
+    sta g_screens,x
+    ldx eol1s,y
+    dex
+    sta g_screens,x
     rts
 
 screen_putchar:
@@ -149,3 +161,5 @@ eol1s:
     byte 16,48,80,112
 eol2s:
     byte 32,64,96,128
+
+digits: ascii "0123456789abcdef"

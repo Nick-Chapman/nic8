@@ -57,7 +57,7 @@ flush: macro
     pha
     lda g_nmi_count
     and #%1 ; use nmi-count to pick screen #0 or #1
-    jsr screen_flush
+    jsr screen_flush_sub
     pla
 endmacro
 

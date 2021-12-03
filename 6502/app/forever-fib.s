@@ -82,7 +82,7 @@ screen_flush_when_time:
 screen_flush_now:
     lda g_nmi_count
     and #%1 ; use nmi-count to pick screen #0 or #1
-    jsr screen_flush
+    jsr screen_flush_sub
     lda g_ticks
     clc
     adc #5 ; 20 times/sec

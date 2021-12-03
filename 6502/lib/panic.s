@@ -14,6 +14,6 @@ endmacro
 
 panic_flush_spin:
     lda g_selected_screen
-    jsr screen_flush
+    jsr screen_flush_sub
 .spin
     jmp .spin

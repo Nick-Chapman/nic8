@@ -64,8 +64,6 @@ put_hex_byte: ; TODO: review this code. wrote it a long time ago! - should it sa
     jsr screen_putchar
     rts
 
-digits: ascii "0123456789abcdef"
-
 print_hex_word: macro L
     lda #'['
     jsr screen_putchar
