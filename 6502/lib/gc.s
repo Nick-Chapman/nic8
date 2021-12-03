@@ -12,11 +12,11 @@ SPACE_B_END = $4000
 init_gc: macro Screen_Number
     pha
     lda #\Screen_Number
-    jsr init_gc_sub
+    jsr internal_init_gc_sub
     pla
 endmacro
 
-init_gc_sub: ; screen number for GC debug passed in acc
+internal_init_gc_sub: ; screen number for GC debug passed in acc
     sta gc_screen
     lda #0
     sta gc_count
