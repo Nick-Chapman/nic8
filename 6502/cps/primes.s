@@ -240,7 +240,7 @@ divides:
     ;debug_decimal_word 1
     ;debug '/'
     ;debug_decimal_word 3
-    ;panic '*'
+    ;panic1 '*'
 
     lda $1 ;iL
     ora $2 ;iH

@@ -8,7 +8,7 @@ fib_recurse:
     lda 0
     sec
     cmp #2
-    bcc fib_base ; N<2 ?
+    bcc .base ; N<2 ?
     ;; allocate cont1
     lda #5
     jsr alloc
@@ -25,6 +25,14 @@ fib_recurse:
     ;; TODO: extract standard entry protocol, 'enter'
     copy_code_pointer_to_local fib_recurse.static_closure, fp
     jmp fib_recurse.code
+;;; N KL KH --> K [N #0]
+.base:
+    copy_word 1,fp ; K
+    ;; N (low-byte of result) is already in 0
+    lda #0
+    sta 1 ; zero high-byte of result
+    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    jmp (cp)
 .roots:
     gc_root_at 1
     rts
@@ -36,15 +44,6 @@ fib_recurse:
 .static_closure:
     word fib_recurse.code
 
-
-;;; N KL KH --> K [N #0]
-fib_base:
-    copy_word 1,fp ; K
-    ;; N (low-byte of result) is already in 0
-    lda #0
-    sta 1 ; zero high-byte of result
-    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
-    jmp (cp)
 
 
 ;;; [. . N KL KH] AL AH -->  fib [N-2 JL JH] where J is fib_cont2 [KL KH AL AH]

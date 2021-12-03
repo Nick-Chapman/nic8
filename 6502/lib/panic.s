@@ -1,17 +1,19 @@
 
-;;; TODO: take a string, not just a char
-
-panic: macro CHAR
-    lda #\CHAR
-    jmp panic_sub
+panic1: macro CHAR
+    print_char '!'
+    print_char \CHAR
+    jmp panic_flush_spin
 endmacro
 
-panic_sub:
-    pha
-    lda #'!'
-    jsr screen_putchar
-    pla
-    jsr screen_putchar
-    screen_flush_selected
-.spin:
+panic: macro STRING
+    print_char '!'
+    newline
+    print_string \STRING
+    jmp panic_flush_spin
+endmacro
+
+panic_flush_spin:
+    lda g_selected_screen
+    jsr screen_flush
+.spin
     jmp .spin

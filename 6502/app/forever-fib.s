@@ -56,6 +56,8 @@ g_screens = $200 ; 4*32 bytes
     include macs.s
     include gc.s
     include nmi_irq.s
+    include fib24.s
+    include gen-fibs.s
 
 reset_main:
     ldx #$ff
@@ -99,6 +101,3 @@ start_example:
     sta 0
     copy_code_pointer_to_local fib_iter.static_closure, fp
     jmp fib_iter.code
-
-    include gen-fibs.s ; TODO: move to top
-    include fib24.s

@@ -26,11 +26,11 @@ no_evacuate_because_static: macro
 endmacro
 
 impossible_scavenge_because_static: macro
-    panic 'S'
+    panic 'Bad Scavenge'
 endmacro
 
 impossible_roots: macro
-    panic 'R'
+    panic 'Bad Roots'
 endmacro
 
 gc_root_at: macro N
@@ -128,7 +128,7 @@ alloc:
     rts
 
 .heap_exhausted_still:
-    panic 'H'
+    panic 'Heap Exhausted'
 
 
 ;;; macro for internal use

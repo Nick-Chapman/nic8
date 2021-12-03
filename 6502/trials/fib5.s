@@ -5,7 +5,8 @@
 STACK = $700
 
 fib5_name:
-    string "5: Forth MEM" ; TODO: BUG: this message is not being shown ?!?
+    ;; This message was getting corrupted. But not fixed. No idea what was wrong!
+    string "5: Forth MEM"
     word fib5_name
 fib5_entry:
 
