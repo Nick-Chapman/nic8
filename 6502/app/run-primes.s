@@ -1,15 +1,16 @@
 
 ;;; Top level app to generate primes numbers
 
-    org $fffc
-    ;; word nmi
+    org $fffa
+    word nmi
     word reset_main
-    word deprecated_ticks_irq
+    word irq
 
     org $8000
 
     include via.s
     include ticks.s
+    include nmi_irq.s
     include lcd.s
     include sleep.s
     include screen.s
@@ -21,22 +22,14 @@
     include gc.s
     include primes.s
 
-screen_flush_when_time: ; TODO
-    rts
-
-pause:
-    pha
-    lda #1
-    jsr sleep_blocking
-    pla
-    rts
-
 ;;; bytes
 heap_end_page = $30
 n_bytes = $31
 g_ticks = $32
 gc_screen = $33
 g_selected_screen = $34
+g_nmi_count = $35
+g_nmi_blocked = $36
 
 ;;; words
 hp = $40
@@ -59,6 +52,25 @@ g_screen_pointers = $80
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
+
+flush: macro
+    pha
+    lda g_nmi_count
+    and #%1 ; use nmi-count to pick screen #0 or #1
+    jsr screen_flush
+    pla
+endmacro
+
+screen_flush_when_time: ; TODO
+    rts
+
+pause:
+    pha
+    lda #1
+    jsr sleep_blocking
+    pla
+    rts
+
 ;;; ----------------------------------------------------------------------
 ;;; show/test divides
 ;; show_divides:
@@ -66,7 +78,7 @@ g_screens = $200 ; 4*32 bytes
 ;;     print_decimal_word 1
 ;;     print_char '/'
 ;;     print_decimal_word 3
-;;     screen_flush_selected
+;;     flush
 
 ;;     copy16_literal_to_var after_divides.static_closure, 5
 ;;     copy16_literal_to_var divides.static_closure, fp
@@ -76,7 +88,7 @@ g_screens = $200 ; 4*32 bytes
 ;; .code:
 ;;     print_char '='
 ;;     print_decimal_byte 1
-;;     screen_flush_selected
+;;     flush
 ;;     jsr pause
 ;;     rts
 ;; .static_closure:
@@ -100,7 +112,7 @@ g_screens = $200 ; 4*32 bytes
 show_candidate:
     ;print_char ','
     print_decimal_word 1
-    screen_flush_selected
+    flush
 
     copy16_literal_to_var after_candidate.static_closure, 5
     copy16_literal_to_var candidate.static_closure, fp
@@ -122,7 +134,7 @@ after_candidate: ; same as after divides - just displays a bool
 ;print_decimal_byte 1
     lda 1
     jsr print_bool
-    screen_flush_selected
+    flush
     jsr pause
     rts
 .static_closure:
@@ -145,6 +157,7 @@ reset_main:
     txs
     jsr init_via
     jsr init_ticks
+    jsr init_nmi_irq
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
@@ -192,8 +205,8 @@ reset_main:
     iny
     bne .loop
     ;; dont expect to everer get here!
-    print_string "-DONE$"
-    screen_flush_selected
+    print_string "$"
+    flush
 spin:
     jmp spin
 
