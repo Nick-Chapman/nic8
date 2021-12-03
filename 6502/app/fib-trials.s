@@ -83,7 +83,6 @@ version_table:
     word fib5_entry
     word fib6_entry
     word fib7_entry
-    word fib7_debug_entry
 version_table_end:
 
 nmi:

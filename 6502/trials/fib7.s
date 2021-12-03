@@ -1,14 +1,5 @@
 
-fib7_debug_name:
-    string "7: Heap (debug)"
-    word fib7_name
-fib7_debug_entry:
-    pha
-    jsr init_gc ; As part ofthe fib-trials, we init GC on each entry
-    lda #1
-    sta gc_debug
-    pla
-    jmp fib7_entry_shared
+    include fib16.s
 
 fib7_name:
     string "7: Heap"
@@ -51,5 +42,3 @@ fib7_done:
     evacuate 2
 .scav:
     scavenge_done 2
-
-    include fib16.s ; TODO top
