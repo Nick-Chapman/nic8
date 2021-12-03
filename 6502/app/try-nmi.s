@@ -1,5 +1,9 @@
 ;;; Test Button connect to NMI.
 
+;;; This example updates the screen continually (every 1/10s) to show two numbers:
+;;; - the number of presses of the physical nml button
+;;; - the number of ticks (1/100s) since reset, as a 16bit value
+
     org $fffa
     word nmi
     word reset_main
@@ -11,23 +15,25 @@
     include ticks.s
     include sleep.s
     include lcd.s
-    include screen.s
+    include mscreen.s
     include decimal.s
     include print.s
 
 ;;; bytes
-g_nmi_blocked = $d1
+g_nmi_blocked = $50
+g_selected_screen = $51
 
 ;;; words
 g_divisor = $e0 ; decimal.s
 g_mod10 = $e2 ; decimal.s
-g_screen_pointer = $e4
 g_nmi_count = $e6
 g_ticks = $e8 ; 16 bit tick (10 minutes!)
 g_temp = $ea
 
+g_screen_pointers = $80 ; 8 bytes
+
 ;;; buffers
-g_screen = $200 ; 32 bytes
+g_screens = $200 ; 8x 32 bytes
 
 nmi:
     pha

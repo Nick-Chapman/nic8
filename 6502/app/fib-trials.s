@@ -2,60 +2,60 @@
 ;;; (1) coded using normal control stack -- DONE
 ;;; (2) coded in CPS style, using heap -- TODO
 
-    org $fffc
+    org $fffa
+    word nmi
     word reset_main
     word ticks_irq
 
     org $8000
 
-;;; TODO: use g_ prefix was (most) globals
-;;; Globals for fib7 GC
-;;; Heap pointer and frame pointer in ZP
-hp = $f0
-fp = $f2
-cp = $f4
-clo = $f6 ; pointer to (space for) the closure just allocated
-heap_end_page = $f8 ; (byte)
-n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
-space_switcher = $fa
-temp = $fc
-;; wipe_old_space = $fe
-ev = $77 ; word being evacuated
-lw = $88 ; low water mark in to-heap; the point from which we scavenge
-gc_count = $8a
-heap_start = $8c
-
 ;;; bytes
 gc_debug = $4f
 g_arg = $50 ; used by fib1
 g_ticks = $51
-;; g_sleep_ticks = $52
-g_screen_pointer = $53
 g_selected_version_index = $54
 
-;;; hack for nmi, mscreen & GC triggering screen flush
 g_selected_screen = $55
 g_nmi_count = $56
-screen_flush_when_time:
-    rts
 
 ;;; words
 g_res = $70 ; used by fib1
 g_divisor = $72 ; decimal.s
 g_mod10 = $74 ; decimal.s
 
+ev = $77 ; word being evacuated
+
+lw = $88 ; low water mark in to-heap; the point from which we scavenge
+gc_count = $8a
+heap_start = $8c
+
 g_selected_version_ptr = $90
 g_id_ptr = $92
 g_mptr = $94
 
+g_screen_pointers = $a0 ; 8 bytes
+
+hp = $f0
+fp = $f2
+cp = $f4
+clo = $f6
+heap_end_page = $f8 ; (byte)
+n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
+space_switcher = $fa
+temp = $fc
+
 ;;; buffers
-g_screen = $200 ; 32 bytes
+g_screens = $200 ; 8x 32 bytes
+
+
+screen_flush_when_time: ; called by GC alloc
+    rts
 
     include via.s
     include ticks.s
     include sound.s
     include lcd.s
-    include screen.s
+    include mscreen.s
     include sleep.s
     include decimal.s
 
@@ -86,6 +86,9 @@ version_table:
     word fib7_debug_entry
 version_table_end:
 
+nmi:
+    rti ; ignore
+
 reset_main:
     ldx #$ff
     txs
@@ -102,7 +105,9 @@ example:
     jsr select_version
     jsr put_version_name
     screen_flush_selected
-    ;jsr pause
+
+    jsr pause
+    jsr pause
     jsr screen_newline
     lda #10 ; Compute fib(N) for N = ...
     pha ; keep N on the stack
@@ -135,6 +140,8 @@ example_loop:
     plx ; result-HI into X, which..
     jsr decimal_put_word ; ..is the calling convention to print a word
 
+    lda #' '
+    jsr screen_putchar
     lda #'('
     jsr screen_putchar
     pla ; timer-LO into A, and
@@ -192,10 +199,10 @@ select_version:
     sec
     lda #num_versions_minus_1
     cmp g_selected_version_index ; on power up may contain any value
-    bcs after_reset_to_version0  ; dont reset if g_selected_version_index in range
+    bcs .after_reset             ; dont reset if g_selected_version_index in range
     lda #0
     sta g_selected_version_index ; select first version
-after_reset_to_version0:
+.after_reset:
     lda g_selected_version_index
     inc g_selected_version_index ; next version on reset
     asl
@@ -212,9 +219,9 @@ put_version_name: ; TODO: avoid use of g_id_ptr
     sbc #2
     sta g_id_ptr
     lda g_selected_version_ptr + 1
-    bcs no_wrap
+    bcs .no_wrap
     sbc #1
-no_wrap:
+.no_wrap:
     sta g_id_ptr + 1
     ldy #1
     lda (g_id_ptr),y ;hi
@@ -241,11 +248,13 @@ put_string:
     lda $104,x
     sta g_mptr + 1
     ldy #0
-put_string_loop:
+.loop:
     lda (g_mptr),y
-    beq put_string_done
-    jsr screen_putchar
+    beq .done
+    phy
+      jsr screen_putchar ; changes y
+    ply
     iny
-    jmp put_string_loop
-put_string_done:
+    jmp .loop
+.done:
     rts

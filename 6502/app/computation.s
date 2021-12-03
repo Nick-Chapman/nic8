@@ -19,6 +19,8 @@
 ;;; - perhaps manipulate screen-contents in memory DONE
 ;;; - with sep thread which keeps LCD up to date with mem (see pre-serial.s)
 
+;;; This example just counts, in 16 bits. Nothing more!
+
     org $fffc
     word reset_main
     word ticks_irq
@@ -27,7 +29,7 @@
 
 ;;; bytes
 g_ticks = $50
-g_screen_pointer = $51
+g_selected_screen = $51
 
 ;;; words
 g_message_ptr = $70
@@ -35,14 +37,16 @@ g_number = $72
 g_divisor = $74
 g_mod10 = $76
 
+g_screen_pointers = $80 ; 8 bytes
+
 ;;; buffers
-g_screen = $200 ; 32 bytes
+g_screens = $200 ; 8x 32 bytes
 
     include via.s
     include ticks.s
     include sound.s
     include lcd.s
-    include screen.s
+    include mscreen.s
     include decimal.s
 
 reset_main:
