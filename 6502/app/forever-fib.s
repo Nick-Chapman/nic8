@@ -52,6 +52,8 @@ g_screens = $200 ; 4*32 bytes
     include decimal.s
     include decimal24.s
     include print.s
+    include sleep.s
+    include debug.s
     include panic.s
     include macs.s
     include gc.s

@@ -10,8 +10,7 @@ fib_recurse:
     cmp #2
     bcc .base ; N<2 ?
     ;; allocate cont1
-    lda #5
-    jsr alloc
+    heap_alloc 'a', 5
     ;; fill in closure
     copy_code_pointer_to_heap0 fib_cont1.code
     copy_byte_local_to_heap 0, 2
@@ -51,8 +50,7 @@ fib_cont1:
     word .roots, .evac, .scav
 .code:
     ;; allocate cont2
-    lda #6
-    jsr alloc
+    heap_alloc 'b', 6
     ;; fill in closure
     copy_code_pointer_to_heap0 fib_cont2.code ; TODO: alloc/fill via macro?
     copy_word_frame_to_heap 3, 2 ; K

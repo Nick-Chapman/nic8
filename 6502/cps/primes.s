@@ -1,22 +1,23 @@
 
 ;;; ----------------------------------------------------------------------
-;;; general array access
-copy_word_from_array: macro A, N, L ; A[N] -> L
-    ldy #\N
-    lda (\A),y
-    sta \L
-    ldy #(\N + 1)
-    lda (\A),y
-    sta \L + 1
-endmacro
+;;; general array access -- TODO: what uses these?
 
-copy_word_from_array0: macro A, L ; A[0] -> L
-    lda (\A)
-    sta \L
-    ldy #1
-    lda (\A),y
-    sta \L + 1
-endmacro
+;; copy_word_from_array: macro A, N, L ; A[N] -> L
+;;     ldy #\N
+;;     lda (\A),y
+;;     sta \L
+;;     ldy #(\N + 1)
+;;     lda (\A),y
+;;     sta \L + 1
+;; endmacro
+
+;; copy_word_from_array0: macro A, L ; A[0] -> L
+;;     lda (\A)
+;;     sta \L
+;;     ldy #1
+;;     lda (\A),y
+;;     sta \L + 1
+;; endmacro
 
 load_byte_from_array: macro A, N
     ldy #\N
@@ -39,9 +40,9 @@ endmacro
 ;;;
 ;;; [. . iL iH tailL tailH]
 cons_cell_i16:
+    byte 'C'
     word .roots, .evac, .scav
 .code:
-    ;debug 'C'
     ;; \n c -> c i tail
     pla ; cL
     sta temp
@@ -50,17 +51,21 @@ cons_cell_i16:
     pla ; nL
     pla ; nH
     ;; setup head/tail
-    load_byte_from_array fp, 3
+    load_byte_from_array data_pointer, 3
     pha ; iH
-    load_byte_from_array fp, 2
+    load_byte_from_array data_pointer, 2
     pha ; iL
-    load_byte_from_array fp, 5
+    load_byte_from_array data_pointer, 5
     pha ; tailH
-    load_byte_from_array fp, 4
+    load_byte_from_array data_pointer, 4
     pha ; tailL
     jmp (temp)
 .roots:
-    impossible_roots ; because a cons-cell is not a proper closure; we dont 'enter' it
+    impossible_roots ; because a cons-cell is not a proper closure; we dont 'enter' it - WE DO!
+    ;; we do enter it. but never do any allocation, so should not call roots
+    ;; but we might do allocation in the code we just back to!
+    ;; so perhaps we had better NOT enter it!
+    ;; DONT NOW
 .evac:
     evacuate 6 ; dispatch code; head-i16; tail
 .scav
@@ -69,9 +74,9 @@ cons_cell_i16:
 
 
 nil_cell_i16:
+    byte 'N'
     word .roots, .evac, .scav
 .code:
-    ;debug 'N'
     pla ; cL
     pla ; cH
     pla ; nL
@@ -128,6 +133,14 @@ False = 0
 
 ;;; TODO: search
 
+read_indexed0: macro P, V
+    lda (\P)
+    sta \V
+    ldy #1
+    lda (\P),y
+    sta \V + 1
+endmacro
+
 ;;; candidate :: Int -> List Int -> (Bool -> r) -> r
 ;;; candidate i ps k = do
 ;;;   let nil = \() -> k True
@@ -136,12 +149,12 @@ False = 0
 ;;;     divides i p k1
 ;;;   match ps nil cons
 ;;;
+;;; 0  1  2  3   4   5  6
 ;;; [] iL iH psL psH kL kH
 candidate:
+    byte 'A'
     word .roots, .evac, .scav
 .code:
-    ;debug 'A'
-
     ;; match ps nil cons
     push_word_immediate .nil
     push_word_immediate .cons
@@ -150,21 +163,22 @@ candidate:
     ;; jmp (cp)
 
     ;; TODO: need to set fp even for data closures !
-    copy_word 3,fp ;ps
-    enter_fp ; k True
+    ;copy_word 3,fp ;ps
+    ;enter_fp ; k True
+
+    copy_word 3,data_pointer ;ps
+    read_indexed0 data_pointer, cp
+    JUMP (cp)
 
 .nil:
-    ;debug 'n'
     copy_word 5,fp ;k
     lda #True
     sta $1
     enter_fp ; k True
 .cons:
-    ;debug 'c'
     ;; \p ps' -> let k1 = make_candidate_cont (i,ps,k) ...
     ;; allocate continuation
-    lda #8
-    jsr alloc
+    heap_alloc 'd', 8
     ;; fill in closure
     copy_code_pointer_to_heap0 candidate_cont.code
     copy_word_local_to_heap 1, 2 ; i
@@ -183,8 +197,8 @@ candidate:
     copy_code_pointer_to_local divides.static_closure, fp
     JUMP divides.code ; divides i p k1
 .roots:
-    gc_root_at 2 ; ps
-    gc_root_at 4 ; k
+    gc_root_at 3 ; ps
+    gc_root_at 5 ; k
     rts
 .evac:
     no_evacuate_because_static
@@ -198,21 +212,18 @@ candidate:
 ;;;
 ;;; [. . iL iH psL psH kL kH] b
 candidate_cont:
+    byte 'B'
     word .roots, .evac, .scav
 .code:
-    ;debug 'B'
-    ;debug_hex_byte 1
     lda 1 ; b
     bne .bTrue
     ;; candidate i ps k
-    ;debug 'f'
     copy_word_from_frame 2, 1 ; i
     copy_word_from_frame 4, 3 ; ps
     copy_word_from_frame 6, 5 ; k
     copy_code_pointer_to_local candidate.static_closure, fp
     JUMP candidate.code
 .bTrue:
-    ;debug 't'
     copy_word_from_frame 6, 2 ; k -> fp (using 2 as a temp)
     copy_word 2, fp
     lda #False
@@ -232,16 +243,12 @@ candidate_cont:
 ;;; divides i p k =
 ;;;   if i == 0 then k True else let i' = i-p in if i' < 0 then k False else divides i' p k
 ;;;
+;;; 0  1  2  3  4  5  6
 ;;; [] iL iH pL pH kL kH
 divides:
+    byte 'D'
     word .roots, .evac, .scav
 .code:
-    ;debug 'D'
-    ;debug_decimal_word 1
-    ;debug '/'
-    ;debug_decimal_word 3
-    ;panic1 '*'
-
     lda $1 ;iL
     ora $2 ;iH
     beq .baseT ;i==0
@@ -255,19 +262,17 @@ divides:
     sta $2 ; i'H
     JUMP .code ; divides i' p k
 .baseT:
-    ;debug 't'
     copy_word 5,fp ;k
     lda #True
     sta $1
     enter_fp ; k True
 .baseF:
-    ;debug 'f'
     copy_word 5,fp ;k
     lda #False
     sta $1
     enter_fp ; k False
 .roots:
-    gc_root_at 4 ; k
+    gc_root_at 5 ; k
     rts
 .evac:
     no_evacuate_because_static

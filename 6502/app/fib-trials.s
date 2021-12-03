@@ -68,6 +68,7 @@ screen_flush_when_time: ; called by GC alloc
     include sleep.s
     include decimal.s
     include print.s
+    include debug.s
     include panic.s
     include macs.s
     include gc.s

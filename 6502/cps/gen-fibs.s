@@ -6,8 +6,7 @@ fib_iter:
 .code:
     lda $0
     ;; allocate & fill in closure
-    lda #3
-    jsr alloc
+    heap_alloc 'g', 3
     copy_code_pointer_to_heap0 fib_iter2.code
     copy_byte_local_to_heap 0, 2 ; I
     ;; setup args & fp

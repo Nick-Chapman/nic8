@@ -33,11 +33,11 @@ no_evacuate_because_static: macro
 endmacro
 
 impossible_scavenge_because_static: macro
-    panic 'Bad Scavenge'
+    panic 'Scav'
 endmacro
 
 impossible_roots: macro
-    panic 'Bad Roots'
+    panic 'Roots'
 endmacro
 
 gc_root_at: macro N
@@ -47,10 +47,10 @@ gc_root_at: macro N
 endmacro
 
 evacuate: macro N
-    ;print_char 'e' ; DEBUG
+    ;debug 'e'
     lda #\N
     pha
-    jsr alloc.again
+    jsr alloc_sub.again ; TODO, hmm
     ply
     jsr gc.evacuate_sub
     rts
@@ -60,6 +60,7 @@ endmacro
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
 ;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
 scavenge_cell_at: macro N
+    ;debug 's'
     ldy #\N ; TODO: use word macros to do copy: into ev; back from clo
     lda (lw),y
     sta ev
@@ -89,11 +90,21 @@ scavenge_done: macro N
 endmacro
 
 ;;; allocate [N(acc)] bytes in the heap; adjusting hp
-alloc:
+
+heap_alloc: macro C, N
+    lda #\N
+    jsr alloc_sub
+endmacro
+
+
+alloc_sub:
     sta n_bytes ; TODO: put this on stack to avoid global
 
+    ;; Something needs to do a regular flush...
+    ;; Really we should do it on the JUMP/ENTER
+    ;; But for now...
     ;; HACK trigger flush screen from allocation
-    jsr screen_flush_when_time
+    jsr screen_flush_when_time ; needed for forever-fib
 
     copy_word hp, clo
     lda n_bytes
@@ -110,6 +121,7 @@ alloc:
     rts
 
 .heap_exhausted:
+    ;debug 'X'
     jsr gc.start
     lda n_bytes
     jmp .again
@@ -165,19 +177,42 @@ jump_cp: macro
 endmacro
 
 
+;; show_closure_tag: macro HP
+;;     lda (\HP)
+;;     sec
+;;     sbc #7 ; negative offset from code-pointer -- SHARE
+;;     sta cp
+;;     ldy #1
+;;     lda (\HP),y
+;;     sta cp + 1
+;;     bcs .\@
+;;     dec cp + 1
+;; .\@:
+;;     lda (cp)
+;;     jsr screen_putchar
+;;     screen_flush_selected
+;; endmacro
+
+
 gc: ; private namespace marker
 
 
 .evacuate_roots:
+    ;debug 'R'
+    ;show_closure_tag fp
     get_code_pointer_offset_function fp, 6
     jump_cp
 
 .gc_scavenge:
+    ;debug 'S'
+    ;show_closure_tag lw
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
     get_code_pointer_offset_function lw, 2
     jump_cp
 
 .dispatch_evacuate:
+    ;debug 'E'
+    ;show_closure_tag ev
     ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
     get_code_pointer_offset_function ev, 4
     ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
@@ -185,11 +220,11 @@ gc: ; private namespace marker
     jump_cp
 
 .start:
-    lda gc_screen
-    ldx g_selected_screen
-    phx ; save caller's selected screen
-    sta g_selected_screen ; set screen for GC debug
-
+    ;lda gc_screen
+    ;; SWITCH TO GC SCREEN
+    ;; ldx g_selected_screen
+    ;; phx ; save caller's selected screen
+    ;; sta g_selected_screen ; set screen for GC debug
     jsr .debug_start_gc
     jsr .switch_space
     copy_word hp, heap_start
@@ -232,6 +267,7 @@ gc: ; private namespace marker
 ;;; keep scavenging until 'lw' catches up with 'hp'
 ;;; scavenge routines jump back here when thet are done
 .scavenge_loop:
+    ;debug 'L'
     lda lw
     cmp hp
     beq .scavenge_loop_cmp_second_byte
@@ -243,27 +279,42 @@ gc: ; private namespace marker
     jmp .gc_scavenge
 .finished:
     jsr .debug_end_gc
-    plx ; restore caller's selected screen
-    stx g_selected_screen
+    ;; RESTORE CALLER SCREEN
+    ;; plx ; restore caller's selected screen
+    ;; stx g_selected_screen
     rts
 
 .debug_start_gc:
-    newline
-    newline
-    jsr screen_return_home
-    print_string 'GC{'
+    ;; newline
+    ;; newline
+    ;; jsr screen_return_home
+    ;; print_string 'GC{'
     rts
 
 .debug_end_gc:
-    print_char '}'
+    ;; print_char '}'
+    ;; newline
+
+    ;; SWITCH TO GC SCREEN
+    ldx g_selected_screen
+    phx ; save caller's selected screen
+    lda gc_screen
+    sta g_selected_screen ; set screen for GC debug
+
     newline
-    print_char '#'
+    print_string 'GC:'
     inc16_var gc_count
     print_decimal_word gc_count
-    print_string ',live:'
+    newline
+    print_string 'live:'
     sub16 hp, heap_start, temp
     print_decimal_word temp
-    print_string '  ' ; blank digits
+    ;print_string '  ' ; blank digits
+
+    ;; RESTORE CALLER SCREEN
+    plx ; restore caller's selected screen
+    stx g_selected_screen
+
     rts
 
 .evacuate_sub: ; N passed in Y; N>=1

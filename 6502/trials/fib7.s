@@ -13,8 +13,7 @@ fib7_entry_shared:
     sta 0 ; N
     copy16_literal_to_var 0, gc_count
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
-    lda #2
-    jsr alloc
+    heap_alloc 'c', 2
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_done.code
     ;; setup args

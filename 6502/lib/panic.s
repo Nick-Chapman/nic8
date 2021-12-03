@@ -7,7 +7,7 @@ endmacro
 
 panic: macro STRING
     print_char '!'
-    newline
+    ;newline
     print_string \STRING
     jmp panic_flush_spin
 endmacro

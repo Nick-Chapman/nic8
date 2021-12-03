@@ -40,13 +40,15 @@ clo = $46
 ev = $48
 lw = $4a
 temp = $4c
-space_switcher = $4c
 heap_start = $4e
 gc_count = $50
+space_switcher = $52
 
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
+
+data_pointer = $60 ; whenin a cons cell, which we DONT enter
 
 g_screen_pointers = $80
 
@@ -58,7 +60,7 @@ screen_flush_when_time: ; TODO: copied form forever-fib -- share!
     lda g_next_screen_flush
     sec
     sbc g_ticks
-    beq screen_flush_now
+    beq screen_flush_now ; TODO: fix so we cant miss the time
     rts
 screen_flush_now:
     lda g_nmi_count
@@ -70,16 +72,17 @@ screen_flush_now:
     sta g_next_screen_flush
     rts
 
-flush: macro
-    jsr screen_flush_when_time
-endmacro
+;; flush: macro
+;;     jsr screen_flush_when_time
+;; endmacro
 
-pause:
-    pha
-    lda #1
-    jsr sleep_blocking
-    pla
-    rts
+;; pause:
+;;     pha
+;;     jsr screen_flush_now
+;;     lda #20
+;;     jsr sleep_blocking
+;;     pla
+;;     rts
 
 reset_main:
     ldx #$ff
@@ -108,37 +111,56 @@ reset_main:
     bne .loop
     iny
     bne .loop
-    ;; dont expect to everer get here!
+    ;; get here when we loop around the whole 16 bit range
     print_string "$"
-    flush
+    jsr screen_flush_now
 spin:
     jmp spin
 
+push_word: macro V
+    lda \V+1
+    pha
+    lda \V
+    pha
+endmacro
+
+pull_word: macro V
+    pla
+    sta \V
+    pla
+    sta \V+1
+endmacro
+
 show_candidate:
-    print_decimal_word 1
-    flush
+    push_word 1
     copy16_literal_to_var after_candidate.static_closure, 5
     copy16_literal_to_var candidate.static_closure, fp
     enter_fp
 
-;;; should there be the roots/evac/scav table here? -yes, but the easy static thing
 after_candidate:
+    byte 'Z'
+    word .roots, .evac, .scav
 .code:
     lda 1
-    jsr print_bool
-    flush
-    jsr pause
+    beq .false
+    pull_word 1
+;print_char '.'
+    newline
+    print_decimal_word 1
+    jsr screen_flush_now
     rts
+.false:
+    pull_word 1
+    rts
+.roots:
+    impossible_roots
+.evac:
+    no_evacuate_because_static
+.scav:
+    impossible_scavenge_because_static
 .static_closure:
     word .code
 
-print_bool:
-    beq .dot
-    print_char 'x'
-    rts
-.dot:
-    print_char '.'
-    rts
 
 ;;; static lists
 list_2:
