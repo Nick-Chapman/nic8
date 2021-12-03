@@ -34,7 +34,7 @@ init_screen:
 ;;     jsr screen_flush_sub
 ;; endmacro
 
-screen_flush_selected: macro ; whatever is the selected screen
+screen_flush_selected: macro ; whatever screen is selected for writing
     pha
     lda g_selected_screen
     jsr screen_flush

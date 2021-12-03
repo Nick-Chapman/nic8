@@ -5,18 +5,19 @@
     org $fffa
     word nmi
     word reset_main
-    word ticks_irq
+    word irq
 
     org $8000
 
 ;;; bytes
-gc_debug = $4f
+gc_screen = $4f
 g_arg = $50 ; used by fib1
 g_ticks = $51
 g_selected_version_index = $54
 
 g_selected_screen = $55
 g_nmi_count = $56
+g_nmi_blocked = $57
 
 ;;; words
 g_res = $70 ; used by fib1
@@ -48,6 +49,14 @@ temp = $fc
 g_screens = $200 ; 8x 32 bytes
 
 
+flush: macro
+    pha
+    lda g_nmi_count
+    and #%1 ; use nmi-count to pick screen #0 or #1
+    jsr screen_flush
+    pla
+endmacro
+
 screen_flush_when_time: ; called by GC alloc
     rts
 
@@ -62,6 +71,7 @@ screen_flush_when_time: ; called by GC alloc
     include panic.s
     include macs.s
     include gc.s
+    include nmi_irq.s
 
     ;; various implementations of fib
     include fib1.s
@@ -84,15 +94,13 @@ version_table:
     word fib7_entry
 version_table_end:
 
-nmi:
-    rti ; ignore
-
 reset_main:
     ldx #$ff
     txs
 
     jsr init_via
     jsr init_ticks
+    jsr init_nmi_irq
     jsr init_sound ; silence
     jsr init_lcd
     jsr lcd_clear_display
@@ -102,7 +110,7 @@ reset_main:
 example:
     jsr select_version
     jsr put_version_name
-    screen_flush_selected
+    flush
 
     jsr pause
     jsr pause
@@ -118,7 +126,7 @@ example_loop:
 
     jsr decimal_put_byte ; ..so we can print it
     print_char '-'
-    screen_flush_selected
+    flush
     ;jsr pause
 
     ;; All versions have same interface: byte argument in A; 2 bytes space on stack for result
@@ -142,7 +150,7 @@ example_loop:
     plx ; timer-HI into X, which..
     jsr decimal_put_word ; ..as before
     print_char ')'
-    screen_flush_selected
+    flush
 
     tsx
 
@@ -156,13 +164,13 @@ _1$:
 
     jsr pause
     jsr screen_newline
-    screen_flush_selected
+    flush
 
     jmp example_loop
 
 finish:
     print_char '$'
-    screen_flush_selected
+    flush
 spin:
     jmp spin
 

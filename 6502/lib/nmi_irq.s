@@ -23,7 +23,7 @@ irq: ; copy & extend version in ticks.s
     pla
     rti
 
-init_nmi: ; TODO: combine with (ticks)init_ticks
+init_nmi_irq: ; TODO: combine with (ticks)init_ticks
     stz g_nmi_blocked
     stz g_nmi_count
     rts

@@ -2,7 +2,7 @@
 
     org $fffc
     word reset_main
-    word ticks_irq
+    word deprecated_ticks_irq
 
     org $8000
 

@@ -17,7 +17,7 @@ ticks_per_sec = 100
 
 clks_per_tick = (clks_per_sec / ticks_per_sec - 2)
 
-ticks_irq:
+deprecated_ticks_irq: ; TODO: switch callers to use nmi-aware irq (in nmi_irq.s)
     bit T1CL ; acknowledge interrupt
     inc g_ticks
     rti

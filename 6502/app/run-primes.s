@@ -4,7 +4,7 @@
     org $fffc
     ;; word nmi
     word reset_main
-    word ticks_irq
+    word deprecated_ticks_irq
 
     org $8000
 
@@ -35,7 +35,7 @@ pause:
 heap_end_page = $30
 n_bytes = $31
 g_ticks = $32
-gc_debug = $33
+gc_screen = $33
 g_selected_screen = $34
 
 ;;; words
@@ -148,7 +148,7 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr init_gc
+    jsr init_gc_sub
 
     ;; test_divides 0, 3
     ;; test_divides 1, 3

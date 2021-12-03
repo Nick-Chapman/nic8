@@ -9,9 +9,16 @@ SPACE_B_END = $4000
 
 ;;; Client entry points
 
-init_gc:
+init_gc: macro Screen_Number
+    pha
+    lda #\Screen_Number
+    jsr init_gc_sub
+    pla
+endmacro
+
+init_gc_sub: ; screen number for GC debug passed in acc
+    sta gc_screen
     lda #0
-    sta gc_debug
     sta gc_count
     sta gc_count + 1
     jsr gc.set_heap_space_a
@@ -178,7 +185,7 @@ gc: ; private namespace marker
     jump_cp
 
 .start:
-    lda gc_debug
+    lda gc_screen
     ldx g_selected_screen
     phx ; save caller's selected screen
     sta g_selected_screen ; set screen for GC debug

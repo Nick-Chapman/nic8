@@ -5,9 +5,7 @@ fib7_name:
     string "7: Heap"
     word fib7_name
 fib7_entry:
-    pha
-    jsr init_gc ; As part ofthe fib-trials, we init GC on each entry
-    pla
+    init_gc 1
     jmp fib7_entry_shared
 
 fib7_entry_shared:

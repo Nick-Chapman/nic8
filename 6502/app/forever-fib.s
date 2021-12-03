@@ -14,7 +14,7 @@
 heap_end_page = $30
 n_bytes = $31
 g_ticks = $32
-gc_debug = $33
+gc_screen = $33
 g_selected_screen = $34
 g_nmi_count = $35
 g_nmi_blocked = $36
@@ -64,18 +64,12 @@ reset_main:
     txs
     jsr init_via
     jsr init_ticks
-    jsr init_nmi
+    jsr init_nmi_irq
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr init_gc
-
-    ;; send GC debug to screen #1
-    lda #1
-    sta gc_debug
-
-    jsr screen_flush_now
-
+    init_gc 1 ; screen-number
+    jsr screen_flush_now ; sets the next(first) time to flush
     jmp start_example
 
 
