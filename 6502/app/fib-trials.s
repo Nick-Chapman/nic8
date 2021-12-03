@@ -119,8 +119,7 @@ example_loop:
     lda $101,x
 
     jsr decimal_put_byte ; ..so we can print it
-    lda #'-'
-    jsr screen_putchar
+    print_char '-'
     screen_flush_selected
     ;jsr pause
 
@@ -140,15 +139,12 @@ example_loop:
     plx ; result-HI into X, which..
     jsr decimal_put_word ; ..is the calling convention to print a word
 
-    lda #' '
-    jsr screen_putchar
-    lda #'('
-    jsr screen_putchar
+    print_char ' '
+    print_char '('
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
     jsr decimal_put_word ; ..as before
-    lda #')'
-    jsr screen_putchar
+    print_char ')'
 
     screen_flush_selected
 
@@ -163,8 +159,6 @@ _1$:
     inc $101,x ; increment N (in place) on stack
 
     jsr pause
-    lda #' '
-    jsr screen_putchar
     jsr screen_newline
     screen_flush_selected
 
