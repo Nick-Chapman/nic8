@@ -1,27 +1,35 @@
 
+True = 1
+False = 0
+
+JUMP: macro DEST
+    ;; Maybe switch task here
+    jmp \DEST
+endmacro
+
+enter_fp: macro
+    copy_word_from_frame0 cp
+    JUMP (cp)
+endmacro
+
 ;;; ----------------------------------------------------------------------
-;;; general array access -- TODO: what uses these?
+;;; Number args/locals from 1 (because of plan to have fp as 0)
+;;; BUT IT NEEDS TO START FROM 2, because fp is a word!
 
-;; copy_word_from_array: macro A, N, L ; A[N] -> L
-;;     ldy #\N
-;;     lda (\A),y
-;;     sta \L
-;;     ldy #(\N + 1)
-;;     lda (\A),y
-;;     sta \L + 1
-;; endmacro
-
-;; copy_word_from_array0: macro A, L ; A[0] -> L
-;;     lda (\A)
-;;     sta \L
-;;     ldy #1
-;;     lda (\A),y
-;;     sta \L + 1
-;; endmacro
+;;; ----------------------------------------------------------------------
+;;; array access
 
 load_byte_from_array: macro A, N
     ldy #\N
     lda (\A),y
+endmacro
+
+read_indexed0: macro P, V
+    lda (\P)
+    sta \V
+    ldy #1
+    lda (\P),y
+    sta \V + 1
 endmacro
 
 ;;; ----------------------------------------------------------------------
@@ -38,7 +46,9 @@ endmacro
 ;;; cons-cell of 16-bit numbers
 ;;; (we need to know the element's size & that it's not a heap value)
 ;;;
-;;; [. . iL iH tailL tailH]
+;;; fp
+;;;     .23 .45
+;;; [..  i   tail]
 cons_cell_i16:
     byte 'C'
     word .roots, .evac, .scav
@@ -61,13 +71,9 @@ cons_cell_i16:
     pha ; tailL
     jmp (temp)
 .roots:
-    impossible_roots ; because a cons-cell is not a proper closure; we dont 'enter' it - WE DO!
-    ;; we do enter it. but never do any allocation, so should not call roots
-    ;; but we might do allocation in the code we just back to!
-    ;; so perhaps we had better NOT enter it!
-    ;; DONT NOW
+    impossible_roots
 .evac:
-    evacuate 6 ; dispatch code; head-i16; tail
+    evacuate 6
 .scav
     scavenge_cell_at 4 ; tail
     scavenge_done 6
@@ -94,23 +100,6 @@ nil_cell_i16:
     word .code
 
 
-;;; ----------------------------------------------------------------------
-;;; Number args/locals from 1 (because of plan to have fp as 0)
-
-
-JUMP: macro DEST
-    ;; Maybe switch task here
-    jmp \DEST
-endmacro
-
-enter_fp: macro
-    copy_word_from_frame0 cp
-    JUMP (cp)
-endmacro
-
-True = 1
-False = 0
-
 ;; primes:
 ;; .code:
 ;; .evac:
@@ -133,13 +122,6 @@ False = 0
 
 ;;; TODO: search
 
-read_indexed0: macro P, V
-    lda (\P)
-    sta \V
-    ldy #1
-    lda (\P),y
-    sta \V + 1
-endmacro
 
 ;;; candidate :: Int -> List Int -> (Bool -> r) -> r
 ;;; candidate i ps k = do
@@ -149,8 +131,8 @@ endmacro
 ;;;     divides i p k1
 ;;;   match ps nil cons
 ;;;
-;;; 0  1  2  3   4   5  6
-;;; [] iL iH psL psH kL kH
+;;; fp    12 34 56
+;;; [..] (i  ps k)
 candidate:
     byte 'A'
     word .roots, .evac, .scav
@@ -158,18 +140,9 @@ candidate:
     ;; match ps nil cons
     push_word_immediate .nil
     push_word_immediate .cons
-
-    ;; copy_word_from_array 3, 0, cp
-    ;; jmp (cp)
-
-    ;; TODO: need to set fp even for data closures !
-    ;copy_word 3,fp ;ps
-    ;enter_fp ; k True
-
     copy_word 3,data_pointer ;ps
     read_indexed0 data_pointer, cp
     JUMP (cp)
-
 .nil:
     copy_word 5,fp ;k
     lda #True
@@ -177,7 +150,6 @@ candidate:
     enter_fp ; k True
 .cons:
     ;; \p ps' -> let k1 = make_candidate_cont (i,ps,k) ...
-    ;; allocate continuation
     heap_alloc 'd', 8
     ;; fill in closure
     copy_code_pointer_to_heap0 candidate_cont.code
@@ -210,7 +182,9 @@ candidate:
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
 ;;; make_candidate_cont (i,ps,k) = \b -> if b then k False else candidate i ps k
 ;;;
-;;; [. . iL iH psL psH kL kH] b
+;;; fp                1
+;;;    .23 .45 .67
+;;; [.. i   ps  k  ] (b)
 candidate_cont:
     byte 'B'
     word .roots, .evac, .scav
@@ -243,8 +217,8 @@ candidate_cont:
 ;;; divides i p k =
 ;;;   if i == 0 then k True else let i' = i-p in if i' < 0 then k False else divides i' p k
 ;;;
-;;; 0  1  2  3  4  5  6
-;;; [] iL iH pL pH kL kH
+;;; fp    12 34 56
+;;; [..] (i  p  k)
 divides:
     byte 'D'
     word .roots, .evac, .scav

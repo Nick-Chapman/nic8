@@ -1,6 +1,7 @@
 ;;; Compute fib with 24-bit results
 
-;;; [] N KL KH --> fib [N-1 JL JH] where J is fib_cont1 [N KL KH]
+;;; fp     0 12           0   12             .01       .2 .34
+;;; [..] ( N K ) --> fib (N-1 J ) where J is [fib_cont1 N  K ]
 fib_recurse:
     word .roots, .evac, .scav
 .code:
@@ -45,7 +46,9 @@ fib_recurse:
     word .code
 
 
-;;; [. . N KL KH] AL AM AH -->  fib [N-2 JL JH] where J is fib_cont2 [KL KH AL AM AH]
+;;; fp          012          0   12           .01        .23 .456
+;;; .01 .2 .34
+;;; [..  N  KH] (A) --> fib (N-2 J) where J is [fib_cont2 K   A]
 fib_cont1:
     word .roots, .evac, .scav
 .code:
@@ -73,8 +76,9 @@ fib_cont1:
     scavenge_cell_at 3
     scavenge_done 5
 
-
-;;; [. . KL HL AL AM AH] BL BM BH (TmpL TmpH) --> RL RM RH (where R = A + B)
+;;; fp             012 34      012
+;;; .01 .23 .456
+;;; [..  K    A  ] (B  Tmp) --> R (where R = A + B)
 fib_cont2:
     word .roots, .evac, .scav
 .code:

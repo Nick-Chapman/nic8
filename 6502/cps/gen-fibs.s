@@ -1,6 +1,6 @@
 
-
-;; [] I --> print("$I-"); fib [I KL KH] where K is fib_iter2 [. . I]
+;;; fp    0
+;;; [..] (I)
 fib_iter:
     word .roots, .evac, .scav
 .code:
@@ -25,7 +25,9 @@ fib_iter:
     word fib_iter.code
 
 
-;;; [. . I] RL RM RH --> print("$result "); fib_iter [I+1]
+;;; fp     012
+;;;    .2
+;;; [.. I] (R)
 fib_iter2:
     word .roots, .evac, .scav
 .code:
