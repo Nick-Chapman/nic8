@@ -18,6 +18,7 @@ g_selected_version_index = $54
 g_selected_screen = $55
 g_nmi_count = $56
 g_nmi_blocked = $57
+g_next_screen_flush = $58
 
 ;;; words
 g_res = $70 ; used by fib1
@@ -34,8 +35,6 @@ g_selected_version_ptr = $90
 g_id_ptr = $92
 g_mptr = $94
 
-g_screen_pointers = $a0 ; 8 bytes
-
 hp = $f0
 fp = $f2
 cp = $f4
@@ -44,6 +43,10 @@ heap_end_page = $f8 ; (byte)
 n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
 space_switcher = $fa
 temp = $fc
+
+
+NUM_SCREENS = 2
+g_screen_pointers = $a0 ; 8 bytes
 
 ;;; buffers
 g_screens = $200 ; 8x 32 bytes
@@ -56,9 +59,6 @@ flush: macro
     jsr screen_flush_sub
     pla
 endmacro
-
-screen_flush_when_time: ; called by GC alloc
-    rts
 
     include via.s
     include ticks.s

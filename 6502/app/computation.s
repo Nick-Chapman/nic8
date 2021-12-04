@@ -21,15 +21,19 @@
 
 ;;; This example just counts, in 16 bits. Nothing more!
 
-    org $fffc
+    org $fffa
+    word nmi
     word reset_main
-    word deprecated_ticks_irq
+    word irq
 
     org $8000
 
 ;;; bytes
 g_ticks = $50
 g_selected_screen = $51
+g_nmi_blocked = $52
+g_nmi_count = $53
+g_next_screen_flush = $54
 
 ;;; words
 g_message_ptr = $70
@@ -37,6 +41,7 @@ g_number = $72
 g_divisor = $74
 g_mod10 = $76
 
+NUM_SCREENS = 4
 g_screen_pointers = $80 ; 8 bytes
 
 ;;; buffers
@@ -44,6 +49,7 @@ g_screens = $200 ; 8x 32 bytes
 
     include via.s
     include ticks.s
+    include nmi_irq.s
     include sound.s
     include lcd.s
     include screen.s
@@ -75,21 +81,6 @@ example_loop:
     jsr ds_increment
     jsr pull_number
     jmp example_loop
-
-next_screen_print = $33
-screen_flush_when_time:
-    lda next_screen_print
-    sec
-    sbc g_ticks
-    beq screen_flush_now
-    rts
-screen_flush_now:
-    screen_flush_selected
-    lda g_ticks
-    clc
-    adc #5 ; 20 times/sec
-    sta next_screen_print
-    rts
 
 init_number:
     lda #0

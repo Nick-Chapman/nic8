@@ -87,6 +87,10 @@ ptr = $12
 ptr2 = $14
 g_mptr = $58 ; print.s
 
+g_nmi_count = $35 ;byte
+g_next_screen_flush = $37 ;byte
+
+NUM_SCREENS = 1
 g_screen_pointers = $80
 g_screens = $200
 window = $300

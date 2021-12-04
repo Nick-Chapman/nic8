@@ -14,6 +14,7 @@
     include lcd.s
     include sleep.s
     include screen.s
+
     include decimal.s
     include print.s
     include debug.s
@@ -50,27 +51,12 @@ g_mptr = $58 ; print.s
 
 data_pointer = $60 ; whenin a cons cell, which we DONT enter
 
+NUM_SCREENS = 2
 g_screen_pointers = $80
 
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
-
-screen_flush_when_time: ; TODO: copied form forever-fib -- share!
-    lda g_next_screen_flush
-    sec
-    sbc g_ticks
-    beq screen_flush_now ; TODO: fix so we cant miss the time
-    rts
-screen_flush_now:
-    lda g_nmi_count
-    and #%1 ; use nmi-count to pick screen #0 or #1
-    jsr screen_flush_sub
-    lda g_ticks
-    clc
-    adc #5 ; 20 times/sec
-    sta g_next_screen_flush
-    rts
 
 ;; flush: macro
 ;;     jsr screen_flush_when_time

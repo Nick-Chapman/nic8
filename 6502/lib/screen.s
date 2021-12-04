@@ -4,7 +4,7 @@
 ;;; PROVIDES: init_screen, screen_flush, screen_putchar, screen_newline, screen_return_home
 
 
-;; 4 screens
+;; 4 screens -- TODO: 8 screens!
 
 init_screen_pointers:
     lda #0
@@ -163,3 +163,20 @@ eol2s:
     byte 32,64,96,128
 
 digits: ascii "0123456789abcdef"
+
+
+screen_flush_when_time:
+    lda g_next_screen_flush
+    sec
+    sbc g_ticks
+    beq screen_flush_now
+    rts
+screen_flush_now:
+    lda g_nmi_count
+    and #(NUM_SCREENS - 1)
+    jsr screen_flush_sub
+    lda g_ticks
+    clc
+    adc #5 ; 20 times/sec
+    sta g_next_screen_flush
+    rts

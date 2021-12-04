@@ -40,6 +40,7 @@ g_divisor24 = $60 ; decimal24.s
 g_modulus24 = $63 ; decimal24.s
 
 ;;; quad
+NUM_SCREENS = 2
 g_screen_pointers = $80
 
 ;;; buffers
@@ -49,6 +50,7 @@ g_screens = $200 ; 4*32 bytes
     include ticks.s
     include lcd.s
     include screen.s
+
     include decimal.s
     include decimal24.s
     include print.s
@@ -74,22 +76,6 @@ reset_main:
     jsr screen_flush_now ; sets the next(first) time to flush
     jmp start_example
 
-
-screen_flush_when_time:
-    lda g_next_screen_flush
-    sec
-    sbc g_ticks
-    beq screen_flush_now
-    rts
-screen_flush_now:
-    lda g_nmi_count
-    and #%1 ; use nmi-count to pick screen #0 or #1
-    jsr screen_flush_sub
-    lda g_ticks
-    clc
-    adc #5 ; 20 times/sec
-    sta g_next_screen_flush
-    rts
 
 
 start_example:

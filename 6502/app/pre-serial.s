@@ -19,10 +19,13 @@ g_next_screen_print = $53
 g_time_put_next_message_char = $54
 g_nmi_count = $55
 g_nmi_blocked = $56
-g_mptr = $58 ; print.s
+g_next_screen_flush = $57
 
 ;;; words
 g_message_ptr = $70
+g_mptr = $72 ; print.s
+
+NUM_SCREENS = 4
 
 ;;; quads (4 bytes)
 g_screen_pointers = $80
@@ -100,22 +103,6 @@ example_loop:
 spin_with_flush:
     jsr screen_flush_when_time
     jmp spin_with_flush
-
-screen_flush_when_time:
-    lda g_next_screen_print
-    sec
-    sbc g_ticks
-    beq screen_flush_now
-    rts
-screen_flush_now:
-    lda g_nmi_count
-    and #%11
-    jsr screen_flush_sub
-    lda g_ticks
-    clc
-    adc #5 ; 20 times/sec
-    sta g_next_screen_print
-    rts
 
 init_put_message:
     jsr init_message_ptr

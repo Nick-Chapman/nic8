@@ -22,6 +22,7 @@
 ;;; bytes
 g_nmi_blocked = $50
 g_selected_screen = $51
+g_next_screen_flush = $52
 
 ;;; words
 g_divisor = $e0 ; decimal.s
@@ -31,6 +32,8 @@ g_nmi_count = $e6
 g_ticks = $e8 ; 16 bit tick (10 minutes!)
 g_temp = $ea
 
+
+NUM_SCREENS = 1
 g_screen_pointers = $80 ; 8 bytes
 
 ;;; buffers
