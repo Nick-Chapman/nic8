@@ -58,7 +58,7 @@ g_screens = $200 ; 4*32 bytes
     include debug.s
     include panic.s
     include macs.s
-    include gc.s
+    include heap.s
     include nmi_irq.s
     include fib24.s
     include gen-fibs.s

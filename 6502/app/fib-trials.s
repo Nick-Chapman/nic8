@@ -71,7 +71,7 @@ endmacro
     include debug.s
     include panic.s
     include macs.s
-    include gc.s
+    include heap.s
     include nmi_irq.s
 
     ;; various implementations of fib

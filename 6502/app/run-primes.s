@@ -20,7 +20,7 @@
     include debug.s
     include panic.s
     include macs.s
-    include gc.s
+    include heap.s
     include primes.s
 
 ;;; bytes
