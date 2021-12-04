@@ -6,6 +6,12 @@ SPACE_A_END = $2400
 SPACE_B_START = $2400
 SPACE_B_END = $4000
 
+BASE = 10
+arg2 = BASE + 2
+arg3 = BASE + 3
+arg4 = BASE + 4
+arg5 = BASE + 5
+arg6 = BASE + 6
 
 ;;; Client entry points
 

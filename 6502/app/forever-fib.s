@@ -46,14 +46,6 @@ g_screen_pointers = $80
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
-
-;;; Move BASE from -2 to 10 (in prep for eventual to x-indexed addressing)
-BASE = 10
-arg2 = BASE + 2
-arg3 = BASE + 3
-arg4 = BASE + 4
-arg5 = BASE + 5
-
     include via.s
     include ticks.s
     include lcd.s
