@@ -1,4 +1,4 @@
-BASE = -2
+BASE = 10
 arg2 = BASE + 2
 arg3 = BASE + 3
 arg4 = BASE + 4
