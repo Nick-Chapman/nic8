@@ -14,7 +14,6 @@ gc_screen = $4f
 g_arg = $50 ; used by fib1
 g_ticks = $51
 g_selected_version_index = $54
-
 g_selected_screen = $55
 g_nmi_count = $56
 g_nmi_blocked = $57
@@ -24,26 +23,15 @@ g_next_screen_flush = $58
 g_res = $70 ; used by fib1
 g_divisor = $72 ; decimal.s
 g_mod10 = $74 ; decimal.s
-
-ev = $77 ; word being evacuated
-
-lw = $88 ; low water mark in to-heap; the point from which we scavenge
 gc_count = $8a
 heap_start = $8c
-
 g_selected_version_ptr = $90
 g_id_ptr = $92
 g_mptr = $94
-
-hp = $f0
-fp = $f2
-cp = $f4
-clo = $f6
+g_heap_pointer = $f0
 heap_end_page = $f8 ; (byte)
 n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
 space_switcher = $fa
-temp = $fc
-
 
 NUM_SCREENS = 2
 g_screen_pointers = $a0 ; 8 bytes

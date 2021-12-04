@@ -34,22 +34,14 @@ g_nmi_blocked = $36
 g_next_screen_flush = $37
 
 ;;; words
-hp = $40
-fp = $42
-cp = $44
-clo = $46
-ev = $48
-lw = $4a
-temp = $4c
+g_heap_pointer = $40
 heap_start = $4e
 gc_count = $50
 space_switcher = $52
-
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
-
-data_pointer = $60 ; whenin a cons cell, which we DONT enter
+data_pointer = $60 ; for cons cell, which we DONT enter
 
 NUM_SCREENS = 2
 g_screen_pointers = $80

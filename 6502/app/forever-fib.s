@@ -21,14 +21,8 @@ g_nmi_blocked = $36
 g_next_screen_flush = $37
 
 ;;; words
-hp = $40
-fp = $42
-cp = $44
-clo = $46
-ev = $48
-lw = $4a
+g_heap_pointer = $40
 space_switcher = $4c
-temp = $4e
 gc_count = $50
 heap_start = $52
 g_divisor = $54 ; decimal.s

@@ -6,12 +6,21 @@ SPACE_A_END = $2400
 SPACE_B_START = $2400
 SPACE_B_END = $4000
 
+temp = 0
+lw = 2
+ev = 4
+clo = 6
+cp = 8
+
 BASE = 10
+
+fp = BASE
 arg2 = BASE + 2
 arg3 = BASE + 3
 arg4 = BASE + 4
 arg5 = BASE + 5
 arg6 = BASE + 6
+
 
 ;;; Client entry points
 
@@ -28,7 +37,7 @@ internal_init_gc_sub: ; screen number for GC debug passed in acc
     sta gc_count
     sta gc_count + 1
     jsr gc.set_heap_space_a
-    copy_word hp, heap_start
+    copy_word g_heap_pointer, heap_start
     rts
 
 ;;; Macros for external use
@@ -112,17 +121,17 @@ alloc_sub:
     ;; HACK trigger flush screen from allocation
     jsr screen_flush_when_time ; needed for forever-fib
 
-    copy_word hp, clo
+    copy_word g_heap_pointer, clo
     lda n_bytes
     clc
-    adc hp
-    sta hp
+    adc g_heap_pointer
+    sta g_heap_pointer
     bcc .ok
-    lda hp + 1
+    lda g_heap_pointer + 1
     inc
     cmp heap_end_page
     beq .heap_exhausted
-    sta hp + 1
+    sta g_heap_pointer + 1
 .ok:
     rts
 
@@ -139,17 +148,17 @@ alloc_sub:
 
 .again: ; TODO: avoid code repetition w.r.t alloc
     pha
-    copy_word hp, clo
+    copy_word g_heap_pointer, clo
     pla
     clc
-    adc hp
-    sta hp
+    adc g_heap_pointer
+    sta g_heap_pointer
     bcc .again_done
-    lda hp + 1
+    lda g_heap_pointer + 1
     inc
     cmp heap_end_page
     beq .heap_exhausted_still
-    sta hp + 1
+    sta g_heap_pointer + 1
 .again_done:
     rts
 
@@ -233,8 +242,8 @@ gc: ; private namespace marker
     ;; sta g_selected_screen ; set screen for GC debug
     jsr .debug_start_gc
     jsr .switch_space
-    copy_word hp, heap_start
-    copy_word hp, lw
+    copy_word g_heap_pointer, heap_start
+    copy_word g_heap_pointer, lw
     jsr .evacuate_roots
     ;; evacuate 'fp'... ; TODO: fp=0, and treat like any other root
     copy_word fp, ev
@@ -253,9 +262,9 @@ gc: ; private namespace marker
 .set_heap_space_a:
     copy_code_pointer_to_local .set_heap_space_b, space_switcher
     lda #<SPACE_A_START
-    sta hp
+    sta g_heap_pointer
     lda #>SPACE_A_START
-    sta hp + 1
+    sta g_heap_pointer + 1
     lda #>SPACE_A_END
     sta heap_end_page
     rts
@@ -263,9 +272,9 @@ gc: ; private namespace marker
 .set_heap_space_b:
     copy_code_pointer_to_local .set_heap_space_a, space_switcher
     lda #<SPACE_B_START
-    sta hp
+    sta g_heap_pointer
     lda #>SPACE_B_START
-    sta hp + 1
+    sta g_heap_pointer + 1
     lda #>SPACE_B_END
     sta heap_end_page
     rts
@@ -275,12 +284,12 @@ gc: ; private namespace marker
 .scavenge_loop:
     ;debug 'L'
     lda lw
-    cmp hp
+    cmp g_heap_pointer
     beq .scavenge_loop_cmp_second_byte
     jmp .gc_scavenge
 .scavenge_loop_cmp_second_byte:
     lda lw + 1
-    cmp hp + 1
+    cmp g_heap_pointer + 1
     beq gc.finished
     jmp .gc_scavenge
 .finished:
@@ -313,7 +322,7 @@ gc: ; private namespace marker
     print_decimal_word gc_count
     newline
     print_string 'live:'
-    sub16 hp, heap_start, temp
+    sub16 g_heap_pointer, heap_start, temp
     print_decimal_word temp
     ;print_string '  ' ; blank digits
 
