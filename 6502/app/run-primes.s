@@ -65,10 +65,20 @@ g_screens = $200 ; 4*32 bytes
 ;; pause:
 ;;     pha
 ;;     jsr screen_flush_now
-;;     lda #20
+;;     lda #10
 ;;     jsr sleep_blocking
 ;;     pla
 ;;     rts
+
+
+;;; TODO: switch base from -1 to 10
+BASE = -1
+arg2 = BASE + 2
+arg3 = BASE + 3
+arg4 = BASE + 4
+arg5 = BASE + 5
+arg6 = BASE + 6
+
 
 reset_main:
     ldx #$ff
@@ -87,9 +97,9 @@ reset_main:
 .loop:
     phx
     phy
-    stx 1 ; lo
-    sty 2 ; hi
-    copy16_literal_to_var list_7532, 3
+    stx arg2 ; lo
+    sty arg3 ; hi
+    copy16_literal_to_var list_7532, arg4
     jsr show_candidate
     ply
     plx
@@ -118,8 +128,8 @@ pull_word: macro V
 endmacro
 
 show_candidate:
-    push_word 1
-    copy16_literal_to_var after_candidate.static_closure, 5
+    push_word arg2
+    copy16_literal_to_var after_candidate.static_closure, arg6
     copy16_literal_to_var candidate.static_closure, fp
     enter_fp
 
@@ -127,10 +137,9 @@ after_candidate:
     byte 'Z'
     word .roots, .evac, .scav
 .code:
-    lda 1
+    lda arg2
     beq .false
     pull_word 1
-;print_char '.'
     newline
     print_decimal_word 1
     jsr screen_flush_now

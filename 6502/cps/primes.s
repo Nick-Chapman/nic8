@@ -122,7 +122,6 @@ nil_cell_i16:
 
 ;;; TODO: search
 
-
 ;;; candidate :: Int -> List Int -> (Bool -> r) -> r
 ;;; candidate i ps k = do
 ;;;   let nil = \() -> k True
@@ -131,7 +130,7 @@ nil_cell_i16:
 ;;;     divides i p k1
 ;;;   match ps nil cons
 ;;;
-;;; fp    12 34 56
+;;; fp    23 45 67
 ;;; [..] (i  ps k)
 candidate:
     byte 'A'
@@ -140,37 +139,37 @@ candidate:
     ;; match ps nil cons
     push_word_immediate .nil
     push_word_immediate .cons
-    copy_word 3,data_pointer ;ps
+    copy_word arg4,data_pointer ;ps
     read_indexed0 data_pointer, cp
     JUMP (cp)
 .nil:
-    copy_word 5,fp ;k
+    copy_word arg6,fp ;k
     lda #True
-    sta $1
+    sta arg2
     enter_fp ; k True
 .cons:
     ;; \p ps' -> let k1 = make_candidate_cont (i,ps,k) ...
     heap_alloc 'd', 8
     ;; fill in closure
     copy_code_pointer_to_heap0 candidate_cont.code
-    copy_word_local_to_heap 1, 2 ; i
+    copy_word_local_to_heap arg2, 2 ; i
     pla ; ps'L
     store_heap 4
     pla ; ps'H
     store_heap 5
-    copy_word_local_to_heap 5, 6 ; k
+    copy_word_local_to_heap arg6, 6 ; k
     ;; setup args
-    ;; iL,iH already in 1,2
+    ;; iL,iH already in arg2,arg3
     pla ; pL
-    sta 3
+    sta arg4
     pla ; pH
-    sta 4
-    copy_word clo, 5
+    sta arg5
+    copy_word clo, arg6
     copy_code_pointer_to_local divides.static_closure, fp
     JUMP divides.code ; divides i p k1
 .roots:
-    gc_root_at 3 ; ps
-    gc_root_at 5 ; k
+    gc_root_at arg4 ; ps
+    gc_root_at arg6 ; k
     rts
 .evac:
     no_evacuate_because_static
@@ -182,26 +181,26 @@ candidate:
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
 ;;; make_candidate_cont (i,ps,k) = \b -> if b then k False else candidate i ps k
 ;;;
-;;; fp                1
+;;; fp                2
 ;;;    .23 .45 .67
 ;;; [.. i   ps  k  ] (b)
 candidate_cont:
     byte 'B'
     word .roots, .evac, .scav
 .code:
-    lda 1 ; b
+    lda arg2 ; b
     bne .bTrue
     ;; candidate i ps k
-    copy_word_from_frame 2, 1 ; i
-    copy_word_from_frame 4, 3 ; ps
-    copy_word_from_frame 6, 5 ; k
+    copy_word_from_frame 2, arg2 ; i
+    copy_word_from_frame 4, arg4 ; ps
+    copy_word_from_frame 6, arg6 ; k
     copy_code_pointer_to_local candidate.static_closure, fp
     JUMP candidate.code
 .bTrue:
-    copy_word_from_frame 6, 2 ; k -> fp (using 2 as a temp)
-    copy_word 2, fp
+    copy_word_from_frame 6, arg3 ; k -> fp (using 2 as a temp)
+    copy_word arg3, fp
     lda #False
-    sta $1
+    sta arg2
     enter_fp ; k False
 .roots:
     rts ; no roots
@@ -217,36 +216,36 @@ candidate_cont:
 ;;; divides i p k =
 ;;;   if i == 0 then k True else let i' = i-p in if i' < 0 then k False else divides i' p k
 ;;;
-;;; fp    12 34 56
+;;; fp    23 45 67
 ;;; [..] (i  p  k)
 divides:
     byte 'D'
     word .roots, .evac, .scav
 .code:
-    lda $1 ;iL
-    ora $2 ;iH
+    lda arg2 ;iL
+    ora arg3 ;iH
     beq .baseT ;i==0
     sec
-    lda $1 ;iL
-    sbc $3 ;pL
-    sta $1 ;i'L (ok to save even if we branch to baseF)
-    lda $2 ;iL
-    sbc $4 ;pL
+    lda arg2 ;iL
+    sbc arg4 ;pL
+    sta arg2 ;i'L (ok to save even if we branch to baseF)
+    lda arg3 ;iL
+    sbc arg5 ;pL
     bmi .baseF
-    sta $2 ; i'H
+    sta arg3 ; i'H
     JUMP .code ; divides i' p k
 .baseT:
-    copy_word 5,fp ;k
+    copy_word arg6,fp ;k
     lda #True
-    sta $1
+    sta arg2
     enter_fp ; k True
 .baseF:
-    copy_word 5,fp ;k
+    copy_word arg6,fp ;k
     lda #False
-    sta $1
+    sta arg2
     enter_fp ; k False
 .roots:
-    gc_root_at 5 ; k
+    gc_root_at arg6 ; k
     rts
 .evac:
     no_evacuate_because_static
