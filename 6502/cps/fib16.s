@@ -5,7 +5,7 @@ fib_recurse:
     word .roots, .evac, .scav
 .code:
     ;; access N
-    lda 0
+    lda arg2
     sec
     cmp #2
     bcc .base ; N<2 ?
@@ -13,27 +13,27 @@ fib_recurse:
     heap_alloc 'a', 5
     ;; fill in closure
     copy_code_pointer_to_heap0 fib_cont1.code
-    copy_byte_local_to_heap 0, 2
-    copy_word_local_to_heap 1, 3
+    copy_byte_local_to_heap arg2, 2
+    copy_byte_local_to_heap arg3, 3
+    copy_byte_local_to_heap arg4, 4
     ;; setup args
-    lda 0 ; N
+    lda arg2 ; N
     sec
     sbc #1 ; N-1
-    sta 0
-    copy_word clo, 1
-    ;; TODO: extract standard entry protocol, 'enter'
+    sta arg2
+    copy_word clo, arg3
     copy_code_pointer_to_local fib_recurse.static_closure, fp
     jmp fib_recurse.code
 ;;; N KL KH --> K [N #0]
 .base:
-    copy_word 1,fp ; K
-    ;; N (low-byte of result) is already in 0
+    copy_word arg3,fp ; K
+    ;; N (low-byte of result) is already in arg2
     lda #0
-    sta 1 ; zero high-byte of result
-    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    sta arg3 ; zero high-byte of result
+    copy_word_from_frame0 cp
     jmp (cp)
 .roots:
-    gc_root_at 1
+    gc_root_at arg3
     rts
 .evac:
     copy_word ev, clo
@@ -52,15 +52,16 @@ fib_cont1:
     ;; allocate cont2
     heap_alloc 'b', 6
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib_cont2.code ; TODO: alloc/fill via macro?
+    copy_code_pointer_to_heap0 fib_cont2.code
     copy_word_frame_to_heap 3, 2 ; K
-    copy_word_local_to_heap 0, 4 ; A
+    copy_byte_local_to_heap arg2, 4 ; AL
+    copy_byte_local_to_heap arg3, 5 ; AH
     ;; setup args
     load_frame_var 2 ; N
     sec
     sbc #2 ; N-2
-    sta 0
-    copy_word clo,1
+    sta arg2
+    copy_word clo,arg3
     copy_code_pointer_to_local fib_recurse.static_closure, fp
     jmp fib_recurse.code
 .roots:
@@ -79,15 +80,15 @@ fib_cont2:
     clc
     ;; TODO: use macro for 16 bit addition - already written!
     load_frame_var 4 ; AL
-    adc 0 ; BL
-    sta 0 ; RL
+    adc arg2 ; BL
+    sta arg2 ; RL
     load_frame_var 5 ; AH
-    adc 1 ; BH
-    sta 1 ; RH
+    adc arg3 ; BH
+    sta arg3 ; RH
     ;; return to caller
-    copy_word_from_frame 2, 2 ; K
-    copy_word 2, fp
-    copy_word_from_frame0 cp ; TODO: avoid cp; using pha/pha/rts
+    copy_word_from_frame 2, arg4 ; K
+    copy_word arg4, fp
+    copy_word_from_frame0 cp
     jmp (cp)
 .roots:
     impossible_roots

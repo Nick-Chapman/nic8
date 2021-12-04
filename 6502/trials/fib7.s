@@ -1,3 +1,9 @@
+BASE = -2
+arg2 = BASE + 2
+arg3 = BASE + 3
+arg4 = BASE + 4
+arg5 = BASE + 5
+arg6 = BASE + 6
 
     include fib16.s
 
@@ -10,16 +16,16 @@ fib7_entry:
 
 fib7_entry_shared:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
-    sta 0 ; N
+    sta arg2 ; N
     copy16_literal_to_var 0, gc_count
     ;; allocate final continuation -- TODO: no need for this to be heap allocated
     heap_alloc 'c', 2
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_done.code
     ;; setup args
-    copy_word clo, 1
+    copy_word clo, arg3
     copy_code_pointer_to_local fib_recurse.static_closure, fp
-    jmp fib_recurse.code ; TODO: Use a standard entry protocol, 'enter'
+    jmp fib_recurse.code
 
 
 ;;; RL RH -->
@@ -28,9 +34,9 @@ fib7_done:
 .code:
     ;; move final result to pre-allocated space on stack
     tsx
-    lda 0
+    lda arg2
     sta $103,x
-    lda 1
+    lda arg3
     sta $104,x
     rts ; return to original caller
 .roots:
