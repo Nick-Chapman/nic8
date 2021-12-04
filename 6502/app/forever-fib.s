@@ -46,6 +46,14 @@ g_screen_pointers = $80
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
+
+;;; TODO: move BASE from -2 to 10 (eventually to ,x)
+BASE = -2
+arg2 = BASE + 2
+arg3 = BASE + 3
+arg4 = BASE + 4
+arg5 = BASE + 5
+
     include via.s
     include ticks.s
     include lcd.s
@@ -79,7 +87,8 @@ reset_main:
 
 
 start_example:
+    ;stz arg2 :TODO better
     lda #0
-    sta 0
+    sta arg2
     copy_code_pointer_to_local fib_iter.static_closure, fp
     jmp fib_iter.code
