@@ -24,7 +24,7 @@ fib7_entry_shared:
 
 ;;; RL RH -->
 fib7_done:
-    word .roots, .evac, .scav ; TODO capture common pattern for def/.code
+    word .roots, .evac, .scav
 .code:
     ;; move final result to pre-allocated space on stack
     tsx

@@ -36,7 +36,6 @@ fib_recurse:
     gc_root_at arg3
     rts
 .evac:
-    copy_word ev, clo
     rts
 .scav:
     impossible_scavenge_because_static

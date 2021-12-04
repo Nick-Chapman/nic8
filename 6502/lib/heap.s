@@ -42,11 +42,6 @@ internal_init_gc_sub: ; screen number for GC debug passed in acc
 
 ;;; Macros for external use
 
-no_evacuate_because_static: macro
-    copy_word ev, clo
-    rts
-endmacro
-
 impossible_scavenge_because_static: macro
     panic 'Scav'
 endmacro
@@ -58,7 +53,7 @@ endmacro
 gc_root_at: macro N
     copy_word \N, ev
     jsr gc.dispatch_evacuate
-    copy_word clo, \N
+    copy_word ev, \N
 endmacro
 
 evacuate: macro N
@@ -68,15 +63,16 @@ evacuate: macro N
     jsr alloc_sub.again ; TODO, hmm
     ply
     jsr gc.evacuate_sub
+    copy_word clo, ev
     rts
 endmacro
 
 ;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
-;;; By first setting 'ev'; calling evacuate; then assigning 'clo' back to the cell
+;;; By first setting 'ev'; calling evacuate; then assigning 'ev' back to the cell
 scavenge_cell_at: macro N
     ;debug 's'
-    ldy #\N ; TODO: use word macros to do copy: into ev; back from clo
+    ldy #\N ; TODO: use word macros to do copy
     lda (lw),y
     sta ev
     ldy #\N + 1
@@ -84,11 +80,11 @@ scavenge_cell_at: macro N
     sta ev + 1
     ;; now 'ev is setup
     jsr gc.dispatch_evacuate
-    ;; repoint the scavenged word to the relocated closure
-    lda clo
+    ;; repoint the scavenged word to the relocated 'ev'
+    lda ev
     ldy #\N
     sta (lw),y
-    lda clo + 1
+    lda ev + 1
     ldy #\N + 1
     sta (lw),y
 endmacro
@@ -248,7 +244,7 @@ gc: ; private namespace marker
     ;; evacuate 'fp'... ; TODO: fp=0, and treat like any other root
     copy_word fp, ev
     jsr .dispatch_evacuate
-    copy_word clo, fp
+    copy_word ev, fp
     jmp .scavenge_loop
 
 .switch_space:

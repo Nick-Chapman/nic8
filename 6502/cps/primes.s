@@ -93,7 +93,7 @@ nil_cell_i16:
 .roots:
     impossible_roots
 .evac:
-    no_evacuate_because_static
+    rts
 .scav:
     impossible_scavenge_because_static
 .static_closure:
@@ -172,7 +172,7 @@ candidate:
     gc_root_at arg6 ; k
     rts
 .evac:
-    no_evacuate_because_static
+    rts
 .scav:
     impossible_scavenge_because_static
 .static_closure:
@@ -248,7 +248,7 @@ divides:
     gc_root_at arg6 ; k
     rts
 .evac:
-    no_evacuate_because_static
+    rts
 .scav:
     impossible_scavenge_because_static
 .static_closure:

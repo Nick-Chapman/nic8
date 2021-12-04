@@ -132,7 +132,7 @@ after_candidate:
 .roots:
     impossible_roots
 .evac:
-    no_evacuate_because_static
+    rts
 .scav:
     impossible_scavenge_because_static
 .static_closure:

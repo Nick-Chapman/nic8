@@ -15,9 +15,8 @@ fib_iter:
     copy_code_pointer_to_local fib_recurse.static_closure, fp
     jmp fib_recurse.code
 .roots:
-    rts ; no roots
+    rts
 .evac:
-    copy_word ev, clo ; TODO: change evac inteface to be ev->ev, then this line wont be needed
     rts
 .scav:
     impossible_scavenge_because_static
