@@ -71,8 +71,7 @@ g_screens = $200 ; 4*32 bytes
 ;;     rts
 
 
-;;; TODO: switch base from -1 to 10
-BASE = -1
+BASE = 10
 arg2 = BASE + 2
 arg3 = BASE + 3
 arg4 = BASE + 4
