@@ -1,4 +1,4 @@
-;;; AoC 2020, day1, parts 1 & 2
+;;; AoC 2021, day1, parts 1 & 2
 
     org $fffc
     word reset_main
