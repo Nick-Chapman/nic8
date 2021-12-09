@@ -177,6 +177,6 @@ screen_flush_now:
     jsr screen_flush_sub
     lda g_ticks
     clc
-    adc #5 ; 20 times/sec
+    adc #5 ; 20 times/sec ; TODO: Be a bit slower, say 10/sec to avoid waiting on lcd
     sta g_next_screen_flush
     rts
