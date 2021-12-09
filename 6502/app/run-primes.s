@@ -49,19 +49,6 @@ g_screen_pointers = $80
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
-
-;; flush: macro
-;;     jsr screen_flush_when_time
-;; endmacro
-
-;; pause:
-;;     pha
-;;     jsr screen_flush_now
-;;     lda #10
-;;     jsr sleep_blocking
-;;     pla
-;;     rts
-
 reset_main:
     ldx #$ff
     txs
@@ -73,89 +60,4 @@ reset_main:
     jsr init_screen
     init_gc 1 ; screen-number
     jsr screen_flush_now ; sets the next(first) time to flush
-
-    ldy #0
-    ldx #2
-.loop:
-    phx
-    phy
-    stx arg2 ; lo
-    sty arg3 ; hi
-    copy16_literal_to_var list_7532, arg4
-    jsr show_candidate
-    ply
-    plx
-    inx
-    bne .loop
-    iny
-    bne .loop
-    ;; get here when we loop around the whole 16 bit range
-    print_string "$"
-    jsr screen_flush_now
-spin:
-    jmp spin
-
-push_word: macro V
-    lda \V+1
-    pha
-    lda \V
-    pha
-endmacro
-
-pull_word: macro V
-    pla
-    sta \V
-    pla
-    sta \V+1
-endmacro
-
-show_candidate:
-    push_word arg2
-    copy16_literal_to_var after_candidate.static_closure, arg6
-    copy16_literal_to_var candidate.static_closure, fp
-    enter_fp
-
-after_candidate:
-    byte 'Z'
-    word .roots, .evac, .scav
-.code:
-    lda arg2
-    beq .false
-    pull_word 1
-    newline
-    print_decimal_word 1
-    jsr screen_flush_now
-    rts
-.false:
-    pull_word 1
-    rts
-.roots:
-    impossible_roots
-.evac:
-    rts
-.scav:
-    impossible_scavenge_because_static
-.static_closure:
-    word .code
-
-
-;;; static lists
-list_2:
-    word cons_cell_i16.code
-    word 2
-    word nil_cell_i16.static_closure
-
-list_32:
-    word cons_cell_i16.code
-    word 3
-    word list_2
-
-list_532:
-    word cons_cell_i16.code
-    word 5
-    word list_32
-
-list_7532:
-    word cons_cell_i16.code
-    word 7
-    word list_532
+    jmp not_quite_primes.code

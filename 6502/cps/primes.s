@@ -122,6 +122,123 @@ nil_cell_i16:
 
 ;;; TODO: search
 
+;;; ----------------------------------------------------------------------
+;;; static lists
+
+list_2:
+    word cons_cell_i16.code
+    word 2
+    word nil_cell_i16.static_closure
+
+list_32:
+    word cons_cell_i16.code
+    word 3
+    word list_2
+
+list_532:
+    word cons_cell_i16.code
+    word 5
+    word list_32
+
+list_7532:
+    word cons_cell_i16.code
+    word 7
+    word list_532
+
+;; not_quite_primes :: IO ()
+;; not_quite_primes = search_noX 2 [2,3,5,7]
+not_quite_primes:
+.code:
+    lda #2
+    sta arg2
+    stz arg3
+    copy16_literal_to_var list_7532, arg4
+    copy_code_pointer_to_local search_noX.static_closure, fp
+    enter_fp
+
+;; search_noX :: Int -> List Int -> IO ()
+;; search_noX i ps = do
+;;   candidate i ps $ \b ->
+;;     case b of
+;;       True -> do
+;;         print i
+;;         search (i+1) ps
+;;       False ->
+;;         search (i+1) ps
+
+
+;;; fp    23 45
+;;; [..] (i  ps) --> candidate (i ps k) where k is [search_noX_continue i ps]
+search_noX:
+    byte 'S'
+    word .roots, .evac, .scav
+.code:
+    ;debug '?'
+    ;debug_decimal_word arg2 ; i
+    ;; allocate continuation
+    heap_alloc 'q', 6 ; TODO: remove char tags passed to alloc
+    copy_code_pointer_to_heap0 search_noX_continue.code
+    copy_word_local_to_heap arg2, 2 ; i
+    copy_word_local_to_heap arg4, 4 ; ps
+    ;; setup args
+    ;; i already in 23; ps already in 45
+    copy_word clo, arg6 ; k
+    copy_code_pointer_to_local candidate.static_closure, fp
+    ;;JUMP candidate.code ; candidate i ps k
+    enter_fp
+.roots:
+    gc_root_at arg4 ; ps
+    rts
+.evac:
+    rts
+.scav:
+    impossible_scavenge_because_static
+.static_closure:
+    word .code
+
+;;; fp            2
+;;;    .23 .45
+;;; [.. i   ps ] (b) --> if b then print i; search (i+1, ps)
+search_noX_continue:
+    byte 'T'
+    word .roots, .evac, .scav
+.code:
+
+    lda arg2
+    beq .skip_print
+
+    copy_word_from_frame 2, arg2 ; i
+    copy_word_from_frame 4, arg4 ; ps
+    ;debug '+'
+    ;debug_decimal_word arg2 ; i
+
+    print_char ' '
+    print_decimal_word arg2 ; i
+    jmp .do_inc
+
+.skip_print:
+    copy_word_from_frame 2, arg2 ; i
+    copy_word_from_frame 4, arg4 ; ps
+    ;debug '-'
+    ;debug_decimal_word arg2 ; i
+
+.do_inc:
+    inc arg2
+    bne .skip_inc_byte2
+    inc arg2 + 1
+.skip_inc_byte2:
+    copy_code_pointer_to_local search_noX.static_closure, fp
+    ;;JUMP search_noX.code ; search (i+1) ps
+    enter_fp
+.roots:
+    rts
+.evac:
+    evacuate 6
+.scav:
+    scavenge_cell_at 4 ; ps
+    scavenge_done 6
+
+;;; ----------------------------------------------------------------------
 ;;; candidate :: Int -> List Int -> (Bool -> r) -> r
 ;;; candidate i ps k = do
 ;;;   let nil = \() -> k True
