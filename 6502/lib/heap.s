@@ -111,11 +111,7 @@ endmacro
 alloc_sub:
     sta n_bytes ; TODO: put this on stack to avoid global
 
-    ;; Something needs to do a regular flush...
-    ;; Really we should do it on the JUMP/ENTER
-    ;; But for now...
-    ;; HACK trigger flush screen from allocation
-    jsr screen_flush_when_time ; needed for forever-fib
+    jsr screen_flush_when_time ;; HACK trigger flush screen from allocation
 
     copy_word g_heap_pointer, clo
     lda n_bytes

@@ -165,12 +165,13 @@ eol2s:
 digits: ascii "0123456789abcdef"
 
 
-screen_flush_when_time:
-    lda g_next_screen_flush
+screen_flush_when_time: ; should really be called every jiffy
+    lda g_ticks
     sec
-    sbc g_ticks
-    beq screen_flush_now
+    sbc g_next_screen_flush
+    bpl screen_flush_now
     rts
+
 screen_flush_now:
     lda g_nmi_count
     and #(NUM_SCREENS - 1)
