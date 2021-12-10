@@ -125,8 +125,9 @@ alloc_sub:
     rts
 
 .heap_exhausted:
-    ;debug 'X'
+    ;debug '{'
     jsr gc.start
+    ;debug '}'
     lda n_bytes
     jmp .again
 

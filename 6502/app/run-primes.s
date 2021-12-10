@@ -50,6 +50,7 @@ g_screen_pointers = $80
 ;;; buffers
 g_screens = $200 ; 4*32 bytes
 
+
 reset_main:
     ldx #$ff
     txs
@@ -61,4 +62,4 @@ reset_main:
     jsr init_screen
     init_gc 1 ; screen-number
     jsr screen_flush_now ; sets the next(first) time to flush
-    jmp not_quite_primes.code
+    jmp primes.code
