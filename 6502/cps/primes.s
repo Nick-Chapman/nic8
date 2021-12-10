@@ -2,14 +2,9 @@
 True = 1
 False = 0
 
-JUMP: macro DEST
-    ;; Maybe switch task here
-    jmp \DEST
-endmacro
-
 enter_fp: macro
     copy_word_from_frame0 cp
-    JUMP (cp)
+    NEXT (cp)
 endmacro
 
 ;;; ----------------------------------------------------------------------
@@ -258,7 +253,7 @@ candidate:
     push_word_immediate .cons
     copy_word arg4,data_pointer ;ps
     read_indexed0 data_pointer, cp
-    JUMP (cp)
+    NEXT (cp)
 .nil:
     copy_word arg6,fp ;k
     lda #True
@@ -283,7 +278,7 @@ candidate:
     sta arg5
     copy_word clo, arg6
     copy_code_pointer_to_local divides.static_closure, fp
-    JUMP divides.code ; divides i p k1
+    NEXT divides.code ; divides i p k1
 .roots:
     gc_root_at arg4 ; ps
     gc_root_at arg6 ; k
@@ -312,7 +307,7 @@ candidate_cont:
     copy_word_from_frame 4, arg4 ; ps
     copy_word_from_frame 6, arg6 ; k
     copy_code_pointer_to_local candidate.static_closure, fp
-    JUMP candidate.code
+    NEXT candidate.code
 .bTrue:
     copy_word_from_frame 6, arg3 ; k -> fp (using 2 as a temp)
     copy_word arg3, fp
@@ -350,7 +345,7 @@ divides:
     sbc arg5 ;pL
     bmi .baseF
     sta arg3 ; i'H
-    JUMP .code ; divides i' p k
+    NEXT .code ; divides i' p k
 .baseT:
     copy_word arg6,fp ;k
     lda #True

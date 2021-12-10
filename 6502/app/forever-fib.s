@@ -54,6 +54,8 @@ g_screens = $200 ; 4*32 bytes
     include macs.s
     include heap.s
     include nmi_irq.s
+
+    include executive.s
     include fib24.s
     include gen-fibs.s
 

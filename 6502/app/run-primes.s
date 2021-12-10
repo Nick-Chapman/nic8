@@ -21,6 +21,7 @@
     include panic.s
     include macs.s
     include heap.s
+    include executive.s
     include primes.s
 
 ;;; bytes

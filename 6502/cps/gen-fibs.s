@@ -13,7 +13,7 @@ fib_iter:
     sec
     sbc arg3 ; temp in arg3 - the time to continue
     bpl .go
-    jmp .wait ; TODO: this must go through the switching macro (when implemented)
+    NEXT .wait
 .roots:
     rts
 .evac:
@@ -33,7 +33,7 @@ fib_iter:
     ;; arg2 already contains I
     copy_word clo, arg3 ; K
     copy_code_pointer_to_local fib_recurse.static_closure, fp
-    jmp fib_recurse.code
+    NEXT fib_recurse.code
 
 
 ;;; fp     234
@@ -49,7 +49,7 @@ fib_iter2:
     inc
     sta arg2 ; I+1
     copy_code_pointer_to_local fib_iter.static_closure, fp
-    jmp fib_iter.code
+    NEXT fib_iter.code
 .roots:
     rts
 .evac:

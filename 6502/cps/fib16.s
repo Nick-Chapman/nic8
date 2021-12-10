@@ -23,7 +23,7 @@ fib_recurse:
     sta arg2
     copy_word clo, arg3
     copy_code_pointer_to_local fib_recurse.static_closure, fp
-    jmp fib_recurse.code
+    NEXT fib_recurse.code
 ;;; N KL KH --> K [N #0]
 .base:
     copy_word arg3,fp ; K
@@ -31,7 +31,7 @@ fib_recurse:
     lda #0
     sta arg3 ; zero high-byte of result
     copy_word_from_frame0 cp
-    jmp (cp)
+    NEXT (cp)
 .roots:
     gc_root_at arg3
     rts
@@ -62,7 +62,7 @@ fib_cont1:
     sta arg2
     copy_word clo,arg3
     copy_code_pointer_to_local fib_recurse.static_closure, fp
-    jmp fib_recurse.code
+    NEXT fib_recurse.code
 .roots:
     rts
 .evac:
@@ -88,7 +88,7 @@ fib_cont2:
     copy_word_from_frame 2, arg4 ; K
     copy_word arg4, fp
     copy_word_from_frame0 cp
-    jmp (cp)
+    NEXT (cp)
 .roots:
     impossible_roots
 .evac:

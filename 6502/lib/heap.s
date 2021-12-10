@@ -110,9 +110,6 @@ endmacro
 
 alloc_sub:
     sta n_bytes ; TODO: put this on stack to avoid global
-
-    jsr screen_flush_when_time ;; HACK trigger flush screen from allocation
-
     copy_word g_heap_pointer, clo
     lda n_bytes
     clc
