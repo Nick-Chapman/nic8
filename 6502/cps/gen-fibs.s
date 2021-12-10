@@ -1,9 +1,29 @@
 
-;;; fp    2
-;;; [..] (I)
+;;; fp    2  3
+;;; [..] (I, Time)
 fib_iter:
     word .roots, .evac, .scav
 .code:
+    clc
+    lda g_ticks
+    adc #10 ; wait 1/10s
+    sta arg3
+.wait
+    lda g_ticks
+    sec
+    sbc arg3 ; temp in arg3 - the time to continue
+    bpl .go
+    jmp .wait ; TODO: this must go through the switching macro (when implemented)
+.roots:
+    rts
+.evac:
+    rts
+.scav:
+    impossible_scavenge_because_static
+.static_closure:
+    word fib_iter.code
+
+.go:
     lda arg2
     ;; allocate & fill in closure
     heap_alloc 'g', 3
@@ -14,14 +34,6 @@ fib_iter:
     copy_word clo, arg3 ; K
     copy_code_pointer_to_local fib_recurse.static_closure, fp
     jmp fib_recurse.code
-.roots:
-    rts
-.evac:
-    rts
-.scav:
-    impossible_scavenge_because_static
-.static_closure:
-    word fib_iter.code
 
 
 ;;; fp     234
