@@ -1,10 +1,12 @@
 ;;; PROVIDES: init_gc, alloc, evacuate, scavenge_cell_at, scavenge_done
 
-;;; 2x 7k heap space...
-SPACE_A_START = $800
-SPACE_A_END = $2400
-SPACE_B_START = $2400
+
+PAGES_PER_SEMI_SPACE = 28 ; 7K
+
 SPACE_B_END = $4000
+SPACE_B_START = SPACE_B_END - ($100 * PAGES_PER_SEMI_SPACE)
+SPACE_A_END = SPACE_B_START
+SPACE_A_START = SPACE_A_END - ($100 * PAGES_PER_SEMI_SPACE)
 
 temp = 0
 lw = 2
