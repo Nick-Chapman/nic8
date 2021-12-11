@@ -3,10 +3,8 @@
 
 ;;; TODO: deprecate/merge this into nmi_irq.s
 
-;;; TODO: move these defs to via.s ; better still, merge this file into via.s
 T1CL = $6004
 T1CH = $6005
-
 ACR = $600B
 IER = $600E
 

@@ -1,6 +1,5 @@
-;;; Explore fib example...
-;;; (1) coded using normal control stack -- DONE
-;;; (2) coded in CPS style, using heap -- TODO
+;;; Explore various coding of parameter passing for fib functions
+;;; including different stack and heap disciplines
 
     org $fffa
     word nmi
@@ -26,11 +25,11 @@ g_mod10 = $74 ; decimal.s
 gc_count = $8a
 heap_start = $8c
 g_selected_version_ptr = $90
-g_id_ptr = $92
+g_version_name = $92
 g_mptr = $94
 g_heap_pointer = $f0
 heap_end_page = $f8 ; (byte)
-n_bytes = $f9 ; number of bytes to allocate (byte) ; TODO: avoid
+n_bytes = $f9 ; number of bytes to allocate (byte)
 space_switcher = $fa
 
 NUM_SCREENS = 2
@@ -201,21 +200,21 @@ select_version:
     sta g_selected_version_ptr + 1
     rts
 
-put_version_name: ; TODO: avoid use of g_id_ptr
+put_version_name:
     lda g_selected_version_ptr
     sec
     sbc #2
-    sta g_id_ptr
+    sta g_version_name
     lda g_selected_version_ptr + 1
     bcs .no_wrap
     sbc #1
 .no_wrap:
-    sta g_id_ptr + 1
+    sta g_version_name + 1
     ldy #1
-    lda (g_id_ptr),y ;hi
+    lda (g_version_name),y ;hi
     pha
     dey
-    lda (g_id_ptr),y ;lo
+    lda (g_version_name),y ;lo
     pha
     jsr put_string
     pla

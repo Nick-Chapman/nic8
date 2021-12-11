@@ -75,7 +75,7 @@ reset_main:
 
 
 start_example:
-    ;stz arg2 :TODO better
+    ;; TODO prefer stz to lda #0; sta
     lda #0
     sta arg2
     copy_code_pointer_to_local fib_iter.static_closure, fp

@@ -87,7 +87,6 @@ fib_cont2:
     word .roots, .evac, .scav
 .code:
     clc
-    ;; TODO: use macro for 16 bit addition - already written!
     load_frame_var 4 ; AL
     adc arg2 ; BL
     sta arg2 ; RL

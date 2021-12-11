@@ -1,6 +1,4 @@
 
-;;; macros for screen printing
-
 newline: macro
     phy
     jsr screen_newline
@@ -14,7 +12,7 @@ print_char: macro CHAR
     pla
 endmacro
 
-print_decimal_trip: macro L ; TODO: should these macros be in same file as the subs they call?
+print_decimal_trip: macro L ; TODO: move macros to same file as the subs they call
     pha
     phx
     phy
@@ -47,8 +45,7 @@ print_decimal_byte: macro L
     pla
 endmacro
 
-
-put_hex_byte: ; TODO: review this code. wrote it a long time ago! - should it save/restore x/a?
+put_hex_byte: ; TODO: save/restore x
     pha
     lsr
     lsr

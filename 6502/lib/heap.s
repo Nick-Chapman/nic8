@@ -1,6 +1,5 @@
 ;;; PROVIDES: init_gc, alloc, evacuate, scavenge_cell_at, scavenge_done
 
-
 PAGES_PER_SEMI_SPACE = 28 ; 7K
 SPACE_B_END = $4000
 SPACE_B_START = SPACE_B_END - ($100 * PAGES_PER_SEMI_SPACE)
@@ -12,7 +11,6 @@ SPACE_A_START = SPACE_A_END - ($100 * PAGES_PER_SEMI_SPACE)
 ;; SPACE_A_END = SPACE_A_START + ($100 * PAGES_PER_SEMI_SPACE)
 ;; SPACE_B_START = $2000
 ;; SPACE_B_END = SPACE_B_START + ($100 * PAGES_PER_SEMI_SPACE)
-
 
 temp = 0
 lw = 2
@@ -28,7 +26,6 @@ arg3 = BASE + 3
 arg4 = BASE + 4
 arg5 = BASE + 5
 arg6 = BASE + 6
-
 
 ;;; Client entry points
 
@@ -65,10 +62,9 @@ gc_root_at: macro N
 endmacro
 
 evacuate: macro N
-    ;debug 'e'
     lda #\N
     pha
-    jsr alloc_sub.again ; TODO, hmm
+    jsr alloc_sub.again
     ply
     jsr gc.evacuate_sub
     copy_word clo, ev
@@ -79,7 +75,6 @@ endmacro
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
 ;;; By first setting 'ev'; calling evacuate; then assigning 'ev' back to the cell
 scavenge_cell_at: macro N
-    ;debug 's'
     ldy #\N ; TODO: use word macros to do copy
     lda (lw),y
     sta ev
@@ -115,7 +110,6 @@ heap_alloc: macro C, N
     jsr alloc_sub
 endmacro
 
-
 alloc_sub:
     sta n_bytes ; TODO: put this on stack to avoid global
     copy_word g_heap_pointer, clo
@@ -137,7 +131,7 @@ alloc_sub:
     jsr gc.start
     ;debug '}'
     lda n_bytes
-    jmp .again
+    jmp .again ; TODO: inline this jump
 
 ;;; This inner alloc must succeed !
 ;;; i.e. we do the exhaustion check, and it must not fail.
@@ -162,7 +156,6 @@ alloc_sub:
 
 .heap_exhausted_still:
     panic 'Heap Exhausted'
-
 
 ;;; macro for internal use
 get_code_pointer_offset_function: macro HP, N
@@ -189,43 +182,18 @@ jump_cp: macro
     jmp (temp)
 endmacro
 
-
-;; show_closure_tag: macro HP
-;;     lda (\HP)
-;;     sec
-;;     sbc #7 ; negative offset from code-pointer -- SHARE
-;;     sta cp
-;;     ldy #1
-;;     lda (\HP),y
-;;     sta cp + 1
-;;     bcs .\@
-;;     dec cp + 1
-;; .\@:
-;;     lda (cp)
-;;     jsr screen_putchar
-;;     screen_flush_selected
-;; endmacro
-
-
 gc: ; private namespace marker
 
-
 .evacuate_roots:
-    ;debug 'R'
-    ;show_closure_tag fp
     get_code_pointer_offset_function fp, 6
     jump_cp
 
 .gc_scavenge:
-    ;debug 'S'
-    ;show_closure_tag lw
     ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
     get_code_pointer_offset_function lw, 2
     jump_cp
 
 .dispatch_evacuate:
-    ;debug 'E'
-    ;show_closure_tag ev
     ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
     get_code_pointer_offset_function ev, 4
     ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
@@ -233,17 +201,12 @@ gc: ; private namespace marker
     jump_cp
 
 .start:
-    ;lda gc_screen
-    ;; SWITCH TO GC SCREEN
-    ;; ldx g_selected_screen
-    ;; phx ; save caller's selected screen
-    ;; sta g_selected_screen ; set screen for GC debug
     jsr .debug_start_gc
     jsr .switch_space
     copy_word g_heap_pointer, heap_start
     copy_word g_heap_pointer, lw
     jsr .evacuate_roots
-    ;; evacuate 'fp'... ; TODO: fp=0, and treat like any other root
+    ;; TODO: evacuate 'fp' like any other root; caller must identify it ?
     copy_word fp, ev
     jsr .dispatch_evacuate
     copy_word ev, fp
@@ -280,7 +243,6 @@ gc: ; private namespace marker
 ;;; keep scavenging until 'lw' catches up with 'hp'
 ;;; scavenge routines jump back here when thet are done
 .scavenge_loop:
-    ;debug 'L'
     lda lw
     cmp g_heap_pointer
     beq .scavenge_loop_cmp_second_byte
@@ -292,28 +254,17 @@ gc: ; private namespace marker
     jmp .gc_scavenge
 .finished:
     jsr .debug_end_gc
-    ;; RESTORE CALLER SCREEN
-    ;; plx ; restore caller's selected screen
-    ;; stx g_selected_screen
     rts
 
-.debug_start_gc:
-    ;; newline
-    ;; newline
-    ;; jsr screen_return_home
-    ;; print_string 'GC{'
+.debug_start_gc: ; TODO: inline/remove this
     rts
 
-.debug_end_gc:
-    ;; print_char '}'
-    ;; newline
-
+.debug_end_gc: ; TODO: inline
     ;; SWITCH TO GC SCREEN
     ldx g_selected_screen
     phx ; save caller's selected screen
     lda gc_screen
-    sta g_selected_screen ; set screen for GC debug
-
+    sta g_selected_screen
     newline
     print_string 'GC:'
     inc16_var gc_count
@@ -322,12 +273,9 @@ gc: ; private namespace marker
     print_string 'live:'
     sub16 g_heap_pointer, heap_start, temp
     print_decimal_word temp
-    ;print_string '  ' ; blank digits
-
     ;; RESTORE CALLER SCREEN
     plx ; restore caller's selected screen
     stx g_selected_screen
-
     rts
 
 .evacuate_sub: ; N passed in Y; N>=1

@@ -50,7 +50,7 @@ fib6_entry:
 
     pla
     sta (g_stack)
-    jsr push ; TODO: use a macro!
+    jsr push
 
     ;;      0  1 ...
     ;;         N

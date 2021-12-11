@@ -80,7 +80,7 @@ fib_cont2:
     word .roots, .evac, .scav
 .code:
     clc
-    ;; TODO: use macro for 16 bit addition - already written!
+    ;; How can we use the macro for 16 bit addition without using a temp?
     load_frame_var 4 ; AL
     adc arg2 ; BL
     sta arg2 ; RL

@@ -1,5 +1,5 @@
-;;; TODO: rename file to word-macs ?
-;;; TODO: unify, and name consitently
+
+;;; TODO: which macros are used; and where?
 
 copy_word: macro source, dest
     lda \source

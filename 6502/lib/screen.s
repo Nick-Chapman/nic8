@@ -3,7 +3,6 @@
 ;;; REQUIRES: g_screen, g_screen_pointer
 ;;; PROVIDES: init_screen, screen_flush, screen_putchar, screen_newline, screen_return_home
 
-
 ;; 4 screens -- TODO: 8 screens!
 
 init_screen_pointers:
@@ -29,10 +28,6 @@ init_screen:
     cpx #(4 * 32)
     bne .each_char
     rts
-
-;; screen_flush: macro ; doesn't work unless acc is setup
-;;     jsr screen_flush_sub
-;; endmacro
 
 screen_flush_selected: macro ; whatever screen is selected for writing
     pha
@@ -60,7 +55,7 @@ screen_flush_sub:
     sec
     cpx #16
     bne .each_line1_char
-    ;; reposition to line2. do 24 dummy prints
+    ;; reposition to line2. do 24 dummy prints ; TODO: avoid the dummy prints
     lda #'+' ;dont expect to see this
     ldx #24
 .each_dummy_print:
@@ -106,9 +101,9 @@ screen_newline:
     ldy g_selected_screen
     lda g_screen_pointers,y
     cmp eol1s,y
-    bmi _$
+    bmi .skip
     jsr scrollup
-_$:
+.skip:
     jsr return_to_start_line2
     pla
     rts
@@ -118,10 +113,10 @@ maybe_scroll:
     ldy g_selected_screen
     lda g_screen_pointers,y
     cmp eol2s,y
-    bne _$
+    bne .skip
     jsr scrollup
     jsr return_to_start_line2
-_$:
+.skip:
     pla
     rts
 
@@ -154,7 +149,6 @@ screen_return_home:
     sta g_screen_pointers,y
     rts
 
-
 starts:
     byte 0,32,64,96
 eol1s:
@@ -164,8 +158,7 @@ eol2s:
 
 digits: ascii "0123456789abcdef"
 
-
-screen_flush_when_time: ; should really be called every jiffy
+screen_flush_when_time: ; should be called every jiffy
     lda g_ticks
     sec
     sbc g_next_screen_flush
@@ -178,6 +171,6 @@ screen_flush_now:
     jsr screen_flush_sub
     lda g_ticks
     clc
-    adc #5 ; 20 times/sec ; TODO: Be a bit slower, say 10/sec to avoid waiting on lcd
+    adc #5 ; 20 times/sec ; TODO: bit slower, say 10/sec to avoid waiting on lcd
     sta g_next_screen_flush
     rts

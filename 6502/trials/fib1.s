@@ -1,7 +1,6 @@
 ;;; REQUIRES: g_arg (byte), g_res (word)
 ;;; PROVIDES: fib1
 
-;;; TODO: use local labels!
 fib1_name:
     string "1: ZP -> ZP"
     word fib1_name

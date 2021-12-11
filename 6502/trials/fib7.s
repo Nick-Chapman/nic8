@@ -12,7 +12,7 @@ fib7_entry_shared:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta arg2 ; N
     copy16_literal_to_var 0, gc_count
-    ;; allocate final continuation -- TODO: no need for this to be heap allocated
+    ;; allocate final continuation -- aside: there is no need for this to be heap allocated
     heap_alloc 'c', 2
     ;; fill in closure
     copy_code_pointer_to_heap0 fib7_done.code
