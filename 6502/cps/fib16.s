@@ -9,6 +9,9 @@ fib_recurse:
     sec
     cmp #2
     bcc .base ; N<2 ?
+;;     bcs .rec
+;;     jmp .base
+;; .rec:
     ;; allocate cont1
     heap_alloc 'a', 5
     ;; fill in closure

@@ -14,7 +14,6 @@ endmacro
 debug_hex_word: macro L
     print_hex_word \L
     screen_flush_selected
-    jsr pause1sec
 endmacro
 
 debug_hex_byte: macro L

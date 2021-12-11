@@ -2,9 +2,28 @@
 True = 1
 False = 0
 
+panic_if_not_in_rom_sub:
+    cmp #$80
+    bcc .bad
+    rts
+.bad:
+    panic 'OOR'
+
+panic_if_not_in_rom: macro V
+    pha
+    lda \V + 1
+    jsr panic_if_not_in_rom_sub
+    pla
+endmacro
+
+indirect_NEXT: macro V
+    ;panic_if_not_in_rom \V
+    NEXT (\V)
+endmacro
+
 enter_fp: macro
     copy_word_from_frame0 cp
-    NEXT (cp)
+    indirect_NEXT cp
 endmacro
 
 ;;; ----------------------------------------------------------------------
@@ -169,6 +188,9 @@ search_continue:
 .code:
     lda arg2
     beq .skip_print
+;;     bne .skip_print_no
+;;     jmp .skip_print
+;; .skip_print_no:
     copy_word_from_frame 2, arg2 ; i
     copy_word_from_frame 4, arg4 ; ps -- arg4 is temp set to current ps, it will be extended
     print_char ' '
@@ -176,6 +198,8 @@ search_continue:
     ;; alloc cons cell
     heap_alloc 'a', 6
     copy_code_pointer_to_heap0 cons_cell_i16.code
+    ;; TODO: fix BUG - making use of arg2/arg4 which were set before the above alloc
+    ;; but will not be valid if the alloc caused GC
     copy_word_local_to_heap arg2, 2 ; i
     copy_word_local_to_heap arg4, 4 ; ps
     ;; set arg4-ps to be the newly allocated cons cell
@@ -223,7 +247,7 @@ candidate:
     push_word_immediate .cons
     copy_word arg4,data_pointer ;ps
     read_indexed0 data_pointer, cp
-    NEXT (cp)
+    indirect_NEXT cp
 .nil:
     copy_word arg6,fp ;k
     lda #True
@@ -231,14 +255,18 @@ candidate:
     enter_fp ; k True
 .cons:
     ;; \p ps' -> let k1 = make_candidate_cont (i,ps,k) ...
+
+    ;; before we alloc, pull ps' off the stack, and put it in arg4
+    ;; which is treated as a root here
+    pla ; ps'L
+    sta arg4
+    pla ; ps'H
+    sta arg5
+
     heap_alloc 'd', 8
-    ;; fill in closure
     copy_code_pointer_to_heap0 candidate_cont.code
     copy_word_local_to_heap arg2, 2 ; i
-    pla ; ps'L
-    store_heap 4
-    pla ; ps'H
-    store_heap 5
+    copy_word_local_to_heap arg4, 4 ; ps'
     copy_word_local_to_heap arg6, 6 ; k
     ;; setup args
     ;; iL,iH already in arg2,arg3
@@ -277,7 +305,7 @@ candidate_cont:
     copy_code_pointer_to_local candidate.static_closure, fp
     NEXT candidate.code
 .bTrue:
-    copy_word_from_frame 6, arg3 ; k -> fp (using 2 as a temp)
+    copy_word_from_frame 6, arg3 ; k -> fp (using 3 as a temp)
     copy_word arg3, fp
     lda #False
     sta arg2
