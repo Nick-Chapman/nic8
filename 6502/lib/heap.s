@@ -42,7 +42,7 @@ internal_init_gc_sub: ; screen number for GC debug passed in acc
     sta gc_count
     sta gc_count + 1
     jsr gc.set_heap_space_a
-    copy_word g_heap_pointer, heap_start
+    copy16 g_heap_pointer, heap_start
     rts
 
 ;;; Macros for external use
@@ -56,9 +56,9 @@ impossible_roots: macro
 endmacro
 
 gc_root_at: macro N
-    copy_word \N, ev
+    copy16 \N, ev
     jsr gc.dispatch_evacuate
-    copy_word ev, \N
+    copy16 ev, \N
 endmacro
 
 evacuate: macro N
@@ -67,7 +67,7 @@ evacuate: macro N
     jsr alloc_sub.again
     ply
     jsr gc.evacuate_sub
-    copy_word clo, ev
+    copy16 clo, ev
     rts
 endmacro
 
@@ -75,21 +75,11 @@ endmacro
 ;;; We will call evacuate on the cell (2 byte pointer) at offset-N
 ;;; By first setting 'ev'; calling evacuate; then assigning 'ev' back to the cell
 scavenge_cell_at: macro N
-    ldy #\N ; TODO: use word macros to do copy
-    lda (lw),y
-    sta ev
-    ldy #\N + 1
-    lda (lw),y
-    sta ev + 1
+    load16 lw, \N, ev
     ;; now 'ev is setup
     jsr gc.dispatch_evacuate
     ;; repoint the scavenged word to the relocated 'ev'
-    lda ev
-    ldy #\N
-    sta (lw),y
-    lda ev + 1
-    ldy #\N + 1
-    sta (lw),y
+    save16 ev, lw,\N
 endmacro
 
 scavenge_done: macro N
@@ -112,7 +102,7 @@ endmacro
 
 alloc_sub:
     sta n_bytes ; TODO: put this on stack to avoid global
-    copy_word g_heap_pointer, clo
+    copy16 g_heap_pointer, clo
     lda n_bytes
     clc
     adc g_heap_pointer
@@ -140,7 +130,7 @@ alloc_sub:
 
 .again: ; TODO: avoid code repetition w.r.t alloc
     pha
-    copy_word g_heap_pointer, clo
+    copy16 g_heap_pointer, clo
     pla
     clc
     adc g_heap_pointer
@@ -158,14 +148,12 @@ alloc_sub:
     panic 'Heap Exhausted'
 
 ;;; macro for internal use
-get_code_pointer_offset_function: macro HP, N
-    lda (\HP)
+get_code_pointer_offset_function: macro P, N
+    lda (\P)
     sec
     sbc #\N ; negative offset from code-pointer
     sta cp
-    ldy #1
-    lda (\HP),y
-    sta cp + 1
+    load8 \P,1, cp + 1
     bcs .\@
     dec cp + 1
 .\@:
@@ -174,11 +162,7 @@ endmacro
 ;;; macro for internal use
 ;;; double indirect jump to 'cp' (using 'temp')
 jump_cp: macro
-    lda (cp)
-    sta temp
-    ldy #1
-    lda (cp),y
-    sta temp + 1
+    load16_0 cp, temp
     jmp (temp)
 endmacro
 
@@ -203,13 +187,13 @@ gc: ; private namespace marker
 .start:
     jsr .debug_start_gc
     jsr .switch_space
-    copy_word g_heap_pointer, heap_start
-    copy_word g_heap_pointer, lw
+    copy16 g_heap_pointer, heap_start
+    copy16 g_heap_pointer, lw
     jsr .evacuate_roots
     ;; TODO: evacuate 'fp' like any other root; caller must identify it ?
-    copy_word fp, ev
+    copy16 fp, ev
     jsr .dispatch_evacuate
-    copy_word ev, fp
+    copy16 ev, fp
     jmp .scavenge_loop
 
 .switch_space:
@@ -221,7 +205,7 @@ gc: ; private namespace marker
 ;;; And also, for the pending alloc which cause GC to be initiated.
 
 .set_heap_space_a:
-    copy_code_pointer_to_local .set_heap_space_b, space_switcher
+    store16i .set_heap_space_b, space_switcher
     lda #<SPACE_A_START
     sta g_heap_pointer
     lda #>SPACE_A_START
@@ -231,7 +215,7 @@ gc: ; private namespace marker
     rts
 
 .set_heap_space_b:
-    copy_code_pointer_to_local .set_heap_space_a, space_switcher
+    store16i .set_heap_space_a, space_switcher
     lda #<SPACE_B_START
     sta g_heap_pointer
     lda #>SPACE_B_START
@@ -267,7 +251,7 @@ gc: ; private namespace marker
     sta g_selected_screen
     newline
     print_string 'GC:'
-    inc16_var gc_count
+    increment16 gc_count
     print_decimal_word gc_count
     newline
     print_string 'live:'

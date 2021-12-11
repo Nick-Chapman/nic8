@@ -16,28 +16,27 @@ fib_recurse:
     ;; allocate cont1
     heap_alloc 'e', 5
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib_cont1.code
-    copy_byte_local_to_heap arg2, 2
-    ;copy_word_local_to_heap arg3, 3 ; replace word with 2xbyte ops
-    copy_byte_local_to_heap arg3, 3
-    copy_byte_local_to_heap arg4, 4
+    save16i_0 fib_cont1.code, clo
+    save8 arg2, clo,2
+    save8 arg3, clo,3
+    save8 arg4, clo,4
     ;; setup args
     lda arg2 ; N
     sec
     sbc #1 ; N-1
     sta arg2
-    copy_word clo, arg3
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo, arg3
+    store16i fib_recurse.static_closure, fp
     NEXT fib_recurse.code
 
 ;;;        2 3  4
 ;;; --> K (N #0 #0)
 .base:
-    copy_word arg3,fp ; K
+    copy16 arg3,fp ; K
     ;; N (low-byte of result) is already in arg2
     stz arg3 ; zero medium byte of result
     stz arg4 ; zero high byte of result
-    copy_word_from_frame0 cp
+    load16_0 fp, cp
     NEXT (cp)
 .roots:
     gc_root_at arg3
@@ -59,18 +58,18 @@ fib_cont1:
     ;; allocate cont2
     heap_alloc 'f', 7
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib_cont2.code
-    copy_word_frame_to_heap 3, 2 ; K
-    copy_byte_local_to_heap arg2, 4 ; AL
-    copy_byte_local_to_heap arg3, 5 ; AM
-    copy_byte_local_to_heap arg4, 6 ; AH
+    save16i_0 fib_cont2.code, clo
+    transfer16 fp, 3, clo, 2 ; K
+    save8 arg2, clo,4 ; AL
+    save8 arg3, clo,5 ; AM
+    save8 arg4, clo,6 ; AH
     ;; setup args
-    load_frame_var 2 ; N
+    loadA fp, 2 ; N
     sec
     sbc #2 ; N-2
     sta arg2
-    copy_word clo,arg3
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo,arg3
+    store16i fib_recurse.static_closure, fp
     NEXT fib_recurse.code
 .roots:
     rts
@@ -87,19 +86,19 @@ fib_cont2:
     word .roots, .evac, .scav
 .code:
     clc
-    load_frame_var 4 ; AL
+    loadA fp, 4 ; AL
     adc arg2 ; BL
     sta arg2 ; RL
-    load_frame_var 5 ; AM
+    loadA fp, 5 ; AM
     adc arg3 ; BM
     sta arg3 ; RM
-    load_frame_var 6 ; AH
+    loadA fp, 6 ; AH
     adc arg4 ; BH
     sta arg4 ; RH
     ;; return to caller
-    copy_word_from_frame 2, arg5 ; K (using arg5 as a temp)
-    copy_word arg5, fp
-    copy_word_from_frame0 cp
+    load16 fp,2, arg5 ; K (using arg5 as a temp)
+    copy16 arg5, fp
+    load16_0 fp, cp
     NEXT (cp)
 .roots:
     impossible_roots

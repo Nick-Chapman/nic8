@@ -15,25 +15,25 @@ fib_recurse:
     ;; allocate cont1
     heap_alloc 'a', 5
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib_cont1.code
-    copy_byte_local_to_heap arg2, 2
-    copy_byte_local_to_heap arg3, 3
-    copy_byte_local_to_heap arg4, 4
+    save16i_0 fib_cont1.code, clo
+    save8 arg2, clo,2
+    save8 arg3, clo,3
+    save8 arg4, clo,4
     ;; setup args
     lda arg2 ; N
     sec
     sbc #1 ; N-1
     sta arg2
-    copy_word clo, arg3
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo, arg3
+    store16i fib_recurse.static_closure, fp
     NEXT fib_recurse.code
 ;;; N KL KH --> K [N #0]
 .base:
-    copy_word arg3,fp ; K
+    copy16 arg3,fp ; K
     ;; N (low-byte of result) is already in arg2
     lda #0
     sta arg3 ; zero high-byte of result
-    copy_word_from_frame0 cp
+    load16_0 fp, cp
     NEXT (cp)
 .roots:
     gc_root_at arg3
@@ -54,17 +54,17 @@ fib_cont1:
     ;; allocate cont2
     heap_alloc 'b', 6
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib_cont2.code
-    copy_word_frame_to_heap 3, 2 ; K
-    copy_byte_local_to_heap arg2, 4 ; AL
-    copy_byte_local_to_heap arg3, 5 ; AH
+    save16i_0 fib_cont2.code, clo
+    transfer16 fp, 3, clo, 2 ; K
+    save8 arg2, clo,4 ; AL
+    save8 arg3, clo,5 ; AH
     ;; setup args
-    load_frame_var 2 ; N
+    loadA fp, 2 ; N
     sec
     sbc #2 ; N-2
     sta arg2
-    copy_word clo,arg3
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo,arg3
+    store16i fib_recurse.static_closure, fp
     NEXT fib_recurse.code
 .roots:
     rts
@@ -81,16 +81,16 @@ fib_cont2:
 .code:
     clc
     ;; How can we use the macro for 16 bit addition without using a temp?
-    load_frame_var 4 ; AL
+    loadA fp, 4 ; AL
     adc arg2 ; BL
     sta arg2 ; RL
-    load_frame_var 5 ; AH
+    loadA fp, 5 ; AH
     adc arg3 ; BH
     sta arg3 ; RH
     ;; return to caller
-    copy_word_from_frame 2, arg4 ; K
-    copy_word arg4, fp
-    copy_word_from_frame0 cp
+    load16 fp,2, arg4 ; K
+    copy16 arg4, fp
+    load16_0 fp, cp
     NEXT (cp)
 .roots:
     impossible_roots

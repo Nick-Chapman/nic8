@@ -58,6 +58,7 @@ endmacro
     include debug.s
     include panic.s
     include macs.s
+    include arith16.s
     include heap.s
     include executive.s
     include nmi_irq.s

@@ -27,12 +27,12 @@ fib_iter:
     lda arg2
     ;; allocate & fill in closure
     heap_alloc 'g', 3
-    copy_code_pointer_to_heap0 fib_iter2.code
-    copy_byte_local_to_heap arg2, 2 ; I
+    save16i_0 fib_iter2.code, clo
+    save8 arg2, clo,2 ; I
     ;; setup args & fp
     ;; arg2 already contains I
-    copy_word clo, arg3 ; K
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo, arg3 ; K
+    store16i fib_recurse.static_closure, fp
     NEXT fib_recurse.code
 
 
@@ -45,10 +45,10 @@ fib_iter2:
     print_decimal_trip arg2 ; RL,RM,RH (24 bit result)
     lda #' '
     jsr screen_putchar
-    load_frame_var 2 ; I
+    loadA fp, 2 ; I
     inc
     sta arg2 ; I+1
-    copy_code_pointer_to_local fib_iter.static_closure, fp
+    store16i fib_iter.static_closure, fp
     NEXT fib_iter.code
 .roots:
     rts

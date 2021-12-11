@@ -52,6 +52,7 @@ g_screens = $200 ; 4*32 bytes
     include debug.s
     include panic.s
     include macs.s
+    include arith16.s
     include heap.s
     include nmi_irq.s
 
@@ -78,5 +79,5 @@ start_example:
     ;; TODO prefer stz to lda #0; sta
     lda #0
     sta arg2
-    copy_code_pointer_to_local fib_iter.static_closure, fp
+    store16i fib_iter.static_closure, fp
     jmp fib_iter.code

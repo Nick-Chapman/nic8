@@ -11,14 +11,14 @@ fib7_entry:
 fib7_entry_shared:
     ;; N(acc) --> fib7 [N KL KH] where K is fib7_done []
     sta arg2 ; N
-    copy16_literal_to_var 0, gc_count
+    store16i 0, gc_count
     ;; allocate final continuation -- aside: there is no need for this to be heap allocated
     heap_alloc 'c', 2
     ;; fill in closure
-    copy_code_pointer_to_heap0 fib7_done.code
+    save16i_0 fib7_done.code, clo
     ;; setup args
-    copy_word clo, arg3
-    copy_code_pointer_to_local fib_recurse.static_closure, fp
+    copy16 clo, arg3
+    store16i fib_recurse.static_closure, fp
     jmp fib_recurse.code
 
 

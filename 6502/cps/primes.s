@@ -22,28 +22,8 @@ indirect_NEXT: macro V
 endmacro
 
 enter_fp: macro
-    copy_word_from_frame0 cp
+    load16_0 fp, cp
     indirect_NEXT cp
-endmacro
-
-;;; ----------------------------------------------------------------------
-;;; Number args/locals from 1 (because of plan to have fp as 0)
-;;; BUT IT NEEDS TO START FROM 2, because fp is a word!
-
-;;; ----------------------------------------------------------------------
-;;; array access
-
-load_byte_from_array: macro A, N
-    ldy #\N
-    lda (\A),y
-endmacro
-
-read_indexed0: macro P, V
-    lda (\P)
-    sta \V
-    ldy #1
-    lda (\P),y
-    sta \V + 1
 endmacro
 
 ;;; ----------------------------------------------------------------------
@@ -82,13 +62,13 @@ cons_cell_i16:
     pla ; nL
     pla ; nH
     ;; setup head/tail
-    load_byte_from_array data_pointer, 3
+    loadA data_pointer, 3
     pha ; iH
-    load_byte_from_array data_pointer, 2
+    loadA data_pointer, 2
     pha ; iL
-    load_byte_from_array data_pointer, 5
+    loadA data_pointer, 5
     pha ; tailH
-    load_byte_from_array data_pointer, 4
+    loadA data_pointer, 4
     pha ; tailL
     jmp (temp)
 
@@ -132,8 +112,8 @@ primes:
     lda #2
     sta arg2
     stz arg3
-    copy16_literal_to_var nil_cell_i16.static_closure, arg4
-    copy_code_pointer_to_local search.static_closure, fp
+    store16i nil_cell_i16.static_closure, arg4
+    store16i search.static_closure, fp
     enter_fp
 
 ;;; fp    23 45
@@ -163,13 +143,13 @@ search:
     NEXT .wait
 .go
     heap_alloc 'q', 6
-    copy_code_pointer_to_heap0 search_continue.code
-    copy_word_local_to_heap arg2, 2 ; i
-    copy_word_local_to_heap arg4, 4 ; ps
+    save16i_0 search_continue.code, clo
+    save16 arg2, clo,2 ; i
+    save16 arg4, clo,4 ; ps
     ;; setup args
     ;; i already in 23; ps already in 45
-    copy_word clo, arg6 ; k
-    copy_code_pointer_to_local candidate.static_closure, fp
+    copy16 clo, arg6 ; k
+    store16i candidate.static_closure, fp
     enter_fp
 
 ;;; fp            2
@@ -191,29 +171,29 @@ search_continue:
 ;;     bne .skip_print_no
 ;;     jmp .skip_print
 ;; .skip_print_no:
-    copy_word_from_frame 2, arg2 ; i
-    copy_word_from_frame 4, arg4 ; ps -- arg4 is temp set to current ps, it will be extended
+    load16 fp,2, arg2 ; i
+    load16 fp,4, arg4 ; ps -- arg4 is temp set to current ps, it will be extended
     print_char ' '
     print_decimal_word arg2 ; i
     ;; alloc cons cell
     heap_alloc 'a', 6
-    copy_code_pointer_to_heap0 cons_cell_i16.code
+    save16i_0 cons_cell_i16.code, clo
     ;; TODO: fix BUG - making use of arg2/arg4 which were set before the above alloc
     ;; but will not be valid if the alloc caused GC
-    copy_word_local_to_heap arg2, 2 ; i
-    copy_word_local_to_heap arg4, 4 ; ps
+    save16 arg2, clo,2 ; i
+    save16 arg4, clo,4 ; ps
     ;; set arg4-ps to be the newly allocated cons cell
-    copy_word clo, arg4 ; cons (i,ps)
+    copy16 clo, arg4 ; cons (i,ps)
     jmp .do_inc
 .skip_print:
-    copy_word_from_frame 2, arg2 ; i
-    copy_word_from_frame 4, arg4 ; ps
+    load16 fp,2, arg2 ; i
+    load16 fp,4, arg4 ; ps
 .do_inc:
     inc arg2
     bne .skip_inc_byte2
     inc arg2 + 1
 .skip_inc_byte2:
-    copy_code_pointer_to_local search.static_closure, fp
+    store16i search.static_closure, fp
     enter_fp
 
 
@@ -245,11 +225,11 @@ candidate:
     ;; match ps nil cons
     push_word_immediate .nil
     push_word_immediate .cons
-    copy_word arg4,data_pointer ;ps
-    read_indexed0 data_pointer, cp
+    copy16 arg4,data_pointer ;ps
+    load16_0 data_pointer, cp
     indirect_NEXT cp
 .nil:
-    copy_word arg6,fp ;k
+    copy16 arg6,fp ;k
     lda #True
     sta arg2
     enter_fp ; k True
@@ -264,18 +244,18 @@ candidate:
     sta arg5
 
     heap_alloc 'd', 8
-    copy_code_pointer_to_heap0 candidate_cont.code
-    copy_word_local_to_heap arg2, 2 ; i
-    copy_word_local_to_heap arg4, 4 ; ps'
-    copy_word_local_to_heap arg6, 6 ; k
+    save16i_0 candidate_cont.code, clo
+    save16 arg2, clo,2 ; i
+    save16 arg4, clo,4 ; ps'
+    save16 arg6, clo,6 ; k
     ;; setup args
     ;; iL,iH already in arg2,arg3
     pla ; pL
     sta arg4
     pla ; pH
     sta arg5
-    copy_word clo, arg6
-    copy_code_pointer_to_local divides.static_closure, fp
+    copy16 clo, arg6
+    store16i divides.static_closure, fp
     NEXT divides.code ; divides i p k1
 
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
@@ -299,14 +279,14 @@ candidate_cont:
     lda arg2 ; b
     bne .bTrue
     ;; candidate i ps k
-    copy_word_from_frame 2, arg2 ; i
-    copy_word_from_frame 4, arg4 ; ps
-    copy_word_from_frame 6, arg6 ; k
-    copy_code_pointer_to_local candidate.static_closure, fp
+    load16 fp,2, arg2 ; i
+    load16 fp,4, arg4 ; ps
+    load16 fp,6, arg6 ; k
+    store16i candidate.static_closure, fp
     NEXT candidate.code
 .bTrue:
-    copy_word_from_frame 6, arg3 ; k -> fp (using 3 as a temp)
-    copy_word arg3, fp
+    load16 fp,6, arg3 ; k -> fp (using 3 as a temp)
+    copy16 arg3, fp
     lda #False
     sta arg2
     enter_fp ; k False
@@ -343,12 +323,12 @@ divides:
     sta arg3 ; i'H
     NEXT .code ; divides i' p k
 .baseT:
-    copy_word arg6,fp ;k
+    copy16 arg6,fp ;k
     lda #True
     sta arg2
     enter_fp ; k True
 .baseF:
-    copy_word arg6,fp ;k
+    copy16 arg6,fp ;k
     lda #False
     sta arg2
     enter_fp ; k False

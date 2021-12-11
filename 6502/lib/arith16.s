@@ -6,14 +6,24 @@ increment16: macro A
 .\@:
 endmacro
 
-add16: macro A, B, C ; A+B --> C
+add16: macro A, B, RES ; A+B --> RES
     clc
     lda \A
     adc \B
-    sta \C
+    sta \RES
     lda \A + 1
     adc \B + 1
-    sta \C + 1
+    sta \RES + 1
+endmacro
+
+sub16 : macro A, B, RES ; A-B --> RES
+    sec
+    lda \A
+    sbc \B
+    sta \RES
+    lda \A + 1
+    sbc \B + 1
+    sta \RES + 1
 endmacro
 
 compare16: macro A,B ; if B > A, clear carry
