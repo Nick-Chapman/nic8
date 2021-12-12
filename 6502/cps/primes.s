@@ -27,23 +27,13 @@ enter_fp: macro
 endmacro
 
 ;;; ----------------------------------------------------------------------
-;;; push/pull macros
-
-push_word_immediate: macro LIT
-    lda #>\LIT
-    pha
-    lda #<\LIT
-    pha
-endmacro
-
-;;; ----------------------------------------------------------------------
-;;; cons-cell of 16-bit numbers
+;;; lists of 16-bit numbers: cons/nil
 ;;; (we need to know the element's size & that it's not a heap value)
-;;;
-;;; fp
-;;;     .23 .45
-;;; [..  i   tail]
+
 cons_cell_i16:
+    word .roots, .evac, .scav
+.tag:
+    byte 1
 .roots:
     impossible_roots
 .evac:
@@ -52,27 +42,11 @@ cons_cell_i16:
     scavenge_cell_at 4 ; tail
     scavenge_done 6
     byte 'C'
-    word .roots, .evac, .scav
-.code:
-    ;; \n c -> c i tail
-    pla ; cL
-    sta temp
-    pla ; cH
-    sta temp + 1
-    pla ; nL
-    pla ; nH
-    ;; setup head/tail
-    loadA data_pointer, 3
-    pha ; iH
-    loadA data_pointer, 2
-    pha ; iL
-    loadA data_pointer, 5
-    pha ; tailH
-    loadA data_pointer, 4
-    pha ; tailL
-    jmp (temp)
 
 nil_cell_i16:
+    word .roots, .evac, .scav
+.tag:
+    byte 0
 .roots:
     impossible_roots
 .evac:
@@ -80,17 +54,8 @@ nil_cell_i16:
 .scav:
     impossible_scavenge_because_static
 .static_closure:
-    word .code
+    word .tag
     byte 'N'
-    word .roots, .evac, .scav
-.code:
-    pla ; cL
-    pla ; cH
-    pla ; nL
-    sta temp
-    pla ; nH
-    sta temp + 1
-    jmp (temp)
 
 ;;; ----------------------------------------------------------------------
 ;;; primes :: IO ()
@@ -176,7 +141,7 @@ search_continue:
     print_decimal_word arg2 ; i
     ;; alloc cons cell
     heap_alloc 6
-    save16i_0 cons_cell_i16.code, clo
+    save16i_0 cons_cell_i16.tag, clo
     load16 fp,2, arg2 ; i
     load16 fp,4, arg4 ; ps
     save16 arg2, clo,2 ; i
@@ -221,41 +186,27 @@ candidate:
     byte 'A'
     word .roots, .evac, .scav
 .code:
-    ;; match ps nil cons
-    push_word_immediate .nil
-    push_word_immediate .cons
-    copy16 arg4,data_pointer ;ps
-    load16_0 data_pointer, cp
-    indirect_NEXT cp
-.nil:
-    copy16 arg6,fp ;k
-    lda #True
-    sta arg2
-    enter_fp ; k True
-.cons:
-    ;; \p ps' -> let k1 = make_candidate_cont (i,ps,k) ...
-
-    ;; before we alloc, pull ps' off the stack, and put it in arg4
-    ;; which is treated as a root here
-    pla ; ps'L
-    sta arg4
-    pla ; ps'H
-    sta arg5
-
+    load16_0 arg4, cp
+    lda (cp)
+    beq .nil
+    ;; cons case
     heap_alloc 8
+    copy16 arg4, temp
     save16i_0 candidate_cont.code, clo
     save16 arg2, clo,2 ; i
-    save16 arg4, clo,4 ; ps'
+    transfer16 temp,4, clo, 4
     save16 arg6, clo,6 ; k
     ;; setup args
-    ;; iL,iH already in arg2,arg3
-    pla ; pL
-    sta arg4
-    pla ; pH
-    sta arg5
+    ;; i already in arg 2/3
+    load16 temp,2, arg4 ;p
     copy16 clo, arg6
     store16i divides.static_closure, fp
     NEXT divides.code ; divides i p k1
+.nil:
+     copy16 arg6,fp ;k
+     lda #True
+     sta arg2
+     enter_fp ; k True
 
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
 ;;; make_candidate_cont (i,ps,k) = \b -> if b then k False else candidate i ps k

@@ -42,7 +42,6 @@ space_switcher = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
-data_pointer = $60 ; for cons cell, which we DONT enter
 
 NUM_SCREENS = 2
 g_screen_pointers = $80
