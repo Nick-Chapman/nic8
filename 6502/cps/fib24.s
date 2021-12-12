@@ -14,7 +14,7 @@ fib_recurse:
 ;;     jmp .base
 ;; .rec:
     ;; allocate cont1
-    heap_alloc 'e', 5
+    heap_alloc 5
     ;; fill in closure
     save16i_0 fib_cont1.code, clo
     save8 arg2, clo,2
@@ -56,7 +56,7 @@ fib_cont1:
     word .roots, .evac, .scav
 .code:
     ;; allocate cont2
-    heap_alloc 'f', 7
+    heap_alloc 7
     ;; fill in closure
     save16i_0 fib_cont2.code, clo
     transfer16 fp, 3, clo, 2 ; K

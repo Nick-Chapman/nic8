@@ -26,7 +26,7 @@ fib_iter:
 .go:
     lda arg2
     ;; allocate & fill in closure
-    heap_alloc 'g', 3
+    heap_alloc 3
     save16i_0 fib_iter2.code, clo
     save8 arg2, clo,2 ; I
     ;; setup args & fp

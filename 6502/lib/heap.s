@@ -39,7 +39,7 @@ endmacro
 
 ;;; allocate #bytes in the heap
 
-heap_alloc: macro C, N ; TODO: remove unused descriptor byte
+heap_alloc: macro N
     lda #\N
     jsr heap.allocate_may_gc
 endmacro

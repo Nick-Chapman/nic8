@@ -13,7 +13,7 @@ fib7_entry_shared:
     sta arg2 ; N
     store16i 0, gc_count
     ;; allocate final continuation -- aside: there is no need for this to be heap allocated
-    heap_alloc 'c', 2
+    heap_alloc 2
     ;; fill in closure
     save16i_0 fib7_done.code, clo
     ;; setup args

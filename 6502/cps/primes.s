@@ -142,7 +142,7 @@ search:
     bpl .go
     NEXT .wait
 .go
-    heap_alloc 'q', 6
+    heap_alloc 6
     save16i_0 search_continue.code, clo
     save16 arg2, clo,2 ; i
     save16 arg4, clo,4 ; ps
@@ -175,7 +175,7 @@ search_continue:
     print_char ' '
     print_decimal_word arg2 ; i
     ;; alloc cons cell
-    heap_alloc 'a', 6
+    heap_alloc 6
     save16i_0 cons_cell_i16.code, clo
     load16 fp,2, arg2 ; i
     load16 fp,4, arg4 ; ps
@@ -242,7 +242,7 @@ candidate:
     pla ; ps'H
     sta arg5
 
-    heap_alloc 'd', 8
+    heap_alloc 8
     save16i_0 candidate_cont.code, clo
     save16 arg2, clo,2 ; i
     save16 arg4, clo,4 ; ps'
