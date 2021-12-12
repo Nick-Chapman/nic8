@@ -172,14 +172,13 @@ search_continue:
 ;;     jmp .skip_print
 ;; .skip_print_no:
     load16 fp,2, arg2 ; i
-    load16 fp,4, arg4 ; ps -- arg4 is temp set to current ps, it will be extended
     print_char ' '
     print_decimal_word arg2 ; i
     ;; alloc cons cell
     heap_alloc 'a', 6
     save16i_0 cons_cell_i16.code, clo
-    ;; TODO: fix BUG - making use of arg2/arg4 which were set before the above alloc
-    ;; but will not be valid if the alloc caused GC
+    load16 fp,2, arg2 ; i
+    load16 fp,4, arg4 ; ps
     save16 arg2, clo,2 ; i
     save16 arg4, clo,4 ; ps
     ;; set arg4-ps to be the newly allocated cons cell
