@@ -209,7 +209,10 @@ endmacro
     sta (clo),y ; into newly allocated closure in TO-space
     plp
     bne .ev_loop
-    ;; TODO: set fowarding pointer to preserve sharing
+    ;; set fowarding-pointer (inside a broken-heart) to preserve sharing
+    save16i_0 broken_heart.code, ev
+    save16 clo, ev,2
+    ;; update ev to the evacuated closure
     copy16 clo, ev
     rts
 
@@ -234,3 +237,17 @@ endmacro
     plx ; restore caller's selected screen
     stx g_selected_screen
     rts
+
+broken_heart:
+.roots:
+    panic "heart:roots"
+.evac:
+    ;; update ev to the forwarding-pointer contained in the broken-heart
+    load16 ev,2, temp
+    copy16 temp, ev
+    rts
+.scav:
+    panic "heart:scav"
+    word .roots, .evac, .scav
+.code:
+    panic "heart:code"
