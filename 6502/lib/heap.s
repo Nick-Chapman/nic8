@@ -1,4 +1,5 @@
-;;; PROVIDES: init_gc, alloc, evacuate, scavenge_cell_at, scavenge_done
+;;; PROVIDES: init_heap, heap_alloc,
+;;; gc_root_at, evacuate, scavenge_cell_at, scavenge_done
 
 PAGES_PER_SEMI_SPACE = 28 ; 7K
 SPACE_B_END = $4000
@@ -13,10 +14,10 @@ SPACE_A_START = SPACE_A_END - ($100 * PAGES_PER_SEMI_SPACE)
 ;; SPACE_B_END = SPACE_B_START + ($100 * PAGES_PER_SEMI_SPACE)
 
 temp = 0
-lw = 2
-ev = 4
-clo = 6
-cp = 8
+lw = 2  ; low-water mark. pointer into (TO-HEAP).
+ev = 4  ; points to closure being evacuated (FROM-HEAP)
+clo = 6 ; points to closure just allocated  (TO-HEAP)
+cp = 8  ; code-pointer
 
 BASE = 10
 
@@ -29,27 +30,21 @@ arg6 = BASE + 6
 
 ;;; Client entry points
 
-init_gc: macro Screen_Number
+init_heap: macro Screen_Number
     pha
     lda #\Screen_Number
-    jsr internal_init_gc_sub
+    jsr heap.init
     pla
 endmacro
 
-internal_init_gc_sub: ; screen number for GC debug passed in acc
-    sta gc_screen
-    lda #0
-    sta gc_count
-    sta gc_count + 1
-    jsr gc.set_heap_space_a
-    copy16 g_heap_pointer, heap_start
-    rts
+;;; allocate #bytes in the heap
 
-;;; Macros for external use
-
-impossible_scavenge_because_static: macro
-    panic 'Scav'
+heap_alloc: macro C, N ; TODO: remove unused descriptor byte
+    lda #\N
+    jsr heap.allocate_may_gc
 endmacro
+
+;;; Roots...
 
 impossible_roots: macro
     panic 'Roots'
@@ -57,28 +52,26 @@ endmacro
 
 gc_root_at: macro N
     copy16 \N, ev
-    jsr gc.dispatch_evacuate
+    jsr heap.dispatch_evacuate
     copy16 ev, \N
 endmacro
 
+;;; Evacuate...
+
 evacuate: macro N
     lda #\N
-    pha
-    jsr alloc_sub.again
-    ply
-    jsr gc.evacuate_sub
-    copy16 clo, ev
-    rts
+    jmp heap.evacuateN
 endmacro
 
-;;; Working from 'lw' pointing to an evacuated closure not yet scavenged.
-;;; We will call evacuate on the cell (2 byte pointer) at offset-N
-;;; By first setting 'ev'; calling evacuate; then assigning 'ev' back to the cell
+;;; Scavenge...
+
+impossible_scavenge_because_static: macro
+    panic 'Scav'
+endmacro
+
 scavenge_cell_at: macro N
     load16 lw, \N, ev
-    ;; now 'ev is setup
-    jsr gc.dispatch_evacuate
-    ;; repoint the scavenged word to the relocated 'ev'
+    jsr heap.dispatch_evacuate
     save16 ev, lw,\N
 endmacro
 
@@ -87,122 +80,24 @@ scavenge_done: macro N
     clc
     adc #\N
     sta lw
-    bcc .scavenge_done_done
+    bcc .continue\@
     inc lw + 1
-.scavenge_done_done:
-    jmp gc.scavenge_loop
+.continue\@:
+    jmp heap.scavenge_loop
 endmacro
 
-;;; allocate [N(acc)] bytes in the heap; adjusting hp
 
-heap_alloc: macro C, N
-    lda #\N
-    jsr alloc_sub
-endmacro
+heap: ; marker for internal routines
 
-alloc_sub:
-    sta n_bytes ; TODO: put this on stack to avoid global
-    copy16 g_heap_pointer, clo
-    lda n_bytes
-    clc
-    adc g_heap_pointer
-    sta g_heap_pointer
-    bcc .ok
-    lda g_heap_pointer + 1
-    inc
-    cmp heap_end_page
-    beq .heap_exhausted
-    sta g_heap_pointer + 1
-.ok:
-    rts
 
-.heap_exhausted:
-    ;debug '{'
-    jsr gc.start
-    ;debug '}'
-    lda n_bytes
-    jmp .again ; TODO: inline this jump
-
-;;; This inner alloc must succeed !
-;;; i.e. we do the exhaustion check, and it must not fail.
-;;; We call it from the evacuation routines
-;;; And also, for the pending alloc which cause GC to be initiated.
-
-.again: ; TODO: avoid code repetition w.r.t alloc
-    pha
-    copy16 g_heap_pointer, clo
-    pla
-    clc
-    adc g_heap_pointer
-    sta g_heap_pointer
-    bcc .again_done
-    lda g_heap_pointer + 1
-    inc
-    cmp heap_end_page
-    beq .heap_exhausted_still
-    sta g_heap_pointer + 1
-.again_done:
-    rts
-
-.heap_exhausted_still:
-    panic 'Heap Exhausted'
-
-;;; macro for internal use
-get_code_pointer_offset_function: macro P, N
-    lda (\P)
-    sec
-    sbc #\N ; negative offset from code-pointer
-    sta cp
-    load8 \P,1, cp + 1
-    bcs .\@
-    dec cp + 1
-.\@:
-endmacro
-
-;;; macro for internal use
-;;; double indirect jump to 'cp' (using 'temp')
-jump_cp: macro
-    load16_0 cp, temp
-    jmp (temp)
-endmacro
-
-gc: ; private namespace marker
-
-.evacuate_roots:
-    get_code_pointer_offset_function fp, 6
-    jump_cp
-
-.gc_scavenge:
-    ;; scavenging the closure at 'lw' (pointer into TO-HEAP)
-    get_code_pointer_offset_function lw, 2
-    jump_cp
-
-.dispatch_evacuate:
-    ;; evacuate the closure at 'ev' (pointer into FROM-HEAP)
-    get_code_pointer_offset_function ev, 4
-    ;; TODO: after evacuation, we ought to set a fowarding pointer to preserve sharing
-    ;; But I don't think sharing is ever possible in my examples so far
-    jump_cp
-
-.start:
-    jsr .debug_start_gc
-    jsr .switch_space
+.init: ; screen number for GC report passed in acc
+    sta gc_screen
+    lda #0
+    sta gc_count
+    sta gc_count + 1
+    jsr .set_heap_space_a
     copy16 g_heap_pointer, heap_start
-    copy16 g_heap_pointer, lw
-    jsr .evacuate_roots
-    ;; TODO: evacuate 'fp' like any other root; caller must identify it ?
-    copy16 fp, ev
-    jsr .dispatch_evacuate
-    copy16 ev, fp
-    jmp .scavenge_loop
-
-.switch_space:
-    jmp (space_switcher)
-
-;;; This inner alloc must succeed !
-;;; i.e. we do the exhaustion check, and it must not fail.
-;;; We call it from the evacuation routines
-;;; And also, for the pending alloc which cause GC to be initiated.
+    rts
 
 .set_heap_space_a:
     store16i .set_heap_space_b, space_switcher
@@ -224,26 +119,104 @@ gc: ; private namespace marker
     sta heap_end_page
     rts
 
-;;; keep scavenging until 'lw' catches up with 'hp'
-;;; scavenge routines jump back here when thet are done
+.switch_space:
+    jmp (space_switcher)
+
+
+alloc_orelse: macro FAIL ; #bytes in acc
+    ;; if successful, the allocated space can be reference by 'clo'
+    pha
+    copy16 g_heap_pointer, clo
+    pla
+    clc
+    adc g_heap_pointer
+    sta g_heap_pointer
+    bcc .ok\@
+    lda g_heap_pointer + 1
+    inc
+    cmp heap_end_page
+    beq \FAIL
+    sta g_heap_pointer + 1
+.ok\@:
+    endmacro
+
+.allocate_may_gc: ; #bytes in acc
+    pha
+    alloc_orelse .exhausted_trigger_collection
+    pla
+    rts ; return to caller of heap_alloc
+
+.exhausted_trigger_collection:
+    jsr .run_collection
+    jsr .report_collection
+    pla
+    alloc_orelse .exhausted_still_after_collection
+    rts ; return to caller of heap_alloc
+
+.exhausted_still_after_collection:
+    panic 'Heap'
+
+.run_collection:
+    jsr .switch_space
+    copy16 g_heap_pointer, heap_start
+    copy16 g_heap_pointer, lw
+    jsr .dispatch_roots
+    ;; TODO: evacuate 'fp' like other roots; caller says: "gc_root_at fp"
+    copy16 fp, ev
+    jsr .dispatch_evacuate
+    copy16 ev, fp
+    ;; scavenge routines jump back here when they are done
 .scavenge_loop:
+    ;; while 'lw' has not caught up with 'hp', then scavenge
     lda lw
     cmp g_heap_pointer
-    beq .scavenge_loop_cmp_second_byte
-    jmp .gc_scavenge
-.scavenge_loop_cmp_second_byte:
+    bne .dispatch_scavenge
     lda lw + 1
     cmp g_heap_pointer + 1
-    beq gc.finished
-    jmp .gc_scavenge
-.finished:
-    jsr .debug_end_gc
+    bne .dispatch_scavenge
+    rts ; collection is done
+
+jump_indirect_offset: macro P, N
+    lda (\P)
+    sec
+    sbc #\N ; negative offset from code-pointer
+    sta cp
+    load8 \P,1, cp + 1
+    bcs .\@
+    dec cp + 1
+.\@:
+    load16_0 cp, temp
+    jmp (temp)
+endmacro
+
+.dispatch_roots:
+    jump_indirect_offset fp, 6
+
+.dispatch_evacuate:
+    jump_indirect_offset ev, 4
+
+.dispatch_scavenge:
+    jump_indirect_offset lw, 2
+
+.evacuateN: ; #bytes in acc
+    pha
+    alloc_orelse .unexpected_exhaustion_during_collection
+    ply
+.ev_loop:
+    dey
+    php
+    lda (ev),y ; copy from old closure in FROM-space
+    sta (clo),y ; into newly allocated closure in TO-space
+    plp
+    bne .ev_loop
+    ;; TODO: set fowarding pointer to preserve sharing
+    copy16 clo, ev
     rts
 
-.debug_start_gc: ; TODO: inline/remove this
-    rts
+.unexpected_exhaustion_during_collection:
+    panic 'Evac'
 
-.debug_end_gc: ; TODO: inline
+.report_collection:
     ;; SWITCH TO GC SCREEN
     ldx g_selected_screen
     phx ; save caller's selected screen
@@ -260,14 +233,4 @@ gc: ; private namespace marker
     ;; RESTORE CALLER SCREEN
     plx ; restore caller's selected screen
     stx g_selected_screen
-    rts
-
-.evacuate_sub: ; N passed in Y; N>=1
-.ev_loop:
-    dey
-    php
-    lda (ev),y ; copy from old closure in FROM-space
-    sta (clo),y ; into newly allocated closure in TO-space
-    plp
-    bne .ev_loop
     rts

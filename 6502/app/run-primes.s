@@ -27,7 +27,6 @@
 
 ;;; bytes
 heap_end_page = $30
-n_bytes = $31
 g_ticks = $32
 gc_screen = $33
 g_selected_screen = $34
@@ -61,6 +60,6 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    init_gc 1 ; screen-number
+    init_heap 1 ; screen-number
     jsr screen_flush_now ; sets the next(first) time to flush
     jmp primes.code

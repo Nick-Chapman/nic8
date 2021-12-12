@@ -5,7 +5,7 @@ fib7_name:
     string "7: Heap"
     word fib7_name
 fib7_entry:
-    init_gc 1
+    init_heap 1
     jmp fib7_entry_shared
 
 fib7_entry_shared:

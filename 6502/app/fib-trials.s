@@ -29,7 +29,6 @@ g_version_name = $92
 g_mptr = $94
 g_heap_pointer = $f0
 heap_end_page = $f8 ; (byte)
-n_bytes = $f9 ; number of bytes to allocate (byte)
 space_switcher = $fa
 
 NUM_SCREENS = 2
