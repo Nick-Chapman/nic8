@@ -1,42 +1,38 @@
-
-;;; duplicated from heap
-BASE = 10
-arg2 = BASE + 2
-arg3 = BASE + 3
-arg4 = BASE + 4
-arg5 = BASE + 5
-arg6 = BASE + 6
-
 ;;; speed-watch task, in cps style
 
-;;; TODO: how can we make these names be local?
-c = arg2 ; count times this jiffy
-j = arg4 ; this jiffy
+;;; prefix with 's' to avoid clash with uptime, and set base to 10 ; TODO: de-hack!
+sBASE = 10
+sarg2 = sBASE + 2
+sarg3 = sBASE + 3
+sarg4 = sBASE + 4
+sarg5 = sBASE + 5
+sarg6 = sBASE + 6
 
 ;;; speed_watch 23 4
 ;;; [..]       (c  j)
-
 speed_watch:
+.c = sarg2 ; count executions this jiffy
+.j = sarg4 ; this jiffy
 .begin:
 .reset:
-    stz c
-    stz c + 1
+    stz .c
+    stz .c + 1
     clc
     lda g_ticks
-    sta j
+    sta .j
     NEXT .wait
 .wait:
-    lda j
+    lda .j
     cmp g_ticks
     bmi .display
-    inc c
+    inc .c
     bne .skip
-    inc c + 1
+    inc .c + 1
 .skip:
     NEXT .wait
 .display:
     jsr screen_return_home
-    print_decimal_word c
+    print_decimal_word .c
     newline
     print_string "speed"
     NEXT .reset

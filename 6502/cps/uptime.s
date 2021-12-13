@@ -1,30 +1,24 @@
-
-;;; duplicated from heap
-BASE = 10
-arg2 = BASE + 2
-arg3 = BASE + 3
-arg4 = BASE + 4
-arg5 = BASE + 5
-arg6 = BASE + 6
-
 ;;; uptime task, in cps style
 
-;;; hours/minutes/seconds (h/m/s) are each a single byte
-;;; we have an extra byte (j) for the next jiffy at which we tick
+;;; prefix with 'u' to avoid clash with speed-watch, and set base to 20 ; TODO: de-hack!
+uBASE = 20
+uarg2 = uBASE + 2
+uarg3 = uBASE + 3
+uarg4 = uBASE + 4
+uarg5 = uBASE + 5
+uarg6 = uBASE + 6
+
 ;;; uptime 2 3 4 5
 ;;; [..]  (h m s j)
-
-;;; TODO: how can we make these names be local?
-h = arg2
-m = arg3
-s = arg4
-j = arg5
-
 uptime:
+.h = uarg2 ; hours
+.m = uarg3 ; minutes
+.s = uarg4 ; seconds
+.j = uarg5 ; jiffy to tick
 .begin:
-    stz s
-    stz m
-    stz h
+    stz .s
+    stz .m
+    stz .h
     ;; fallthrough
 .show:
     jsr .display
@@ -34,12 +28,12 @@ uptime:
     clc
     lda g_ticks
     adc #100
-    sta j
+    sta .j
     ;; fallthrough
 .wait
     lda g_ticks
     sec
-    sbc j
+    sbc .j
     bpl .show
     NEXT .wait
 
@@ -53,14 +47,14 @@ endmacro
 
 .display:
     jsr screen_return_home
-    print_leading_zero h
-    print_decimal_byte h
+    print_leading_zero .h
+    print_decimal_byte .h
     print_char ':'
-    print_leading_zero m
-    print_decimal_byte m
+    print_leading_zero .m
+    print_decimal_byte .m
     print_char ':'
-    print_leading_zero s
-    print_decimal_byte s
+    print_leading_zero .s
+    print_decimal_byte .s
     newline
     print_string "uptime"
     rts
@@ -74,8 +68,8 @@ increment_modulo: macro V, N
 endmacro
 
 .tick:
-    increment_modulo s, 60
-    increment_modulo m, 60
-    increment_modulo h, 24
+    increment_modulo .s, 60
+    increment_modulo .m, 60
+    increment_modulo .h, 24
 .done:
     rts

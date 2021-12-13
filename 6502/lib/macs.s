@@ -51,6 +51,11 @@ transfer16: macro P,I, Q,J
     transfer8 \P, \I+1, \Q, \J+1
 endmacro
 
+store8i: macro IMM, V
+    lda #\IMM
+    sta \V
+endmacro
+
 store16i: macro IMM, V
     lda #<\IMM
     sta \V
