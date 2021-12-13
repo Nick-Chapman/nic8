@@ -22,7 +22,7 @@ uptime:
     ;; fallthrough
 .show:
     jsr .display
-    NEXT .init_wait
+    ;; fallthrough
 .init_wait
     jsr .tick
     clc
@@ -32,15 +32,14 @@ uptime:
     ;; fallthrough
 .wait
     lda g_ticks
-    sec
-    sbc .j
+    cmp .j
     bpl .show
     NEXT .wait
 
 print_leading_zero: macro V
     lda \V
     cmp #10
-    bpl .skip\@
+    bcs .skip\@
     print_char '0'
 .skip\@:
 endmacro
@@ -55,6 +54,7 @@ endmacro
     print_char ':'
     print_leading_zero .s
     print_decimal_byte .s
+    print_string "   " ; just in case we get corrupton; better chance to see the data
     newline
     print_string "uptime"
     rts
