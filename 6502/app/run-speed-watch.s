@@ -15,7 +15,7 @@
     include print.s
     include panic.s
     include executive.s
-    include uptime.s
+    include speed-watch.s
 
 ;;; bytes
 g_ticks = $32
@@ -43,4 +43,4 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     jsr screen_flush_now ; sets the next(first) time to flush ; TODO: rather not flush now, just set time
-    jmp uptime.begin
+    jmp speed_watch.begin
