@@ -83,21 +83,23 @@ endmac
 
 
 put_string:
+    phx
     tsx
-    lda $103,x ; string-pointer-word (under return-address-word)
+    lda $104,x ; string-pointer-word (under return-address-word, and saved x)
     sta g_mptr
-    lda $104,x
+    lda $105,x
     sta g_mptr + 1
     ldy #0
 .loop:
     lda (g_mptr),y
     beq .done
     phy
-      jsr screen_putchar ; changes x,y
+      jsr screen_putchar ; changes y
     ply
     iny
     jmp .loop
 .done:
+    plx
     rts
 
 print_string: macro S
