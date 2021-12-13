@@ -1,6 +1,4 @@
-
 ;;; setup dev framework code for serial link -- no actual progress on the serial stuff!
-
 ;;; But this example does demonstate:
 ;;; - screen print/wrap/scroll
 ;;; - multi-screen support
@@ -9,8 +7,14 @@
     word nmi
     word reset_main
     word irq
-
     org $8000
+
+    include via.s
+    include ticks.s
+    include sound.s
+    include lcd.s
+    include screen.s
+    include print.s
 
 ;;; bytes
 g_ticks = $50
@@ -26,19 +30,8 @@ g_message_ptr = $70
 g_mptr = $72 ; print.s
 
 NUM_SCREENS = 4
-
-;;; quads (4 bytes)
 g_screen_pointers = $80
-
-;;; buffers
 g_screens = $200 ; 4 * 32 bytes
-
-    include via.s
-    include ticks.s
-    include sound.s
-    include lcd.s
-    include screen.s
-    include print.s
 
 nmi:
     pha
@@ -93,7 +86,6 @@ reset_main:
     jmp example
 
 example:
-    jsr screen_flush_now
     jsr init_put_message
 example_loop:
     jsr screen_flush_when_time

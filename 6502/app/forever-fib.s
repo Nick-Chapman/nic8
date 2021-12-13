@@ -7,7 +7,6 @@
     word nmi
     word reset_main
     word irq
-
     org $8000
 
 ;;; bytes
@@ -32,18 +31,14 @@ g_mptr = $58 ; print.s
 g_divisor24 = $60 ; decimal24.s
 g_modulus24 = $63 ; decimal24.s
 
-;;; quad
 NUM_SCREENS = 2
 g_screen_pointers = $80
-
-;;; buffers
 g_screens = $200 ; 4*32 bytes
 
     include via.s
     include ticks.s
     include lcd.s
     include screen.s
-
     include decimal.s
     include decimal24.s
     include print.s
@@ -54,7 +49,6 @@ g_screens = $200 ; 4*32 bytes
     include arith16.s
     include heap.s
     include nmi_irq.s
-
     include executive.s
     include fib24.s
     include gen-fibs.s
@@ -69,10 +63,7 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     init_heap 1 ; screen-number
-    jsr screen_flush_now ; sets the next(first) time to flush
     jmp start_example
-
-
 
 start_example:
     stz arg2

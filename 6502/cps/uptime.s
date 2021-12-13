@@ -19,17 +19,14 @@ uptime:
     stz .s
     stz .m
     stz .h
-    ;; fallthrough
 .show:
     jsr .display
-    ;; fallthrough
 .init_wait
     jsr .tick
     clc
     lda g_ticks
     adc #100
     sta .j
-    ;; fallthrough
 .wait
     lda g_ticks
     cmp .j

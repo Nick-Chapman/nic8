@@ -1,6 +1,5 @@
 ;;; REQUIRES: g_ticks
 ;;; PROVIDES: init_ticks, ticks_irq
-
 ;;; TODO: deprecate/merge this into nmi_irq.s
 
 T1CL = $6004

@@ -72,7 +72,6 @@ spin:
 example:
     jsr init_number
     jsr init_ds_stack
-    jsr screen_flush_now
 example_loop:
     jsr put_number_dec
     jsr put_dot

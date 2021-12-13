@@ -1,9 +1,7 @@
-
     org $fffa
     word nmi
     word reset_main
     word irq
-
     org $8000
 
     include via.s
@@ -42,5 +40,4 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr screen_flush_now ; sets the next(first) time to flush ; TODO: rather not flush now, just set time
     jmp speed_watch.begin

@@ -1,4 +1,4 @@
-;;; Multi screens
+;;; Support for multiple virtual screens
 
 ;;; REQUIRES: g_screen, g_screen_pointer
 ;;; PROVIDES: init_screen, screen_flush, screen_putchar, screen_newline, screen_return_home
@@ -17,6 +17,7 @@ init_screen_pointers:
     rts
 
 init_screen:
+    jsr screen_flush_init
     stz g_selected_screen
     jsr init_screen_pointers
     ldx #0
@@ -162,13 +163,16 @@ screen_flush_when_time: ; should be called every jiffy
     lda g_ticks
     sec
     sbc g_next_screen_flush
-    bpl screen_flush_now
+    bpl .now
     rts
-
-screen_flush_now:
+.now:
     lda g_nmi_count
     and #(NUM_SCREENS - 1)
     jsr screen_flush_sub
+    jsr screen_flush_init
+    rts
+
+screen_flush_init:
     lda g_ticks
     clc
     adc #5 ; 20 times/sec ; TODO: bit slower, say 10/sec to avoid waiting on lcd

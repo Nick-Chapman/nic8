@@ -1,11 +1,9 @@
-
 ;;; Top level app to generate primes numbers
 
     org $fffa
     word nmi
     word reset_main
     word irq
-
     org $8000
 
     include via.s
@@ -14,7 +12,6 @@
     include lcd.s
     include sleep.s
     include screen.s
-
     include decimal.s
     include print.s
     include debug.s
@@ -45,10 +42,7 @@ g_mptr = $58 ; print.s
 
 NUM_SCREENS = 2
 g_screen_pointers = $80
-
-;;; buffers
 g_screens = $200 ; 4*32 bytes
-
 
 reset_main:
     ldx #$ff
@@ -60,5 +54,4 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     init_heap 1 ; screen-number
-    jsr screen_flush_now ; sets the next(first) time to flush
     jmp primes.code

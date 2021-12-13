@@ -1,9 +1,7 @@
-
     org $fffa
     word nmi
     word reset_main
     word irq
-
     org $8000
 
     include via.s
@@ -60,7 +58,6 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr screen_flush_now ; sets the next(first) time to flush ; TODO: rather not flush now, just set time
 
     store16i uptime.begin, task1
     store16i speed_watch.begin, task2

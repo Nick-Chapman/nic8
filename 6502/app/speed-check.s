@@ -1,12 +1,10 @@
-
-;;; Top level count monitor,
+;;; Early (pre task) speed check...
 ;;; How many times per jiffy (1/100s) do we complete the cyclic_executive
 
     org $fffa
     word nmi
     word reset_main
     word irq
-
     org $8000
 
     include via.s
@@ -14,7 +12,6 @@
     include nmi_irq.s
     include lcd.s
     include screen.s
-
     include decimal.s
     include print.s
 
@@ -32,11 +29,8 @@ g_mptr = $42 ; print.s
 g_divisor = $44 ; decimal.s
 g_mod10 = $46 ; decimal.s
 
-
 NUM_SCREENS = 1
 g_screen_pointers = $80
-
-;;; buffers
 g_screens = $200 ; page
 
 reset_main:
@@ -48,8 +42,6 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-
-    jsr screen_flush_now ; sets the next(first) time to flush
     jsr init_speed_check
     jmp cyclic_executive
 
@@ -77,8 +69,6 @@ check_speed:
     rts
 .we_have_advanced:
     jsr screen_return_home
-    ;newline
-    ;print_char ' '
-    print_decimal_word g_speed ; how much slower?
+    print_decimal_word g_speed
     jsr init_speed_check
     rts
