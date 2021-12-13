@@ -35,10 +35,32 @@ print_decimal_word: macro L
     pla
 endmacro
 
+print_decimal_word_x: macro L
+    pha
+    ldy \L, x
+    lda \L + 1, x
+    phx
+    tax
+    tya
+    jsr decimal_put_word
+    plx
+    pla
+endmacro
+
 print_decimal_byte: macro L
     pha
     phx
     lda \L
+    ldx #0
+    jsr decimal_put_word
+    plx
+    pla
+endmacro
+
+print_decimal_byte_x: macro L
+    pha
+    lda \L, x
+    phx
     ldx #0
     jsr decimal_put_word
     plx

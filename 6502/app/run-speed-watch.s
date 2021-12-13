@@ -12,7 +12,15 @@
     include decimal.s
     include print.s
     include panic.s
-    include executive.s
+
+task_vars_offset = 20
+
+NEXT: macro A
+    jsr screen_flush_when_time
+    ldx #task_vars_offset
+    jmp \A
+endmacro
+
     include speed-watch.s
 
 ;;; bytes
@@ -40,4 +48,6 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
+
+    ldx #task_vars_offset
     jmp speed_watch.begin

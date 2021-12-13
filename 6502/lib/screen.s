@@ -38,7 +38,7 @@ screen_flush_selected: macro ; whatever screen is selected for writing
 endmacro
 
 ;; flush screen (# passed in acc) to the underlying lcd
-screen_flush_sub:
+screen_flush_sub: ; TODO: should this preserve x?
     pha
     jsr show_screen_number_in_corner
     pla

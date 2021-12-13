@@ -49,6 +49,9 @@ g_screens = $200
 task1_screen = 0
 task2_screen = 1
 
+task1_vars_offset = 10
+task2_vars_offset = 20
+
 reset_main:
     ldx #$ff
     txs
@@ -62,17 +65,21 @@ reset_main:
     store16i uptime.begin, task1
     store16i speed_watch.begin, task2
     store16i one2two, switcher
+
     store8i task1_screen, g_selected_screen
+    ldx #task1_vars_offset
     jmp (task1)
 
 one2two:
     copy16 continue_code, task1
     store8i task2_screen, g_selected_screen
     store16i two2one, switcher
+    ldx #task2_vars_offset
     jmp (task2)
 
 two2one:
     copy16 continue_code, task2
     store8i task1_screen, g_selected_screen
     store16i one2two, switcher
+    ldx #task1_vars_offset
     jmp (task1)
