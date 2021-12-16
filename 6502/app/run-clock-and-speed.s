@@ -20,7 +20,7 @@ NEXT: macro A
     jmp (switcher)
 endmacro
 
-    include uptime.s
+    include clock.s
     include speed-watch.s
 
 ;;; bytes
@@ -62,7 +62,7 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
 
-    store16i uptime.begin, task1
+    store16i clock.begin, task1
     store16i speed_watch.begin, task2
     store16i one2two, switcher
 

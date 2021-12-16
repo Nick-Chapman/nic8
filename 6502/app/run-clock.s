@@ -21,7 +21,7 @@ NEXT: macro A
     jmp \A
 endmacro
 
-    include uptime.s
+    include clock.s
 
 ;;; bytes
 g_ticks = $32
@@ -50,4 +50,4 @@ reset_main:
     jsr init_screen
 
     ldx #task_vars_offset
-    jmp uptime.begin
+    jmp clock.begin

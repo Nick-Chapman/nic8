@@ -1,8 +1,8 @@
-;;; uptime task, in cps style
+;;; clock task, in cps style
 
-;;; uptime 2 3 4 5
+;;; clock 2 3 4 5
 ;;; [..]  (h m s j)
-uptime:
+clock:
 .h = 2 ; hours
 .m = 3 ; minutes
 .s = 4 ; seconds
@@ -45,7 +45,7 @@ endmacro
     print_decimal_byte_x .s
     print_string "   " ; just in case we get corrupton; better chance to see the data
     newline
-    print_string "uptime"
+    print_string "clock"
     rts
 
 increment_modulo: macro V, N
