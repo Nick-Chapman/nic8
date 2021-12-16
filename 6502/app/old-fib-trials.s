@@ -59,7 +59,12 @@ endmacro
     include macs.s
     include arith16.s
     include heap.s
-    include executive.s
+
+NEXT: macro A
+    jsr screen_flush_when_time
+    jmp \A
+endmacro
+
     include nmi_irq.s
 
     ;; various implementations of fib

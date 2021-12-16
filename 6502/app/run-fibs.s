@@ -49,7 +49,12 @@ g_screens = $200 ; 4*32 bytes
     include arith16.s
     include heap.s
     include nmi_irq.s
-    include executive.s
+
+NEXT: macro A
+    jsr screen_flush_when_time
+    jmp \A
+endmacro
+
     include fib24.s
     include fibs.s
 
