@@ -2,27 +2,28 @@
 ;;; fp    2  3
 ;;; [..] (I, Time)
 fib_iter:
-    word .roots, .evac, .scav
-.code:
-    clc
-    lda g_ticks
-    adc #10 ; wait 1/10s
-    sta arg3
-.wait
-    lda g_ticks
-    sec
-    sbc arg3 ; temp in arg3 - the time to continue
-    bpl .go
-    NEXT .wait
 .roots:
     rts
 .evac:
     rts
 .scav:
     impossible_scavenge_because_static
+.begin:
+    clc
+    lda g_ticks
+    adc #10 ; wait 1/10s
+    sta arg3
+    store16i fib_iter.static_closure, fp
+    enter_fp
 .static_closure:
-    word fib_iter.code
-
+    word .code
+    word .roots, .evac, .scav
+.code
+    lda g_ticks
+    sec
+    sbc arg3 ; temp in arg3 - the time to continue
+    bpl .go
+    enter_fp ; self
 .go:
     lda arg2
     ;; allocate & fill in closure
@@ -33,8 +34,7 @@ fib_iter:
     ;; arg2 already contains I
     copy16 clo, arg3 ; K
     store16i fib_recurse.static_closure, fp
-    NEXT fib_recurse.code
-
+    enter_fp
 
 ;;; fp     234
 ;;;    .2
@@ -48,8 +48,7 @@ fib_iter2:
     loadA fp, 2 ; I
     inc
     sta arg2 ; I+1
-    store16i fib_iter.static_closure, fp
-    NEXT fib_iter.code
+    jmp fib_iter.begin
 .roots:
     rts
 .evac:

@@ -83,7 +83,7 @@ search:
     sec
     sbc arg6 ; temp in arg6 - the time to continue
     bpl .go
-    enter_fp
+    enter_fp ; self
 .go
     heap_alloc 6
     save16i_0 search_continue.code, clo

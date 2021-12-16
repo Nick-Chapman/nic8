@@ -27,7 +27,7 @@ fib_recurse:
     sta arg2
     copy16 clo, arg3
     store16i fib_recurse.static_closure, fp
-    NEXT fib_recurse.code
+    enter_fp
 
 ;;;        2 3  4
 ;;; --> K (N #0 #0)
@@ -36,8 +36,7 @@ fib_recurse:
     ;; N (low-byte of result) is already in arg2
     stz arg3 ; zero medium byte of result
     stz arg4 ; zero high byte of result
-    load16_0 fp, cp
-    NEXT (cp)
+    enter_fp
 .roots:
     gc_root_at arg3
     rts
@@ -70,7 +69,7 @@ fib_cont1:
     sta arg2
     copy16 clo,arg3
     store16i fib_recurse.static_closure, fp
-    NEXT fib_recurse.code
+    enter_fp
 .roots:
     rts
 .evac:
@@ -98,8 +97,7 @@ fib_cont2:
     ;; return to caller
     load16 fp,2, arg5 ; K (using arg5 as a temp)
     copy16 arg5, fp
-    load16_0 fp, cp
-    NEXT (cp)
+    enter_fp
 .roots:
     impossible_roots
 .evac:
