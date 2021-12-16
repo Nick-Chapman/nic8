@@ -2,30 +2,6 @@
 True = 1
 False = 0
 
-panic_if_not_in_rom_sub:
-    cmp #$80
-    bcc .bad
-    rts
-.bad:
-    panic 'OOR'
-
-panic_if_not_in_rom: macro V
-    pha
-    lda \V + 1
-    jsr panic_if_not_in_rom_sub
-    pla
-endmacro
-
-indirect_NEXT: macro V
-    ;panic_if_not_in_rom \V
-    NEXT (\V)
-endmacro
-
-enter_fp: macro
-    load16_0 fp, cp
-    indirect_NEXT cp
-endmacro
-
 ;;; ----------------------------------------------------------------------
 ;;; lists of 16-bit numbers: cons/nil
 ;;; (we need to know the element's size & that it's not a heap value)
@@ -92,20 +68,22 @@ search:
     rts
 .scav:
     impossible_scavenge_because_static
-.static_closure:
-    word .code
-    word .roots, .evac, .scav
-.code:
+.begin: ; will have jump to here; which call enter_fp
     clc
     lda g_ticks
     adc #1 ; wait a jiffy
     sta arg6
-.wait
+    store16i search.static_closure, fp
+    enter_fp
+.static_closure:
+    word .code
+    word .roots, .evac, .scav
+.code
     lda g_ticks
     sec
     sbc arg6 ; temp in arg6 - the time to continue
     bpl .go
-    NEXT .wait
+    enter_fp
 .go
     heap_alloc 6
     save16i_0 search_continue.code, clo
@@ -157,8 +135,7 @@ search_continue:
     bne .skip_inc_byte2
     inc arg2 + 1
 .skip_inc_byte2:
-    store16i search.static_closure, fp
-    enter_fp
+    jmp search.begin
 
 
 ;;; ----------------------------------------------------------------------
@@ -201,7 +178,7 @@ candidate:
     load16 temp,2, arg4 ;p
     copy16 clo, arg6
     store16i divides.static_closure, fp
-    NEXT divides.code ; divides i p k1
+    enter_fp ; divides i p k1
 .nil:
      copy16 arg6,fp ;k
      lda #True
@@ -233,7 +210,7 @@ candidate_cont:
     load16 fp,4, arg4 ; ps
     load16 fp,6, arg6 ; k
     store16i candidate.static_closure, fp
-    NEXT candidate.code
+    enter_fp
 .bTrue:
     load16 fp,6, arg3 ; k -> fp (using 3 as a temp)
     copy16 arg3, fp
@@ -271,7 +248,7 @@ divides:
     sbc arg5 ;pL
     bmi .baseF
     sta arg3 ; i'H
-    NEXT .code ; divides i' p k
+    enter_fp ; divides i' p k
 .baseT:
     copy16 arg6,fp ;k
     lda #True

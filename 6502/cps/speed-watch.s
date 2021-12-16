@@ -13,7 +13,7 @@ speed_watch:
     lda g_ticks
     sta .j, x
     NEXT .wait
-.wait:
+.wait: ; TODO: rename code; be closure code (i.e. follow: word .roots, .evac, .scav)
     lda .j, x
     cmp g_ticks
     bmi .display
@@ -28,4 +28,4 @@ speed_watch:
     print_string "    "
     newline
     print_string "speed"
-    NEXT .reset
+    NEXT .reset ; TODO: jmp
