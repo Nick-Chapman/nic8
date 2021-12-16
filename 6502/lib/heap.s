@@ -97,6 +97,7 @@ heap: ; marker for internal routines
     sta gc_count + 1
     jsr .set_heap_space_a
     copy16 g_heap_pointer, heap_start
+    jsr .report_collection ; to get info on screen prior to first collection
     rts
 
 .set_heap_space_a:
@@ -148,6 +149,7 @@ alloc_orelse: macro FAIL ; #bytes in acc
 
 .exhausted_trigger_collection:
     jsr .run_collection
+    increment16 gc_count
     jsr .report_collection
     pla
     alloc_orelse .exhausted_still_after_collection
@@ -227,7 +229,6 @@ endmacro
     sta g_selected_screen
     newline
     print_string 'GC:'
-    increment16 gc_count
     print_decimal_word gc_count
     newline
     print_string 'live:'
