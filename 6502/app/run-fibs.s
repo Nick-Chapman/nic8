@@ -49,28 +49,7 @@ g_screens = $200 ; 4*32 bytes
     include arith16.s
     include heap.s
     include nmi_irq.s
-
-panic_if_not_in_rom_sub:
-    cmp #$80
-    bcc .bad
-    rts
-.bad:
-    panic 'OOR'
-
-panic_if_not_in_rom: macro V
-    pha
-    lda \V + 1
-    jsr panic_if_not_in_rom_sub
-    pla
-endmacro
-
-enter_fp: macro ; Want this to be the level at which task switching occurs
-    load16_0 fp, cp
-    panic_if_not_in_rom \cp
-    jsr screen_flush_when_time
-    jmp (\cp)
-endmacro
-
+    include executive.s
     include fib24.s
     include fibs.s
 

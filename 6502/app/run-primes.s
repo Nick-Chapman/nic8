@@ -19,31 +19,7 @@
     include macs.s
     include arith16.s
     include heap.s
-
-
-panic_if_not_in_rom_sub:
-    cmp #$80
-    bcc .bad
-    rts
-.bad:
-    panic 'OOR'
-
-panic_if_not_in_rom: macro V
-    pha
-    lda \V + 1
-    jsr panic_if_not_in_rom_sub
-    pla
-endmacro
-
-
-enter_fp: macro ; Want this to be the level at which task switching occurs
-    load16_0 fp, cp
-    panic_if_not_in_rom \cp
-    jsr screen_flush_when_time
-    jmp (\cp)
-endmacro
-
-    ;include executive.s
+    include executive.s
     include primes.s
 
 ;;; bytes
