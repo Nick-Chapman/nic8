@@ -51,7 +51,7 @@ g_screens = $200 ; 4*32 bytes
     include nmi_irq.s
     include executive.s
     include fib24.s
-    include gen-fibs.s
+    include fibs.s
 
 reset_main:
     ldx #$ff
