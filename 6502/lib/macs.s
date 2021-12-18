@@ -63,6 +63,13 @@ store16i: macro IMM, V
     sta \V + 1
 endmacro
 
+;; store16i_x: macro IMM, V
+;;     lda #<\IMM
+;;     sta \V, x
+;;     lda #>\IMM
+;;     sta \V + 1, x
+;; endmacro
+
 ;;; ----------------------------------------------------------------------
 ;;; special case for offset-0
 

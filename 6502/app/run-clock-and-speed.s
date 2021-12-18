@@ -13,10 +13,31 @@
     include print.s
     include panic.s
     include macs.s
+    include arith16.s
+    include heap.s
 
-NEXT: macro A
+;; NEXT: macro A ; OLD, REMOVE
+;;     jsr screen_flush_when_time
+;;     store16i \A, continue_code
+;;     jmp (switcher)
+;; endmacro
+
+panic_if_not_in_rom_sub:
+    cmp #$80
+    bcc .bad
+    rts
+.bad:
+    panic 'OOR'
+
+panic_if_not_in_rom: macro V
+    pha
+    lda \V + 1
+    jsr panic_if_not_in_rom_sub
+    pla
+endmacro
+
+enter_fp: macro
     jsr screen_flush_when_time
-    store16i \A, continue_code
     jmp (switcher)
 endmacro
 
@@ -24,13 +45,19 @@ endmacro
     include speed-watch.s
 
 ;;; bytes
+heap_end_page = $30
 g_ticks = $32
+gc_screen = $33
 g_selected_screen = $34
 g_nmi_count = $35
 g_nmi_blocked = $36
 g_next_screen_flush = $37
 
 ;;; words
+g_heap_pointer = $40
+heap_start = $4e
+gc_count = $50
+space_switcher = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
@@ -40,9 +67,8 @@ g_mptr = $58 ; print.s
 task1 = $60 ; contains address to continue task1
 task2 = $62 ; ditto task2
 switcher = $64 ; switches task, either: 1->2 or 2->1
-continue_code = $66 ; set by NEXT macro; will be written to task1/task2 vars
 
-NUM_SCREENS = 2
+NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
@@ -61,25 +87,41 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
+    init_heap 2 ; screen-number
 
-    store16i clock.begin, task1
-    store16i speed_watch.begin, task2
+    ldx #task1_vars_offset
+    jsr clock.begin
+    copy16 fp, task1
+
+    ldx #task2_vars_offset
+    jsr speed_watch.begin
+    copy16 fp, task2
+
+    copy16 task1, fp
     store16i one2two, switcher
 
     store8i task1_screen, g_selected_screen
     ldx #task1_vars_offset
-    jmp (task1)
+    load16_0 fp, cp
+    panic_if_not_in_rom cp
+    jmp (cp)
 
 one2two:
-    copy16 continue_code, task1
-    store8i task2_screen, g_selected_screen
+    copy16 fp, task1
+    copy16 task2, fp
     store16i two2one, switcher
+    store8i task2_screen, g_selected_screen
     ldx #task2_vars_offset
-    jmp (task2)
+    load16_0 fp, cp
+    panic_if_not_in_rom cp
+    jmp (cp)
 
 two2one:
-    copy16 continue_code, task2
-    store8i task1_screen, g_selected_screen
+    copy16 fp, task2
+    copy16 task1, fp
     store16i one2two, switcher
+    store8i task1_screen, g_selected_screen
     ldx #task1_vars_offset
-    jmp (task1)
+    load16_0 fp, cp
+    panic_if_not_in_rom cp
+    jmp (cp)

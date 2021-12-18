@@ -7,23 +7,38 @@ clock:
 .m = 3 ; minutes
 .s = 4 ; seconds
 .j = 5 ; jiffy to tick
+.roots:
+    panic "CL:roots" ; see when called
+    rts ; no roots
+.evac:
+    panic "CL:evac" ; see when called
+    rts ; static
+.scav:
+    impossible_scavenge_because_static
 .begin:
+    store16i .static_closure, fp ; TODO: need ,x based indexing? -- hmm, perhaps not
     stz .s, x
     stz .m, x
     stz .h, x
-.show:
+.again:
     jsr .display
-.init_wait
     jsr .tick
     clc
     lda g_ticks
     adc #100
     sta .j, x
-.wait
+    rts
+.static_closure:
+    word .code
+    word .roots, .evac, .scav
+.code
     lda g_ticks
     cmp .j, x
-    bpl .show
-    NEXT .wait
+    bpl .go
+    enter_fp
+.go:
+    jsr .again
+    enter_fp
 
 print_leading_zero: macro V
     lda \V, x

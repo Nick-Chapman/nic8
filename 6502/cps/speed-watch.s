@@ -5,15 +5,27 @@
 speed_watch:
 .c = 2 ; count executions this jiffy
 .j = 4 ; this jiffy
+.roots:
+    panic "SP:roots" ; see when called
+    rts ; no roots
+.evac:
+    panic "SP:evac" ; see when called
+    rts ; static
+.scav:
+    impossible_scavenge_because_static
 .begin:
-.reset:
+    store16i .static_closure, fp
+.again:
     stz .c, x
     stz .c + 1, x
     clc
     lda g_ticks
     sta .j, x
-    NEXT .wait
-.wait: ; TODO: rename code; be closure code (i.e. follow: word .roots, .evac, .scav)
+    rts
+.static_closure:
+    word .code
+    word .roots, .evac, .scav
+.code
     lda .j, x
     cmp g_ticks
     bmi .display
@@ -21,11 +33,12 @@ speed_watch:
     bne .skip
     inc .c + 1, x
 .skip:
-    NEXT .wait
+    enter_fp
 .display:
     jsr screen_return_home
     print_decimal_word_x .c
     print_string "    "
     newline
     print_string "speed"
-    NEXT .reset ; TODO: jmp
+    jsr .again
+    enter_fp
