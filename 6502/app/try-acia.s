@@ -4,8 +4,10 @@
     word deprecated_ticks_irq
     org $8000
 
+cpu_clks_per_sec = 1 * MHz ; run more slowly for the ACIA chip
+
     include via.s
-    include ticks.s
+    include ticks1.s
     include lcd.s
     include screen.s
     include print.s
