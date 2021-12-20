@@ -86,11 +86,11 @@ show_screen_number_in_corner:
     rts
 
 screen_putchar:
-    phx
     cmp #13 ; carriage return (ASCII 13) as added by str directive
     beq screen_newline
     cmp #10 ; carriage return (ASCII 13) as added by str directive
     beq screen_newline
+    phx
     jsr maybe_scroll
     ldy g_selected_screen
     ldx g_screen_pointers,y
