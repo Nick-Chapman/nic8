@@ -40,7 +40,7 @@ endmacro
 ;; flush screen (# passed in acc) to the underlying lcd
 screen_flush_sub: ; TODO: should this preserve x?
     pha
-    jsr show_screen_number_in_corner
+    ;jsr show_screen_number_in_corner
     pla
     ;; copy screen to lcd
     jsr lcd_return_home
