@@ -24,5 +24,10 @@ endmacro
 debug_decimal_word: macro L
     print_decimal_word \L
     screen_flush_selected
-    jsr pause1sec
+    ;jsr pause1sec
+endmacro
+
+debug_decimal_byte: macro L
+    print_decimal_byte \L
+    screen_flush_selected
 endmacro

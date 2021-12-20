@@ -104,7 +104,7 @@ print_hex_byte: macro L
 endmac
 
 
-put_string:
+put_string: ; TODO: make this work for long strings (like acia_put_string)
     phx
     tsx
     lda $104,x ; string-pointer-word (under return-address-word, and saved x)

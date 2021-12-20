@@ -7,9 +7,12 @@
 cpu_clks_per_sec = 1 * MHz ; run more slowly for the ACIA chip
 
     include via.s
+    include arith16.s
+    include acia.s
     include ticks1.s
     include lcd.s
     include screen.s
+    include decimal.s
     include print.s
     include sleep.s
     include debug.s
@@ -20,6 +23,8 @@ g_selected_screen = $34
 g_nmi_count = $35
 g_next_screen_flush = $37
 
+g_divisor = $54 ; decimal.s
+g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s / acia_put_string
 
 NUM_SCREENS = 2
@@ -29,23 +34,10 @@ g_screens = $200
 nmi:
     rti
 
-acia_print_string: macro S
-    jmp .skip\@
-.embedded\@:
-    string \S
-.skip\@:
-    pha
-      lda #>.embedded\@
-      pha
-      lda #<.embedded\@
-      pha
-      jsr acia_put_string
-      pla
-      pla
-    pla
-endmacro
-
 main:
+;;; local vars in zero page
+.count = 0
+.received = 1
     ldx #$ff
     txs
     jsr init_via
@@ -54,58 +46,52 @@ main:
     jsr lcd_clear_display
     jsr init_screen
     jsr init_acia
-again:
-    debug 'a'
-    acia_print_string "Hello from nic502. Let's make this message quite a bit longer! Alphabet: abcdefghijklmnopqrstuvwxyz\n"
-    lda #50
-    jsr sleep_blocking
-    jmp again
-
-acia_put_string:
-    phx
-    tsx
-    lda $104,x ; string-pointer-word (under return-address-word, and saved x)
-    sta g_mptr
-    lda $105,x
-    sta g_mptr + 1
-    ldy #0
-.loop:
-    lda (g_mptr),y
-    beq .done
-    phy
-      jsr acia_putchar
-    ply
-    iny
-    jmp .loop
-.done:
-    plx
-    rts
-
-acia:
-.data = $5000
-.status = $5001
-.command = $5002
-.control = $5003
-
-init_acia:
-    sta acia.status ; program reset
-    lda #%00001011 ; no parity, no echo, no interrupt
-    sta acia.command
-    lda #%00011111 ; 1 stop bit, word length: 8 bits, baud rate: 19200
-    sta acia.control
-    rts
-
-acia_putchar:
+    stz .count
+.again:
+    inc .count
+    debug_decimal_byte .count
+    debug '-'
+    acia_print_string "WALL OF TEXT\n"
+    lda #>wall_of_text
     pha
-    jsr acia_blocking_wait_send
+    lda #<wall_of_text
+    pha
+    jsr acia_put_string
     pla
-    sta acia.data
-    rts
+    pla
+    acia_print_string "press a key\n"
+    jsr acia_read_one_byte
+    sta .received
+    jsr screen_putchar
+    debug_hex_byte .received
+    debug ' '
+    jmp .again
 
-acia_blocking_wait_send:
-.ready_to_send_bit = %00010000
-.loop:
-    lda acia.status
-    and #.ready_to_send_bit
-    beq .loop ; 0 means not-empty(not-ready)
-    rts
+
+wall_of_text: ; a little over 2Kb (xs82*25 + 2 = 2052)
+    text "a.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "b.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "c.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "d.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "e.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "f.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "g.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "h.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "i.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "j.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "k.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "l.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "m.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "n.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "o.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "p.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "q.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "r.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "s.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "t.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "u.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "v.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "w.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "x.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "y.123456789.123456789.123456789.123456789.123456789.123456789.123456789.123456789\n"
+    text "z\n"
