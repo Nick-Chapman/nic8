@@ -4,7 +4,7 @@
     word deprecated_ticks_irq
     org $8000
 
-cpu_clks_per_sec = 1 * MHz ; run more slowly for the ACIA chip
+cpu_clks_per_sec = 4 * MHz ; run more slowly for the ACIA chip
 
     include via.s
     include arith16.s
