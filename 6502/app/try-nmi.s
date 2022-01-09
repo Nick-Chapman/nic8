@@ -16,6 +16,7 @@
     include sleep.s
     include lcd.s
     include screen.s
+    include macs.s
     include decimal.s
     include print.s
 
@@ -28,6 +29,7 @@ g_next_screen_flush = $52
 g_divisor = $e0 ; decimal.s
 g_mod10 = $e2 ; decimal.s
 g_mptr = $58 ; print.s
+g_putchar = $5a ; decimal.s
 g_nmi_count = $e6
 g_ticks = $e8 ; 16 bit tick (10 minutes!)
 g_temp = $ea

@@ -40,6 +40,9 @@ g_message_ptr = $70
 g_number = $72
 g_divisor = $74
 g_mod10 = $76
+g_putchar = $78 ; decimal.s
+g_mptr = $7a ; print.s
+
 
 NUM_SCREENS = 4
 g_screen_pointers = $80 ; 8 bytes
@@ -53,7 +56,9 @@ g_screens = $200 ; 8x 32 bytes
     include sound.s
     include lcd.s
     include screen.s
+    include macs.s
     include decimal.s
+    include print.s
 
 reset_main:
     jsr init_via

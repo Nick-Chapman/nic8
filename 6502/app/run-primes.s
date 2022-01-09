@@ -10,8 +10,11 @@
     include ticks.s
     include nmi_irq.s
     include lcd.s
+    include arith16.s
+    include acia.s
     include sleep.s
     include screen.s
+    include macs.s
     include decimal.s
     include print.s
     include debug.s
@@ -39,6 +42,7 @@ space_switcher = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
+g_putchar = $5a ; decimal.s
 
 NUM_SCREENS = 2
 g_screen_pointers = $80
@@ -50,6 +54,7 @@ reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_nmi_irq
+    jsr init_acia
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen

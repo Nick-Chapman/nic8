@@ -110,13 +110,18 @@ search_continue:
     word .roots, .evac, .scav
 .code:
     lda arg2
-    beq .skip_print
-;;     bne .skip_print_no
-;;     jmp .skip_print
-;; .skip_print_no:
+    bne .skip_print_no
     load16 fp,2, arg2 ; i
+    load16 fp,4, arg4 ; ps
+    jmp .do_inc
+.skip_print_no:
+    load16 fp,2, arg2 ; i
+    ;; (1) print to screen, and..
     print_char ' '
     print_decimal_word arg2 ; i
+    ;; (2) print to serial link
+    acia_print_char ' '
+    acia_print_decimal_word arg2
     ;; alloc cons cell
     heap_alloc 6
     save16i_0 cons_cell_i16.tag, clo
@@ -126,10 +131,6 @@ search_continue:
     save16 arg4, clo,4 ; ps
     ;; set arg4-ps to be the newly allocated cons cell
     copy16 clo, arg4 ; cons (i,ps)
-    jmp .do_inc
-.skip_print:
-    load16 fp,2, arg2 ; i
-    load16 fp,4, arg4 ; ps
 .do_inc:
     inc arg2
     bne .skip_inc_byte2

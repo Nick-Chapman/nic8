@@ -26,6 +26,7 @@ heap_start = $52
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
+g_putchar = $5a ; decimal.s
 
 ;;; trip
 g_divisor24 = $60 ; decimal24.s
@@ -39,13 +40,13 @@ g_screens = $200 ; 4*32 bytes
     include ticks.s
     include lcd.s
     include screen.s
+    include macs.s
     include decimal.s
     include decimal24.s
     include print.s
     include sleep.s
     include debug.s
     include panic.s
-    include macs.s
     include arith16.s
     include heap.s
     include nmi_irq.s

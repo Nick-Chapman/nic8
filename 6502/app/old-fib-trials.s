@@ -22,6 +22,7 @@ g_next_screen_flush = $58
 g_res = $70 ; used by fib1
 g_divisor = $72 ; decimal.s
 g_mod10 = $74 ; decimal.s
+g_putchar = $76 ; decimal.s
 gc_count = $8a
 heap_start = $8c
 g_selected_version_ptr = $90
@@ -52,6 +53,7 @@ endmacro
     include lcd.s
     include screen.s
     include sleep.s
+    include macs.s
     include decimal.s
     include print.s
     include debug.s
@@ -118,7 +120,8 @@ example_loop:
     tsx
     lda $101,x
 
-    jsr decimal_put_byte ; ..so we can print it
+    ldx #0
+    jsr decimal_put_word ; ..so we can print it
     print_char '-'
     flush
     ;jsr pause
@@ -161,6 +164,7 @@ _1$:
     flush
 
     jmp example_loop
+
 
 finish:
     print_char '$'

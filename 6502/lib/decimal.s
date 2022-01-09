@@ -5,6 +5,12 @@
 ;;; put string to screen
 
 decimal_put_word:
+    pha
+    store16i screen_putchar, g_putchar
+    pla
+    jmp generic_decimal_put_word
+
+generic_decimal_put_word:
     sta g_divisor ;lo
     stx g_divisor + 1 ;hi
     lda #0
@@ -47,11 +53,9 @@ decimal_put_word:
 .put_from_stack:
     pla
     beq .done
-    jsr screen_putchar
+    jsr .put
     jmp .put_from_stack
 .done:
     rts
-
-decimal_put_byte:
-    ldx #0
-    jmp decimal_put_word
+.put:
+    jmp (g_putchar)

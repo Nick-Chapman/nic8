@@ -1,4 +1,11 @@
 
+acia_print_char: macro CHAR
+    pha
+    lda #\CHAR
+    jsr acia_putchar
+    pla
+endmacro
+
 acia_print_string: macro S
     jmp .skip\@
 .embedded\@:

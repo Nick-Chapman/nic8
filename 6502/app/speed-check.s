@@ -12,6 +12,7 @@
     include nmi_irq.s
     include lcd.s
     include screen.s
+    include macs.s
     include decimal.s
     include print.s
 
@@ -28,6 +29,7 @@ g_speed = $40 ; #repeats of cyclic_executive per jiffy
 g_mptr = $42 ; print.s
 g_divisor = $44 ; decimal.s
 g_mod10 = $46 ; decimal.s
+g_putchar = $48 ; decimal.s
 
 NUM_SCREENS = 1
 g_screen_pointers = $80
