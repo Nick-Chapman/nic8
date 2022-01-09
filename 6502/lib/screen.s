@@ -38,7 +38,8 @@ screen_flush_selected: macro ; whatever screen is selected for writing
 endmacro
 
 ;; flush screen (# passed in acc) to the underlying lcd
-screen_flush_sub: ; TODO: should this preserve x?
+screen_flush_sub:
+    phx
     pha
     ;jsr show_screen_number_in_corner
     pla
@@ -72,6 +73,7 @@ screen_flush_sub: ; TODO: should this preserve x?
     sec
     cpx #32
     bne .each_line2_char
+    plx
     rts
 
 show_screen_number_in_corner:
@@ -101,6 +103,7 @@ screen_putchar:
     rts
 
 screen_newline:
+    phx
     pha
     ldy g_selected_screen
     lda g_screen_pointers,y
@@ -110,6 +113,7 @@ screen_newline:
 .skip:
     jsr return_to_start_line2
     pla
+    plx
     rts
 
 maybe_scroll:

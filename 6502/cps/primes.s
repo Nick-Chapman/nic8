@@ -1,11 +1,4 @@
 
-BASE = $0a
-arg2 = BASE + 2
-arg3 = BASE + 3
-arg4 = BASE + 4
-arg5 = BASE + 5
-arg6 = BASE + 6
-
 True = 1
 False = 0
 
@@ -56,20 +49,26 @@ nil_cell_i16:
 ;;;         search (i+1) ps
 
 primes:
+.i = 2
+.ps = 4
 .code:
     lda #2
-    sta arg2
-    stz arg3
-    store16i nil_cell_i16.static_closure, arg4
+    sta .i, x
+    stz .i + 1, x
+    store16i_x nil_cell_i16.static_closure, .ps
     store16i search.static_closure, fp
     enter_fp
 
 ;;; fp    23 45
 ;;; [..] (i  ps)
 search:
+.i = 2
+.ps = 4
+.jiffy = 6
+.k = 6 ; called
     byte 'A'
 .roots:
-    gc_root_at arg4 ; ps
+    gc_root_at_x .ps
     rts
 .evac:
     rts
@@ -79,7 +78,7 @@ search:
     clc
     lda g_ticks
     adc #1 ; wait a jiffy
-    sta arg6
+    sta .jiffy, x
     store16i search.static_closure, fp
     enter_fp
 .static_closure:
@@ -88,17 +87,17 @@ search:
 .code
     lda g_ticks
     sec
-    sbc arg6 ; temp in arg6 - the time to continue
+    sbc .jiffy, x
     bpl .go
     enter_fp ; self
 .go
     heap_alloc 6
     save16i_0 search_continue.code, clo
-    save16 arg2, clo,2 ; i
-    save16 arg4, clo,4 ; ps
+    save16_x .i, clo,2
+    save16_x .ps, clo,4
     ;; setup args
     ;; i already in 23; ps already in 45
-    copy16 clo, arg6 ; k
+    copyTo16_x clo, .k
     store16i candidate.static_closure, fp
     enter_fp
 
@@ -106,6 +105,8 @@ search:
 ;;;    .23 .45
 ;;; [.. i   ps ] (b) --> if b then (print i; search (i+1, ps)) else search (i+1, cons (i,ps))
 search_continue:
+.i = 2  ; called
+.ps = 4 ; called
 .roots:
     rts
 .evac:
@@ -116,32 +117,31 @@ search_continue:
     byte 'T'
     word .roots, .evac, .scav
 .code:
-    lda arg2
+    lda .i, x
     bne .skip_print_no
-    load16 fp,2, arg2 ; i
-    load16 fp,4, arg4 ; ps
+    load16_x fp,2, .i
+    load16_x fp,4, .ps
     jmp .do_inc
 .skip_print_no:
-    load16 fp,2, arg2 ; i
+    load16_x fp,2, .i
     ;; (1) print to screen, and..
     print_char ' '
-    print_decimal_word arg2 ; i
+    print_decimal_word_x .i
     ;; (2) print to serial link
     acia_print_char ' '
-    acia_print_decimal_word arg2
+    acia_print_decimal_word_x .i
     ;; alloc cons cell
     heap_alloc 6
     save16i_0 cons_cell_i16.tag, clo
-    load16 fp,2, arg2 ; i
-    load16 fp,4, arg4 ; ps
-    save16 arg2, clo,2 ; i
-    save16 arg4, clo,4 ; ps
-    ;; set arg4-ps to be the newly allocated cons cell
-    copy16 clo, arg4 ; cons (i,ps)
+    load16_x fp,2, .i
+    load16_x fp,4, .ps
+    save16_x .i, clo,2
+    save16_x .ps, clo,4
+    copyTo16_x clo, .ps ; cons (i,ps)
 .do_inc:
-    inc arg2
+    inc .i, x
     bne .skip_inc_byte2
-    inc arg2 + 1
+    inc .i + 1, x
 .skip_inc_byte2:
     jmp search.begin
 
@@ -158,9 +158,13 @@ search_continue:
 ;;; fp    23 45 67
 ;;; [..] (i  ps k)
 candidate:
+.i = 2
+.p = 4 ; called
+.ps = 4
+.k = 6
 .roots:
-    gc_root_at arg4 ; ps
-    gc_root_at arg6 ; k
+    gc_root_at_x .ps
+    gc_root_at_x .k
     rts
 .evac:
     rts
@@ -171,26 +175,27 @@ candidate:
     byte 'A'
     word .roots, .evac, .scav
 .code:
-    load16_0 arg4, cp
+    copyFrom16_x .ps, temp
+    load16 temp,0, cp
     lda (cp)
     beq .nil
     ;; cons case
     heap_alloc 8
-    copy16 arg4, temp
+    copyFrom16_x .ps, temp
     save16i_0 candidate_cont.code, clo
-    save16 arg2, clo,2 ; i
+    save16_x .i, clo,2
     transfer16 temp,4, clo, 4
-    save16 arg6, clo,6 ; k
+    save16_x .k, clo,6
     ;; setup args
-    ;; i already in arg 2/3
-    load16 temp,2, arg4 ;p
-    copy16 clo, arg6
+    ;; i already setup
+    load16_x temp,2, .p
+    copyTo16_x clo, .k
     store16i divides.static_closure, fp
     enter_fp ; divides i p k1
 .nil:
-     copy16 arg6,fp ;k
+     copyFrom16_x .k, fp
      lda #True
-     sta arg2
+     sta .i, x
      enter_fp ; k True
 
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
@@ -200,6 +205,11 @@ candidate:
 ;;;    .23 .45 .67
 ;;; [.. i   ps  k  ] (b)
 candidate_cont:
+.b = 2
+.i = 2 ; called
+.ps = 4 ; called
+.k = 6  ; called
+.temp = 3
 .roots:
     rts ; no roots
 .evac:
@@ -211,19 +221,19 @@ candidate_cont:
     byte 'B'
     word .roots, .evac, .scav
 .code:
-    lda arg2 ; b
+    lda .b, x
     bne .bTrue
     ;; candidate i ps k
-    load16 fp,2, arg2 ; i
-    load16 fp,4, arg4 ; ps
-    load16 fp,6, arg6 ; k
+    load16_x fp,.i, .i
+    load16_x fp,.ps, .ps
+    load16_x fp,.k, .k
     store16i candidate.static_closure, fp
     enter_fp
 .bTrue:
-    load16 fp,6, arg3 ; k -> fp (using 3 as a temp)
-    copy16 arg3, fp
+    load16_x fp,.k, .temp ; k -> fp (using 3 as a temp)
+    copyFrom16_x .temp, fp
     lda #False
-    sta arg2
+    sta .i, x
     enter_fp ; k False
 
 ;;; divides :: Int -> Int -> (Bool -> r) -> r
@@ -233,8 +243,11 @@ candidate_cont:
 ;;; fp    23 45 67
 ;;; [..] (i  p  k)
 divides:
+.i = 2
+.p = 4
+.k = 6
 .roots:
-    gc_root_at arg6 ; k
+    gc_root_at_x .k
     rts
 .evac:
     rts
@@ -245,25 +258,25 @@ divides:
     byte 'D'
     word .roots, .evac, .scav
 .code:
-    lda arg2 ;iL
-    ora arg3 ;iH
+    lda .i, x
+    ora .i + 1, x
     beq .baseT ;i==0
     sec
-    lda arg2 ;iL
-    sbc arg4 ;pL
-    sta arg2 ;i'L (ok to save even if we branch to baseF)
-    lda arg3 ;iL
-    sbc arg5 ;pL
+    lda .i, x
+    sbc .p, x
+    sta .i, x ; (ok to save even if we branch to baseF)
+    lda .i + 1, x
+    sbc .p + 1, x
     bmi .baseF
-    sta arg3 ; i'H
+    sta .i + 1, x
     enter_fp ; divides i' p k
 .baseT:
-    copy16 arg6,fp ;k
+    copyFrom16_x .k, fp
     lda #True
-    sta arg2
+    sta .i, x
     enter_fp ; k True
 .baseF:
-    copy16 arg6,fp ;k
+    copyFrom16_x .k, fp
     lda #False
-    sta arg2
+    sta .i, x
     enter_fp ; k False

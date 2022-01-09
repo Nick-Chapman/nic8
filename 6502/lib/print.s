@@ -53,16 +53,25 @@ print_decimal_word: macro L
     generic_print_decimal_word screen_putchar, \L
 endmacro
 
-print_decimal_word_x: macro L
+generic_print_decimal_word_x: macro P, L
     pha
+    store16i \P, g_putchar
     ldy \L, x
     lda \L + 1, x
     phx
     tax
     tya
-    jsr decimal_put_word
+    jsr generic_decimal_put_word
     plx
     pla
+endmacro
+
+acia_print_decimal_word_x: macro L
+    generic_print_decimal_word_x acia_putchar, \L
+endmacro
+
+print_decimal_word_x: macro L
+    generic_print_decimal_word_x screen_putchar, \L
 endmacro
 
 print_decimal_byte: macro L

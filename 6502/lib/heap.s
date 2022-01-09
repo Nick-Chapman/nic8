@@ -48,6 +48,12 @@ gc_root_at: macro N
     copy16 ev, \N
 endmacro
 
+gc_root_at_x: macro N
+    copyFrom16_x \N, ev
+    jsr heap.dispatch_evacuate
+    copyTo16_x ev, \N
+endmacro
+
 ;;; Evacuate...
 
 evacuate: macro N
@@ -215,8 +221,8 @@ endmacro
 
 .report_collection:
     ;; SWITCH TO GC SCREEN
-    ldx g_selected_screen
-    phx ; save caller's selected screen
+    lda g_selected_screen
+    pha ; save caller's selected screen
     lda gc_screen
     sta g_selected_screen
     newline
@@ -227,8 +233,8 @@ endmacro
     sub16 g_heap_pointer, heap_start, temp
     print_decimal_word temp
     ;; RESTORE CALLER SCREEN
-    plx ; restore caller's selected screen
-    stx g_selected_screen
+    pla ; restore caller's selected screen
+    sta g_selected_screen
     rts
 
 broken_heart:

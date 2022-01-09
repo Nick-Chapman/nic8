@@ -48,6 +48,8 @@ NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200 ; 4*32 bytes
 
+BASE = 20
+
 reset_main:
     ldx #$ff
     txs
@@ -59,4 +61,5 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     init_heap 1 ; screen-number
+    ldx #BASE
     jmp primes.code
