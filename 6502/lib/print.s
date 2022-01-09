@@ -12,17 +12,26 @@ print_char: macro CHAR
     pla
 endmacro
 
-print_decimal_trip: macro L ; TODO: move macros to same file as the subs they call
+generic_print_decimal_trip: macro P, L
     pha
     phx
     phy
+    store16i \P, g_putchar
     lda \L
     ldx \L + 1
     ldy \L + 2
-    jsr decimal_put_trip
+    jsr generic_decimal_put_trip
     ply
     plx
     pla
+endmacro
+
+acia_print_decimal_trip: macro L
+    generic_print_decimal_trip acia_putchar, \L
+endmacro
+
+print_decimal_trip: macro L
+    generic_print_decimal_trip screen_putchar, \L
 endmacro
 
 generic_print_decimal_word: macro P, L

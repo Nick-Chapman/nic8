@@ -42,9 +42,11 @@ fib_iter:
 fib_iter2:
     word .roots, .evac, .scav
 .code:
+    print_char ' '
     print_decimal_trip arg2 ; RL,RM,RH (24 bit result)
-    lda #' '
-    jsr screen_putchar
+    acia_print_char ' '
+    acia_print_decimal_trip arg2
+
     loadA fp, 2 ; I
     inc
     sta arg2 ; I+1

@@ -4,7 +4,7 @@
 ;;; decode 24 bit triple-byte pased in A/X/Y as decimal number
 ;;; put string to screen
 
-decimal_put_trip:
+generic_decimal_put_trip:
     sta g_divisor24 ;lo
     stx g_divisor24 + 1 ;med
     sty g_divisor24 + 2 ;hi
@@ -60,7 +60,9 @@ decimal_put_trip:
 .put_from_stack:
     pla
     beq .done
-    jsr screen_putchar
+    jsr .put
     jmp .put_from_stack
 .done:
     rts
+.put:
+    jmp (g_putchar)
