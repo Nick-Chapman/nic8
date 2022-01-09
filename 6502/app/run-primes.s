@@ -22,7 +22,17 @@
     include macs.s
     include arith16.s
     include heap.s
-    include executive.s
+    ;include executive.s
+
+task_vars_offset = 20
+
+enter_fp: macro
+    load16_0 fp, cp
+    jsr screen_flush_when_time
+    ldx #task_vars_offset
+    jmp (cp)
+endmacro
+
     include primes.s
 
 ;;; bytes
@@ -48,8 +58,6 @@ NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200 ; 4*32 bytes
 
-BASE = 20
-
 reset_main:
     ldx #$ff
     txs
@@ -61,5 +69,6 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     init_heap 1 ; screen-number
-    ldx #BASE
-    jmp primes.code
+    ldx #task_vars_offset
+    jsr primes.begin
+    enter_fp

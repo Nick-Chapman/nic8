@@ -51,13 +51,13 @@ nil_cell_i16:
 primes:
 .i = 2
 .ps = 4
-.code:
+.begin:
     lda #2
     sta .i, x
     stz .i + 1, x
     store16i_x nil_cell_i16.static_closure, .ps
     store16i search.static_closure, fp
-    enter_fp
+    rts
 
 ;;; fp    23 45
 ;;; [..] (i  ps)

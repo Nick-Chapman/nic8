@@ -24,7 +24,7 @@ enter_fp: macro
     ;;panic_if_not_in_rom \cp
     jsr screen_flush_when_time
     ldx #task_vars_offset
-    jmp (\cp)
+    jmp (cp)
 endmacro
 
     include clock.s
