@@ -38,6 +38,12 @@ g_screen_pointers = $a0 ; 8 bytes
 ;;; buffers
 g_screens = $200 ; 8x 32 bytes
 
+BASE = 10
+arg2 = BASE + 2
+arg3 = BASE + 3
+arg4 = BASE + 4
+arg5 = BASE + 5
+arg6 = BASE + 6
 
 flush: macro
     pha
