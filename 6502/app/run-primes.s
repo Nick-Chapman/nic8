@@ -22,7 +22,10 @@
     include macs.s
     include arith16.s
     include heap.s
-    ;include executive.s
+
+find_roots:
+    find_roots_from fp
+    rts
 
 task_vars_offset = 20
 

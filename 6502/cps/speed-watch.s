@@ -6,10 +6,8 @@ speed_watch:
 .c = 2 ; count executions this jiffy
 .j = 4 ; this jiffy
 .roots:
-    panic "SP:roots" ; see when called
     rts ; no roots
 .evac:
-    panic "SP:evac" ; see when called
     rts ; static
 .scav:
     impossible_scavenge_because_static

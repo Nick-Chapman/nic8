@@ -17,6 +17,9 @@
     include arith16.s
     include heap.s
 
+find_roots:
+    panic "find_roots"
+
 task_vars_offset = 10
 
 enter_fp: macro

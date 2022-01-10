@@ -19,11 +19,11 @@
     include arith16.s
     include heap.s
 
-;; NEXT: macro A ; OLD, REMOVE
-;;     jsr screen_flush_when_time
-;;     store16i \A, continue_code
-;;     jmp (switcher)
-;; endmacro
+find_roots:
+    find_roots_from task1
+    find_roots_from task2
+    find_roots_from task3
+    rts
 
 panic_if_not_in_rom_sub:
     cmp #$80
@@ -78,9 +78,9 @@ NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1_screen = 0
-task2_screen = 1
-task3_screen = 2
+task1_screen = 1
+task2_screen = 2
+task3_screen = 3
 
 ;;; not in hex for some reason...
 task1_vars_offset = 10
@@ -97,16 +97,19 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    init_heap 3 ; gc_screen
+    init_heap 0 ; gc_screen
 
+    store8i task1_screen, g_selected_screen
     ldx #task1_vars_offset
-    jsr clock.begin
+    jsr primes.begin
     copy16 fp, task1
 
+    store8i task2_screen, g_selected_screen
     ldx #task2_vars_offset
-    jsr primes.begin
+    jsr clock.begin
     copy16 fp, task2
 
+    store8i task3_screen, g_selected_screen
     ldx #task3_vars_offset
     jsr speed_watch.begin
     copy16 fp, task3

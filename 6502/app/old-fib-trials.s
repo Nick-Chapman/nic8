@@ -68,6 +68,10 @@ endmacro
     include arith16.s
     include heap.s
 
+find_roots:
+    find_roots_from fp
+    rts
+
 NEXT: macro A
     jsr screen_flush_when_time
     jmp \A

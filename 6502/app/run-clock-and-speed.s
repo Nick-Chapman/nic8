@@ -17,11 +17,8 @@
     include arith16.s
     include heap.s
 
-;; NEXT: macro A ; OLD, REMOVE
-;;     jsr screen_flush_when_time
-;;     store16i \A, continue_code
-;;     jmp (switcher)
-;; endmacro
+find_roots:
+    panic "find_roots"
 
 panic_if_not_in_rom_sub:
     cmp #$80

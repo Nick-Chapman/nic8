@@ -29,6 +29,17 @@ init_heap: macro Screen_Number
     pla
 endmacro
 
+find_roots_from: macro P
+    jmp .skip\@
+.dispatch_roots\@:
+    jump_indirect_offset \P, 6
+.skip\@
+    jsr .dispatch_roots\@
+    copy16 \P, ev
+    jsr heap.dispatch_evacuate
+    copy16 ev, \P
+endmacro
+
 ;;; allocate #bytes in the heap
 
 heap_alloc: macro N
@@ -156,15 +167,13 @@ alloc_orelse: macro FAIL ; #bytes in acc
 .exhausted_still_after_collection:
     panic 'Heap'
 
+
 .run_collection:
     jsr .switch_space
     copy16 g_heap_pointer, heap_start
     copy16 g_heap_pointer, lw
-    jsr .dispatch_roots
-    ;; TODO: evacuate 'fp' like other roots; caller says: "gc_root_at fp"
-    copy16 fp, ev
-    jsr .dispatch_evacuate
-    copy16 ev, fp
+    jsr find_roots
+
     ;; scavenge routines jump back here when they are done
 .scavenge_loop:
     ;; while 'lw' has not caught up with 'hp', then scavenge
@@ -189,8 +198,6 @@ jump_indirect_offset: macro P, N
     jmp (temp)
 endmacro
 
-.dispatch_roots:
-    jump_indirect_offset fp, 6
 
 .dispatch_evacuate:
     jump_indirect_offset ev, 4

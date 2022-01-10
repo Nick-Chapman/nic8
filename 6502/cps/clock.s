@@ -8,10 +8,8 @@ clock:
 .s = 4 ; seconds
 .j = 5 ; jiffy to tick
 .roots:
-    panic "CL:roots" ; see when called
     rts ; no roots
 .evac:
-    panic "CL:evac" ; see when called
     rts ; static
 .scav:
     impossible_scavenge_because_static

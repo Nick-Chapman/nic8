@@ -56,6 +56,10 @@ g_screens = $200 ; 4*32 bytes
     include fib24.s
     include fibs.s
 
+find_roots:
+    find_roots_from fp
+    rts
+
 reset_main:
     ldx #$ff
     txs

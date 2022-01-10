@@ -16,7 +16,8 @@
     include arith16.s
     include heap.s
 
-    ; include executive.s ;; TODO: unify with this
+find_roots:
+    panic "find_roots"
 
 task_vars_offset = 20
 
