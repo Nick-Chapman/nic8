@@ -55,6 +55,8 @@ endmacro
 
     include via.s
     include ticks.s
+    include arith16.s
+    include acia.s
     include sound.s
     include lcd.s
     include screen.s
@@ -108,6 +110,7 @@ reset_main:
     jsr init_ticks
     jsr init_nmi_irq
     jsr init_sound ; silence
+    jsr init_acia
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
@@ -140,13 +143,13 @@ example_loop:
 
     pha ; reserve 2-bytes for timing-result
     pha
-    jsr start_timer
+    jsr trial_start_timer
     pha ; reserve 2-bytes for FIB-result
     pha
     tsx
     lda $105,x ; Access N again (now under 4 bytes), to setup the argument to fib (in acc)
     jsr version_dispatch
-    jsr stop_timer
+    jsr trial_stop_timer
 
     pla ; result-LO into A, and
     plx ; result-HI into X, which..
@@ -182,7 +185,7 @@ finish:
 spin:
     jmp spin
 
-start_timer:
+trial_start_timer:
     tsx
     lda g_ticks
     sta $103,x ; timing-word under: 2-bytes return-addr
@@ -190,7 +193,7 @@ start_timer:
     sta $104,x
     rts
 
-stop_timer:
+trial_stop_timer:
     tsx
     lda g_ticks
     sec

@@ -7,7 +7,7 @@ SPACE_B_START = SPACE_B_END - ($100 * PAGES_PER_SEMI_SPACE)
 SPACE_A_END = SPACE_B_START
 SPACE_A_START = SPACE_A_END - ($100 * PAGES_PER_SEMI_SPACE)
 
-;; PAGES_PER_SEMI_SPACE = 8
+;; PAGES_PER_SEMI_SPACE = 1
 ;; SPACE_A_START = $1000
 ;; SPACE_A_END = SPACE_A_START + ($100 * PAGES_PER_SEMI_SPACE)
 ;; SPACE_B_START = $2000
@@ -33,11 +33,9 @@ find_roots_from: macro P
     jmp .skip\@
 .dispatch_roots\@:
     jump_indirect_offset \P, 6
-.skip\@
+.skip\@:
     jsr .dispatch_roots\@
-    copy16 \P, ev
-    jsr heap.dispatch_evacuate
-    copy16 ev, \P
+    gc_root_at \P
 endmacro
 
 ;;; allocate #bytes in the heap

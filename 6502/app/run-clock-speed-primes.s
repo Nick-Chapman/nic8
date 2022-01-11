@@ -20,9 +20,15 @@
     include heap.s
 
 find_roots:
+    phx
+    ldx #task1_vars_offset
     find_roots_from task1
+    ldx #task2_vars_offset
     find_roots_from task2
+    ldx #task3_vars_offset
     find_roots_from task3
+    plx
+    gc_root_at fp
     rts
 
 panic_if_not_in_rom_sub:
@@ -97,6 +103,9 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
+
+    acia_print_string "\n\nRESET...\n"
+
     init_heap 0 ; gc_screen
 
     store8i task1_screen, g_selected_screen
@@ -111,7 +120,8 @@ reset_main:
 
     store8i task3_screen, g_selected_screen
     ldx #task3_vars_offset
-    jsr speed_watch.begin
+    ;jsr speed_watch.begin
+    jsr primes.begin ; dont run speed-watch here, but a 2nd copy of primes!
     copy16 fp, task3
 
     copy16 task1, fp

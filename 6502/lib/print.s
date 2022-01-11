@@ -94,7 +94,8 @@ print_decimal_byte_x: macro L
     pla
 endmacro
 
-put_hex_byte: ; TODO: save/restore x
+put_hex_byte:
+    phx
     pha
     lsr
     lsr
@@ -108,6 +109,7 @@ put_hex_byte: ; TODO: save/restore x
     tax
     lda digits,x
     jsr screen_putchar
+    plx
     rts
 
 print_hex_word: macro L

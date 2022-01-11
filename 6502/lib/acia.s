@@ -85,14 +85,15 @@ acia_putchar:
 ;;; 600us... good
 ;;; 521 good
 ;;; 519 good
-;;; 517 good
+;;; 518 good - switched to this when 517 was seen to be bad
 
+;;; 517 bad - did think this was good for ages, then saw occasional lost char when debuuging
 ;;; 516 bad - bits corruption
 ;;; 515 bad - bits corruption
 ;;; 510 bad - bytes lost
 ;;; 500 bad - bytes lost
 ;;; 500 bad - bytes lost
-clks_to_wait = (cpu_clks_per_sec / 1000000) * 517
+clks_to_wait = (cpu_clks_per_sec / 1000000) * 518
 
 T2CL = $6008
 T2CH = $6009
@@ -124,3 +125,62 @@ acia_read_one_byte:
     beq .loop ; 0 means not-full (no byte has arrived)
     lda acia.data
     rts
+
+
+acia_print_string: macro S
+    jmp .skip\@
+.embedded\@:
+    string \S
+.skip\@:
+    pha
+      lda #>.embedded\@
+      pha
+      lda #<.embedded\@
+      pha
+      jsr acia_put_string
+      pla
+      pla
+    pla
+endmacro
+
+acia_newline:
+    acia_print_string "\n"
+    rts
+
+acia_put_hex_byte:
+    phx
+    pha
+    lsr
+    lsr
+    lsr
+    lsr
+    tax
+    lda digits,x
+    jsr acia_putchar
+    pla
+    and #%1111
+    tax
+    lda digits,x
+    jsr acia_putchar
+    plx
+    rts
+
+acia_print_hex_word: macro L
+    lda #'['
+    jsr acia_putchar
+    lda \L + 1
+    jsr acia_put_hex_byte
+    lda \L
+    jsr acia_put_hex_byte
+    lda #']'
+    jsr acia_putchar
+endmac
+
+acia_print_hex_byte: macro L
+    lda #'['
+    jsr acia_putchar
+    lda \L
+    jsr acia_put_hex_byte
+    lda #']'
+    jsr acia_putchar
+endmac

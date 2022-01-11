@@ -11,7 +11,7 @@ cons_cell_i16:
 .tag:
     byte 1
 .roots:
-    impossible_roots
+    panic "cons:roots"
 .evac:
     evacuate 6
 .scav
@@ -24,7 +24,7 @@ nil_cell_i16:
 .tag:
     byte 0
 .roots:
-    impossible_roots
+    panic "nil:roots"
 .evac:
     rts
 .scav:

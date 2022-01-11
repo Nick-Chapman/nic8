@@ -6,6 +6,8 @@
 
     include via.s
     include ticks.s
+    include arith16.s
+    include acia.s
     include nmi_irq.s
     include lcd.s
     include screen.s
@@ -83,6 +85,7 @@ reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_nmi_irq
+    jsr init_acia
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
