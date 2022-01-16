@@ -31,7 +31,7 @@ fib_iter:
     enter_fp
 .go:
     lda .i, x
-    heap_alloc 3
+    heap_alloc 4 ; every heap alloc must be at least size 4 to allow the broken-heart forwarding pointer
     save16i_0 fib_iter2.code, clo
     save8_x .i, clo,2
     ;; setup args
@@ -40,9 +40,9 @@ fib_iter:
     store16i_x fib_recurse.static_closure, .fp
     enter_fp
 
-;;; fp     234
-;;;    .2
-;;; [.. I] (R)
+;;; fp         234
+;;;    .2 .3
+;;; [.. I xx] (R)
 fib_iter2:
 .fp = 0
 .i = 2
@@ -50,8 +50,8 @@ fib_iter2:
 .code:
     print_char ' '
     print_decimal_trip_x .i
-    acia_print_char ' '
-    acia_print_decimal_trip_x .i
+    ;acia_print_string " f-"
+    ;acia_print_decimal_trip_x .i
     copyFrom16_x .fp, temp
     loadA temp, .i
     inc
@@ -61,6 +61,6 @@ fib_iter2:
 .roots:
     rts
 .evac:
-    evacuate 3
+    evacuate 4
 .scav:
-    scavenge_done 3
+    scavenge_done 4

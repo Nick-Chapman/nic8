@@ -45,7 +45,6 @@ fib_recurse:
 .static_closure:
     word .code
 
-
 ;;; fp          234          2   34            .01        .23 .456
 ;;; .01 .2 .34
 ;;; [..  N  K ] (A) --> fib (N-2 J ) where J is [fib_cont2 K   A]

@@ -89,8 +89,8 @@ NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1_screen = 1
-task2_screen = 2
+task1_screen = 0
+task2_screen = 1
 task3_screen = 3
 
 reset_main:
@@ -106,18 +106,19 @@ reset_main:
 
     acia_print_string "\n\nRESET...\n"
 
-    init_heap 0 ; gc_screen
+    init_heap 2 ; gc_screen
 
     ldx #task1
-    jsr primes.begin
+    jsr fib_iter.begin
 
     ldx #task2
     jsr clock.begin
 
     ldx #task3
+    jsr primes.begin
+
+    ;ldx #task4 ; TODO: make this work!
     ;jsr speed_watch.begin
-    jsr primes.begin ; dont run speed-watch here, but a 2nd copy of primes!
-    ;jsr fib_iter.begin ; dont run speed-watch here, but a 2nd copy of primes!
 
     jmp switch_to_1
 
