@@ -8,25 +8,24 @@ clock:
 .m = 3 ; minutes
 .s = 4 ; seconds
 .j = 5 ; jiffy to tick
+.begin:
+    stz .s, x
+    stz .m, x
+    stz .h, x
+    store16i_x .static_closure0, .fp
+    rts
 .roots:
     rts ; no roots
 .evac:
     rts ; static
 .scav:
     impossible_scavenge_because_static
-.begin:
+.static_closure0:
+    word .code0
+    word .roots, .evac, .scav
+.code0:
     store16i_x .static_closure, .fp
-    stz .s, x
-    stz .m, x
-    stz .h, x
-.again:
-    jsr .display
-    jsr .tick
-    clc
-    lda g_ticks
-    adc #100
-    sta .j, x
-    rts
+    jmp .go
 .static_closure:
     word .code
     word .roots, .evac, .scav
@@ -36,7 +35,12 @@ clock:
     bpl .go
     enter_fp
 .go:
-    jsr .again
+    jsr .display
+    jsr .tick
+    clc
+    lda g_ticks
+    adc #100
+    sta .j, x
     enter_fp
 
 print_leading_zero: macro V
