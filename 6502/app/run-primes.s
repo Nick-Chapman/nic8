@@ -57,7 +57,7 @@ g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal.s
 
-NUM_SCREENS = 2
+NUM_SCREENS = 1
 g_screen_pointers = $80
 g_screens = $200 ; 4*32 bytes
 
@@ -71,7 +71,7 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    init_heap 1 ; screen-number
+    init_heap 0 ; screen-number
     ldx #task1
     jsr primes.begin
     enter_fp

@@ -24,6 +24,7 @@
 task1 = 10
 task2 = 20
 task3 = 30
+task4 = 40
 
 find_roots:
     phx
@@ -89,9 +90,10 @@ NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1_screen = 0
-task2_screen = 1
-task3_screen = 3
+task1_screen = 0 ; fibs
+task2_screen = 1 ; clock
+task3_screen = 0 ; no matter as primes prints noting to screen
+task4_screen = 2 ; speed
 
 reset_main:
     ldx #$ff
@@ -106,7 +108,7 @@ reset_main:
 
     acia_print_string "\n\nRESET...\n"
 
-    init_heap 2 ; gc_screen
+    init_heap 3 ; gc_screen
 
     ldx #task1
     jsr fib_iter.begin
@@ -117,8 +119,8 @@ reset_main:
     ldx #task3
     jsr primes.begin
 
-    ;ldx #task4 ; TODO: make this work!
-    ;jsr speed_watch.begin
+    ldx #task4
+    jsr speed_watch.begin
 
     jmp switch_to_1
 
@@ -139,9 +141,17 @@ switch_to_2:
     jmp (cp)
 
 switch_to_3:
-    store16i switch_to_1, switcher
+    store16i switch_to_4, switcher
     store8i task3_screen, g_selected_screen
     ldx #task3
     load16_0 task3, cp
+    panic_if_not_in_rom cp
+    jmp (cp)
+
+switch_to_4:
+    store16i switch_to_1, switcher
+    store8i task4_screen, g_selected_screen
+    ldx #task4
+    load16_0 task4, cp
     panic_if_not_in_rom cp
     jmp (cp)

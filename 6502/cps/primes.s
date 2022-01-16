@@ -135,8 +135,8 @@ search_continue:
 .skip_print_no:
     load16_x temp,2, .i
     ;; (1) print to screen, and..
-    print_char ' '
-    print_decimal_word_x .i
+    ;print_char ' '
+    ;print_decimal_word_x .i
     ;; (2) print to serial link
     acia_print_char ' '
     acia_print_decimal_word_x .i
