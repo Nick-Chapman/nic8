@@ -3,6 +3,7 @@
 ;;; clock 2 3 4 5
 ;;; [..]  (h m s j)
 clock:
+.fp = 0
 .h = 2 ; hours
 .m = 3 ; minutes
 .s = 4 ; seconds
@@ -14,7 +15,7 @@ clock:
 .scav:
     impossible_scavenge_because_static
 .begin:
-    store16i .static_closure, fp ; TODO: need ,x based indexing? -- hmm, perhaps not
+    store16i_x .static_closure, .fp
     stz .s, x
     stz .m, x
     stz .h, x

@@ -21,13 +21,12 @@
 find_roots:
     panic "find_roots"
 
-task_vars_offset = 20
+task1 = 25
 
 enter_fp: macro
-    load16_0 fp, cp
-    ;;panic_if_not_in_rom \cp
+    load16_0 task1, cp
     jsr screen_flush_when_time
-    ldx #task_vars_offset
+    ldx #task1
     jmp (cp)
 endmacro
 
@@ -69,7 +68,7 @@ reset_main:
     jsr init_screen
     init_heap 1 ; screen-number
 
-    ldx #task_vars_offset
+    ldx #task1
 
     jsr speed_watch.begin
     enter_fp

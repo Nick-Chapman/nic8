@@ -63,10 +63,6 @@ g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal.s
 
-;;; First stab to round-robin between two tasks
-;;; Local vars must not conflict - have temp hack (base = 10/20)
-task1 = $60 ; contains address to continue task1
-task2 = $62 ; ditto task2
 switcher = $64 ; switches task, either: 1->2 or 2->1
 
 NUM_SCREENS = 4
@@ -76,8 +72,8 @@ g_screens = $200
 task1_screen = 0
 task2_screen = 1
 
-task1_vars_offset = 10
-task2_vars_offset = 20
+task1 = 15
+task2 = 25
 
 reset_main:
     ldx #$ff
@@ -91,39 +87,26 @@ reset_main:
     jsr init_screen
     init_heap 2 ; screen-number
 
-    ldx #task1_vars_offset
+    ldx #task1
     jsr clock.begin
-    copy16 fp, task1
 
-    ldx #task2_vars_offset
+    ldx #task2
     jsr speed_watch.begin
-    copy16 fp, task2
 
-    copy16 task1, fp
-    store16i one2two, switcher
+    jmp switch_to_1
 
+switch_to_1:
+    store16i switch_to_2, switcher
     store8i task1_screen, g_selected_screen
-    ldx #task1_vars_offset
-    load16_0 fp, cp
+    ldx #task1
+    load16_0 task1, cp
     panic_if_not_in_rom cp
     jmp (cp)
 
-one2two:
-    copy16 fp, task1
-    copy16 task2, fp
-    store16i two2one, switcher
+switch_to_2:
+    store16i switch_to_1, switcher
     store8i task2_screen, g_selected_screen
-    ldx #task2_vars_offset
-    load16_0 fp, cp
-    panic_if_not_in_rom cp
-    jmp (cp)
-
-two2one:
-    copy16 fp, task2
-    copy16 task1, fp
-    store16i one2two, switcher
-    store8i task1_screen, g_selected_screen
-    ldx #task1_vars_offset
-    load16_0 fp, cp
+    ldx #task2
+    load16_0 task2, cp
     panic_if_not_in_rom cp
     jmp (cp)

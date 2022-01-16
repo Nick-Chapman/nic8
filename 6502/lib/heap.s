@@ -18,7 +18,7 @@ lw = 2  ; low-water mark. pointer into (TO-HEAP).
 ev = 4  ; points to closure being evacuated (FROM-HEAP)
 clo = 6 ; points to closure just allocated  (TO-HEAP)
 cp = 8  ; code-pointer
-fp = $a  ; frame-pointer
+;fp = $a  ; frame-pointer
 
 ;;; Client entry points
 

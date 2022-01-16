@@ -69,6 +69,7 @@ endmacro
     include macs.s
     include arith16.s
     include heap.s
+fp = $a  ; frame-pointer
 
 find_roots:
     find_roots_from fp

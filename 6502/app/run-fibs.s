@@ -51,6 +51,7 @@ g_screens = $200 ; 4*32 bytes
     include panic.s
     include arith16.s
     include heap.s
+fp = $a  ; frame-pointer
     include nmi_irq.s
     include executive.s
     include fib24.s

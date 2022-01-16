@@ -3,6 +3,7 @@
 ;;; speed_watch 23 4
 ;;; [..]       (c  j)
 speed_watch:
+.fp = 0
 .c = 2 ; count executions this jiffy
 .j = 4 ; this jiffy
 .roots:
@@ -12,7 +13,7 @@ speed_watch:
 .scav:
     impossible_scavenge_because_static
 .begin:
-    store16i .static_closure, fp
+    store16i_x .static_closure, .fp
 .again:
     stz .c, x
     stz .c + 1, x

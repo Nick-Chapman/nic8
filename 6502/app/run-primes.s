@@ -23,16 +23,16 @@
     include arith16.s
     include heap.s
 
+task1 = 15
+
 find_roots:
-    find_roots_from fp
+    find_roots_from task1
     rts
 
-task_vars_offset = 20
-
 enter_fp: macro
-    load16_0 fp, cp
+    load16_0 task1, cp
     jsr screen_flush_when_time
-    ldx #task_vars_offset
+    ldx #task1
     jmp (cp)
 endmacro
 
@@ -72,6 +72,6 @@ reset_main:
     jsr lcd_clear_display
     jsr init_screen
     init_heap 1 ; screen-number
-    ldx #task_vars_offset
+    ldx #task1
     jsr primes.begin
     enter_fp

@@ -19,16 +19,20 @@
     include arith16.s
     include heap.s
 
+;;; not in hex for some reason...
+task1 = 10
+task2 = 20
+task3 = 30
+
 find_roots:
     phx
-    ldx #task1_vars_offset
+    ldx #task1
     find_roots_from task1
-    ldx #task2_vars_offset
+    ldx #task2
     find_roots_from task2
-    ldx #task3_vars_offset
+    ldx #task3
     find_roots_from task3
     plx
-    gc_root_at fp
     rts
 
 panic_if_not_in_rom_sub:
@@ -73,11 +77,6 @@ g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal.s
 
-;;; First stab to round-robin between two tasks
-;;; Local vars must not conflict - have temp hack (base = 10/20)
-task1 = $60
-task2 = $62
-task3 = $64
 switcher = $66 ; switches task, either: 1->2, 2->3, 3->1
 
 NUM_SCREENS = 4
@@ -87,11 +86,6 @@ g_screens = $200
 task1_screen = 1
 task2_screen = 2
 task3_screen = 3
-
-;;; not in hex for some reason...
-task1_vars_offset = 10
-task2_vars_offset = 20
-task3_vars_offset = 30
 
 reset_main:
     ldx #$ff
@@ -108,57 +102,38 @@ reset_main:
 
     init_heap 0 ; gc_screen
 
-    store8i task1_screen, g_selected_screen
-    ldx #task1_vars_offset
+    ldx #task1
     jsr primes.begin
-    copy16 fp, task1
 
-    store8i task2_screen, g_selected_screen
-    ldx #task2_vars_offset
+    ldx #task2
     jsr clock.begin
-    copy16 fp, task2
 
-    store8i task3_screen, g_selected_screen
-    ldx #task3_vars_offset
+    ldx #task3
     ;jsr speed_watch.begin
     jsr primes.begin ; dont run speed-watch here, but a 2nd copy of primes!
-    copy16 fp, task3
 
-    copy16 task1, fp
-    store16i switch_1_2, switcher
+    jmp switch_to_1
 
+switch_to_1:
+    store16i switch_to_2, switcher
     store8i task1_screen, g_selected_screen
-    ldx #task1_vars_offset
-    load16_0 fp, cp
+    ldx #task1
+    load16_0 task1, cp
     panic_if_not_in_rom cp
     jmp (cp)
 
-switch_1_2:
-    copy16 fp, task1
-    copy16 task2, fp
-    store16i switch_2_3, switcher
+switch_to_2:
+    store16i switch_to_3, switcher
     store8i task2_screen, g_selected_screen
-    ldx #task2_vars_offset
-    load16_0 fp, cp
+    ldx #task2
+    load16_0 task2, cp
     panic_if_not_in_rom cp
     jmp (cp)
 
-switch_2_3:
-    copy16 fp, task2
-    copy16 task3, fp
-    store16i switch_3_1, switcher
+switch_to_3:
+    store16i switch_to_1, switcher
     store8i task3_screen, g_selected_screen
-    ldx #task3_vars_offset
-    load16_0 fp, cp
-    panic_if_not_in_rom cp
-    jmp (cp)
-
-switch_3_1:
-    copy16 fp, task3
-    copy16 task1, fp
-    store16i switch_1_2, switcher
-    store8i task1_screen, g_selected_screen
-    ldx #task1_vars_offset
-    load16_0 fp, cp
+    ldx #task3
+    load16_0 task3, cp
     panic_if_not_in_rom cp
     jmp (cp)

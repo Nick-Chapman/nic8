@@ -35,6 +35,11 @@ copy8: macro A, B
     sta \B
 endmacro
 
+copy8_x: macro A, B
+    lda \A, x
+    sta \B, x
+endmacro
+
 copyFrom8_x: macro A, B
     lda \A, x
     sta \B
@@ -74,6 +79,11 @@ endmacro
 copy16: macro A, B
     copy8 \A, \B
     copy8 \A+1, \B+1
+endmacro
+
+copy16_x: macro A, B
+    copy8_x \A, \B
+    copy8_x \A+1, \B+1
 endmacro
 
 copyFrom16_x: macro A, B

@@ -49,6 +49,7 @@ nil_cell_i16:
 ;;;         search (i+1) ps
 
 primes:
+.fp = 0
 .i = 2
 .ps = 4
 .jiffy = 6
@@ -62,12 +63,13 @@ primes:
     lda g_ticks
     adc #1 ; wait a jiffy
     sta .jiffy, x
-    store16i search.static_closure, fp
+    store16i_x search.static_closure, .fp
     rts
 
 ;;; fp    23 45
 ;;; [..] (i  ps)
 search:
+.fp = 0
 .i = 2
 .ps = 4
 .jiffy = 6
@@ -85,7 +87,7 @@ search:
     lda g_ticks
     adc #1 ; wait a jiffy
     sta .jiffy, x
-    store16i search.static_closure, fp
+    store16i_x search.static_closure, .fp
     enter_fp
 .static_closure:
     word .code
@@ -104,13 +106,14 @@ search:
     ;; setup args
     ;; i already in 23; ps already in 45
     copyTo16_x clo, .k
-    store16i candidate.static_closure, fp
+    store16i_x candidate.static_closure, .fp
     enter_fp
 
 ;;; fp            2
 ;;;    .23 .45
 ;;; [.. i   ps ] (b) --> if b then (print i; search (i+1, ps)) else search (i+1, cons (i,ps))
 search_continue:
+.fp = 0
 .i = 2  ; called
 .ps = 4 ; called
 .roots:
@@ -123,13 +126,14 @@ search_continue:
     byte 'T'
     word .roots, .evac, .scav
 .code:
+    copyFrom16_x .fp, temp
     lda .i, x
     bne .skip_print_no
-    load16_x fp,2, .i
-    load16_x fp,4, .ps
+    load16_x temp,2, .i
+    load16_x temp,4, .ps
     jmp .do_inc
 .skip_print_no:
-    load16_x fp,2, .i
+    load16_x temp,2, .i
     ;; (1) print to screen, and..
     print_char ' '
     print_decimal_word_x .i
@@ -139,8 +143,9 @@ search_continue:
     ;; alloc cons cell
     heap_alloc 6
     save16i_0 cons_cell_i16.tag, clo
-    load16_x fp,2, .i
-    load16_x fp,4, .ps
+    copyFrom16_x .fp, temp
+    load16_x temp,2, .i
+    load16_x temp,4, .ps
     save16_x .i, clo,2
     save16_x .ps, clo,4
     copyTo16_x clo, .ps ; cons (i,ps)
@@ -164,6 +169,7 @@ search_continue:
 ;;; fp    23 45 67
 ;;; [..] (i  ps k)
 candidate:
+.fp = 0
 .i = 2
 .p = 4 ; called
 .ps = 4
@@ -196,10 +202,10 @@ candidate:
     ;; i already setup
     load16_x temp,2, .p
     copyTo16_x clo, .k
-    store16i divides.static_closure, fp
+    store16i_x divides.static_closure, .fp
     enter_fp ; divides i p k1
 .nil:
-     copyFrom16_x .k, fp
+     copy16_x .k, .fp
      lda #True
      sta .i, x
      enter_fp ; k True
@@ -211,11 +217,11 @@ candidate:
 ;;;    .23 .45 .67
 ;;; [.. i   ps  k  ] (b)
 candidate_cont:
+.fp = 0
 .b = 2
 .i = 2 ; called
 .ps = 4 ; called
 .k = 6  ; called
-.temp = 3
 .roots:
     rts ; no roots
 .evac:
@@ -230,14 +236,15 @@ candidate_cont:
     lda .b, x
     bne .bTrue
     ;; candidate i ps k
-    load16_x fp,.i, .i
-    load16_x fp,.ps, .ps
-    load16_x fp,.k, .k
-    store16i candidate.static_closure, fp
+    copyFrom16_x .fp, temp
+    load16_x temp,.i, .i
+    load16_x temp,.ps, .ps
+    load16_x temp,.k, .k
+    store16i_x candidate.static_closure, .fp
     enter_fp
 .bTrue:
-    load16_x fp,.k, .temp ; k -> fp (using 3 as a temp)
-    copyFrom16_x .temp, fp
+    copyFrom16_x .fp, temp
+    load16_x temp,.k, .fp ; k -> fp
     lda #False
     sta .i, x
     enter_fp ; k False
@@ -249,6 +256,7 @@ candidate_cont:
 ;;; fp    23 45 67
 ;;; [..] (i  p  k)
 divides:
+.fp = 0
 .i = 2
 .p = 4
 .k = 6
@@ -277,12 +285,12 @@ divides:
     sta .i + 1, x
     enter_fp ; divides i' p k
 .baseT:
-    copyFrom16_x .k, fp
+    copy16_x .k, .fp
     lda #True
     sta .i, x
     enter_fp ; k True
 .baseF:
-    copyFrom16_x .k, fp
+    copy16_x .k, .fp
     lda #False
     sta .i, x
     enter_fp ; k False
