@@ -13,6 +13,7 @@
     include screen.s
     include macs.s
     include decimal.s
+    include decimal24.s
     include print.s
     include panic.s
     include macs.s
@@ -57,6 +58,8 @@ endmacro
     include clock.s
     include speed-watch.s
     include primes.s
+    include fib24.s
+    include fibs.s
 
 ;;; bytes
 heap_end_page = $30
@@ -76,6 +79,9 @@ g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal.s
+
+g_divisor24 = $60 ; decimal24.s
+g_modulus24 = $63 ; decimal24.s
 
 switcher = $66 ; switches task, either: 1->2, 2->3, 3->1
 
@@ -111,6 +117,7 @@ reset_main:
     ldx #task3
     ;jsr speed_watch.begin
     jsr primes.begin ; dont run speed-watch here, but a 2nd copy of primes!
+    ;jsr fib_iter.begin ; dont run speed-watch here, but a 2nd copy of primes!
 
     jmp switch_to_1
 

@@ -105,7 +105,8 @@ fib_cont2:
     load16_x temp,.frame_k, .fp
     enter_fp
 .roots:
-    impossible_roots
+    ;impossible_roots
+    rts
 .evac:
     evacuate 7
 .scav:
