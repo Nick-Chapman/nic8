@@ -3,42 +3,40 @@
 ;;; fp     2 34           2   34             .01       .2 .34
 ;;; [..] ( N K ) --> fib (N-1 J ) where J is [fib_cont1 N  K ]
 fib_recurse:
+.n = 2
+.k = 3
+.fp = 0
+.res = 2
     word .roots, .evac, .scav
 .code:
-    ;; access N
-    lda arg2
+    lda .n, x
     sec
     cmp #2
     bcc .base ; N<2 ?
-;;     bcs .rec
-;;     jmp .base
-;; .rec:
-    ;; allocate cont1
     heap_alloc 5
-    ;; fill in closure
     save16i_0 fib_cont1.code, clo
-    save8 arg2, clo,2
-    save8 arg3, clo,3
-    save8 arg4, clo,4
+    save8_x .n, clo, .n
+    save8_x .k, clo, .k
+    save8_x .k+1, clo, .k+1
     ;; setup args
-    lda arg2 ; N
+    lda .n, x
     sec
-    sbc #1 ; N-1
-    sta arg2
-    copy16 clo, arg3
-    store16i fib_recurse.static_closure, fp
+    sbc #1
+    sta .n, x
+    copyTo16_x clo, .k
+    store16i_x fib_recurse.static_closure, .fp
     enter_fp
 
 ;;;        2 3  4
 ;;; --> K (N #0 #0)
 .base:
-    copy16 arg3,fp ; K
-    ;; N (low-byte of result) is already in arg2
-    stz arg3 ; zero medium byte of result
-    stz arg4 ; zero high byte of result
+    copy16_x .k, .fp
+    ;; N (low-byte of result) is already in .res
+    stz .res+1, x
+    stz .res+2, x
     enter_fp
 .roots:
-    gc_root_at arg3
+    gc_root_at_x .k
     rts
 .evac:
     rts
@@ -52,23 +50,26 @@ fib_recurse:
 ;;; .01 .2 .34
 ;;; [..  N  K ] (A) --> fib (N-2 J ) where J is [fib_cont2 K   A]
 fib_cont1:
+.fp = 0
+.frame_n = 2
+.a = 2
+.j = 3
     word .roots, .evac, .scav
 .code:
-    ;; allocate cont2
     heap_alloc 7
-    ;; fill in closure
+    copyFrom16_x .fp, temp
     save16i_0 fib_cont2.code, clo
-    transfer16 fp, 3, clo, 2 ; K
-    save8 arg2, clo,4 ; AL
-    save8 arg3, clo,5 ; AM
-    save8 arg4, clo,6 ; AH
+    transfer16 temp, 3, clo, 2 ; K
+    save8_x .a, clo,4 ; AL
+    save8_x .a+1, clo,5 ; AM
+    save8_x .a+2, clo,6 ; AH
     ;; setup args
-    loadA fp, 2 ; N
+    loadA temp, .frame_n
     sec
     sbc #2 ; N-2
-    sta arg2
-    copy16 clo,arg3
-    store16i fib_recurse.static_closure, fp
+    sta .a, x
+    copyTo16_x clo, .j
+    store16i_x fib_recurse.static_closure, .fp
     enter_fp
 .roots:
     rts
@@ -82,21 +83,26 @@ fib_cont1:
 ;;; .01 .23 .456
 ;;; [..  K    A  ] (B  Tmp) --> R (where R = A + B)
 fib_cont2:
+.fp = 0
+.frame_k = 2
+.frame_a = 4
+.b = 2
+.res = 2
     word .roots, .evac, .scav
 .code:
+    copyFrom16_x .fp, temp
     clc
-    loadA fp, 4 ; AL
-    adc arg2 ; BL
-    sta arg2 ; RL
-    loadA fp, 5 ; AM
-    adc arg3 ; BM
-    sta arg3 ; RM
-    loadA fp, 6 ; AH
-    adc arg4 ; BH
-    sta arg4 ; RH
+    loadA temp, .frame_a
+    adc .b, x
+    sta .res, x
+    loadA temp, .frame_a+1
+    adc .b+1, x
+    sta .res+1, x
+    loadA temp, .frame_a+2
+    adc .b+2, x
+    sta .res+2, x
     ;; return to caller
-    load16 fp,2, arg5 ; K (using arg5 as a temp)
-    copy16 arg5, fp
+    load16_x temp,.frame_k, .fp
     enter_fp
 .roots:
     impossible_roots

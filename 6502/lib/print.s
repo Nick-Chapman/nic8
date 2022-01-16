@@ -12,26 +12,28 @@ print_char: macro CHAR
     pla
 endmacro
 
-generic_print_decimal_trip: macro P, L
+generic_print_decimal_trip_x: macro P, L
     pha
     phx
     phy
     store16i \P, g_putchar
-    lda \L
-    ldx \L + 1
-    ldy \L + 2
+    lda \L + 1, x
+    pha
+    ldy \L + 2, x
+    lda \L, x
+    plx
     jsr generic_decimal_put_trip
     ply
     plx
     pla
 endmacro
 
-acia_print_decimal_trip: macro L
-    generic_print_decimal_trip acia_putchar, \L
+acia_print_decimal_trip_x: macro L
+    generic_print_decimal_trip_x acia_putchar, \L
 endmacro
 
-print_decimal_trip: macro L
-    generic_print_decimal_trip screen_putchar, \L
+print_decimal_trip_x: macro L
+    generic_print_decimal_trip_x screen_putchar, \L
 endmacro
 
 generic_print_decimal_word: macro P, L

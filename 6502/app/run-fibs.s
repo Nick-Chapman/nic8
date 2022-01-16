@@ -51,14 +51,37 @@ g_screens = $200 ; 4*32 bytes
     include panic.s
     include arith16.s
     include heap.s
-fp = $a  ; frame-pointer
     include nmi_irq.s
-    include executive.s
+
+task1 = 10
+
+panic_if_not_in_rom_sub:
+    cmp #$80
+    bcc .bad
+    rts
+.bad:
+    panic 'OOR'
+
+panic_if_not_in_rom: macro V
+    pha
+    lda \V + 1
+    jsr panic_if_not_in_rom_sub
+    pla
+endmacro
+
+enter_fp: macro
+    load16_0 task1, cp
+    panic_if_not_in_rom cp
+    jsr screen_flush_when_time
+    jmp (cp)
+endmacro
+
     include fib24.s
     include fibs.s
 
 find_roots:
-    find_roots_from fp
+    ldx #task1
+    find_roots_from task1
     rts
 
 reset_main:
@@ -71,10 +94,8 @@ reset_main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
+    acia_print_string "\n\nRESET...\n"
     init_heap 1 ; screen-number
-    jmp start_example
-
-start_example:
-    stz arg2
-    store16i fib_iter.static_closure, fp
-    jmp fib_iter.code
+    ldx #task1
+    jsr fib_iter.begin
+    enter_fp

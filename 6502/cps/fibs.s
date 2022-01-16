@@ -1,63 +1,63 @@
 
-BASE = $0a
-arg2 = BASE + 2
-arg3 = BASE + 3
-arg4 = BASE + 4
-arg5 = BASE + 5
-arg6 = BASE + 6
-
 ;;; fp    2  3
 ;;; [..] (I, Time)
 fib_iter:
+.fp = 0
+.i = 2
+.jif = 3 ; time after pause
+.begin:
+    stz .i, x
+.again:
+    clc
+    lda g_ticks
+    adc #10 ; wait 1/10s
+    sta .jif, x
+    store16i_x fib_iter.static_closure, .fp
+    rts
 .roots:
     rts
 .evac:
     rts
 .scav:
     impossible_scavenge_because_static
-.begin:
-    clc
-    lda g_ticks
-    adc #10 ; wait 1/10s
-    sta arg3
-    store16i fib_iter.static_closure, fp
-    enter_fp
 .static_closure:
     word .code
     word .roots, .evac, .scav
 .code
     lda g_ticks
     sec
-    sbc arg3 ; temp in arg3 - the time to continue
+    sbc .jif, x
     bpl .go
-    enter_fp ; self
+    enter_fp
 .go:
-    lda arg2
-    ;; allocate & fill in closure
+    lda .i, x
     heap_alloc 3
     save16i_0 fib_iter2.code, clo
-    save8 arg2, clo,2 ; I
-    ;; setup args & fp
+    save8_x .i, clo,2
+    ;; setup args
     ;; arg2 already contains I
-    copy16 clo, arg3 ; K
-    store16i fib_recurse.static_closure, fp
+    copyTo16_x clo, fib_recurse.k
+    store16i_x fib_recurse.static_closure, .fp
     enter_fp
 
 ;;; fp     234
 ;;;    .2
 ;;; [.. I] (R)
 fib_iter2:
+.fp = 0
+.i = 2
     word .roots, .evac, .scav
 .code:
     print_char ' '
-    print_decimal_trip arg2 ; RL,RM,RH (24 bit result)
+    print_decimal_trip_x .i
     acia_print_char ' '
-    acia_print_decimal_trip arg2
-
-    loadA fp, 2 ; I
+    acia_print_decimal_trip_x .i
+    copyFrom16_x .fp, temp
+    loadA temp, .i
     inc
-    sta arg2 ; I+1
-    jmp fib_iter.begin
+    sta .i, x
+    jsr fib_iter.again
+    enter_fp
 .roots:
     rts
 .evac:
