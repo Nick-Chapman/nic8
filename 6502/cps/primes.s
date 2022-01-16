@@ -51,11 +51,17 @@ nil_cell_i16:
 primes:
 .i = 2
 .ps = 4
+.jiffy = 6
 .begin:
     lda #2
     sta .i, x
     stz .i + 1, x
     store16i_x nil_cell_i16.static_closure, .ps
+    ;; setting the initial pause here was missing, which resulted in ND behaviour
+    clc
+    lda g_ticks
+    adc #1 ; wait a jiffy
+    sta .jiffy, x
     store16i search.static_closure, fp
     rts
 
