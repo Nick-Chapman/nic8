@@ -135,6 +135,8 @@ print_hex_byte: macro L
 endmac
 
 
+;;; TODO: move these macros to screen; prefix with screen_
+
 put_string: ; TODO: make this work for long strings (like acia_put_string)
     phx
     tsx
@@ -155,7 +157,7 @@ put_string: ; TODO: make this work for long strings (like acia_put_string)
     plx
     rts
 
-print_string: macro S
+print_string: macro S ; unify with acia version
     jmp .skip\@
 .embedded\@:
     string \S
@@ -164,6 +166,30 @@ print_string: macro S
       lda #>.embedded\@
       pha
       lda #<.embedded\@
+      pha
+      jsr put_string
+      pla
+      pla
+    pla
+endmacro
+
+print_string_variable: macro V
+    pha
+      lda \V + 1
+      pha
+      lda \V
+      pha
+      jsr put_string
+      pla
+      pla
+    pla
+endmacro
+
+print_string_variable_x: macro V
+    pha
+      lda \V + 1, x
+      pha
+      lda \V, x
       pha
       jsr put_string
       pla

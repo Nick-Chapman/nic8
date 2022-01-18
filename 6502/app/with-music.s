@@ -1,3 +1,5 @@
+;;; Play music concurrently with other tasks
+
     org $fffa
     word nmi
     word reset_main
@@ -19,50 +21,20 @@
     include macs.s
     include arith16.s
     include heap.s
+    include sound.s
 
-;;; not in hex for some reason...
-task1 = 10
-task2 = 20
-task3 = 30
-task4 = 40
-
-find_roots:
-    phx
-    ldx #task1
-    find_roots_from task1
-    ldx #task2
-    find_roots_from task2
-    ldx #task3
-    find_roots_from task3
-    ;; TODO: fix bug! also find roots from task4.
-    ;; bug only didn't hit because task4 (below) is not a heap task, but the speed-watcher
-    plx
-    rts
-
-panic_if_not_in_rom_sub:
-    cmp #$80
-    bcc .bad
-    rts
-.bad:
-    panic 'OOR'
-
-panic_if_not_in_rom: macro V
-    pha
-    lda \V + 1
-    jsr panic_if_not_in_rom_sub
-    pla
-endmacro
-
-enter_fp: macro
-    jsr screen_flush_when_time
+enter_fp: macro ; TODO: rename yield
+    ;acia_print_char '.'
+    jsr screen_flush_when_time ; TODO: should this be a task like any other?
     jmp (switcher)
 endmacro
 
     include clock.s
     include speed-watch.s
-    include primes.s
+    include music.s
     include fib24.s
     include fibs.s
+    include primes.s
 
 ;;; bytes
 heap_end_page = $30
@@ -86,16 +58,20 @@ g_putchar = $5a ; decimal.s
 g_divisor24 = $60 ; decimal24.s
 g_modulus24 = $63 ; decimal24.s
 
-switcher = $66 ; switches task, either: 1->2, 2->3, 3->1
+switcher = $66
 
 NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1_screen = 0 ; fibs
-task2_screen = 1 ; clock
-task3_screen = 0 ; no matter as primes prints noting to screen
-task4_screen = 2 ; speed
+;;; not in hex for some reason...
+task1 = 10
+task2 = 20
+task3 = 30
+
+task1_screen = 0
+task2_screen = 1
+task3_screen = 2
 
 reset_main:
     ldx #$ff
@@ -103,28 +79,43 @@ reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_nmi_irq
+    jsr init_sound
     jsr init_acia
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-
     acia_print_string "\n\nRESET...\n"
-
     init_heap 3 ; gc_screen
 
     ldx #task1
-    jsr fib_iter.begin
+    jsr music.begin
 
     ldx #task2
-    jsr clock.begin
-
-    ldx #task3
-    jsr primes.begin
-
-    ldx #task4
     jsr speed_watch.begin
 
+    ldx #task3
+    jsr fib_iter.begin
+    ;jsr primes.begin
+    ;jsr clock.begin
+
     jmp switch_to_1
+
+;;; ----------------------------------------------------------------------
+;;; task switching... TODO: move to new file
+
+panic_if_not_in_rom_sub:
+    cmp #$80
+    bcc .bad
+    rts
+.bad:
+    panic 'OOR'
+
+panic_if_not_in_rom: macro V
+    pha
+    lda \V + 1
+    jsr panic_if_not_in_rom_sub
+    pla
+endmacro
 
 switch_to_1:
     store16i switch_to_2, switcher
@@ -143,17 +134,21 @@ switch_to_2:
     jmp (cp)
 
 switch_to_3:
-    store16i switch_to_4, switcher
+    store16i switch_to_1, switcher
     store8i task3_screen, g_selected_screen
     ldx #task3
     load16_0 task3, cp
     panic_if_not_in_rom cp
     jmp (cp)
 
-switch_to_4:
-    store16i switch_to_1, switcher
-    store8i task4_screen, g_selected_screen
-    ldx #task4
-    load16_0 task4, cp
-    panic_if_not_in_rom cp
-    jmp (cp)
+find_roots:
+    phx
+    ldx #task1
+    find_roots_from task1
+    ldx #task2
+    find_roots_from task2
+    ldx #task3
+    find_roots_from task3
+    ;; TODO: find roots from task4 (if we add it)
+    plx
+    rts

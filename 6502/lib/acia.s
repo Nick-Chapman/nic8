@@ -22,6 +22,18 @@ acia_print_string: macro S
     pla
 endmacro
 
+acia_print_string_variable: macro V
+    pha
+      lda \V + 1
+      pha
+      lda \V
+      pha
+      jsr acia_put_string
+      pla
+      pla
+    pla
+endmacro
+
 acia_put_string:
     phx
     tsx
@@ -127,21 +139,21 @@ acia_read_one_byte:
     rts
 
 
-acia_print_string: macro S
-    jmp .skip\@
-.embedded\@:
-    string \S
-.skip\@:
-    pha
-      lda #>.embedded\@
-      pha
-      lda #<.embedded\@
-      pha
-      jsr acia_put_string
-      pla
-      pla
-    pla
-endmacro
+;; acia_print_string: macro S ;; TODO: this is duplciated in this file!
+;;     jmp .skip\@
+;; .embedded\@:
+;;     string \S
+;; .skip\@:
+;;     pha
+;;       lda #>.embedded\@
+;;       pha
+;;       lda #<.embedded\@
+;;       pha
+;;       jsr acia_put_string
+;;       pla
+;;       pla
+;;     pla
+;; endmacro
 
 acia_newline:
     acia_print_string "\n"
