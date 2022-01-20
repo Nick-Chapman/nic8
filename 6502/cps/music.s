@@ -92,27 +92,11 @@ music:
 .gap_over:
     jmp .start
 
-my_temp = $ff
-
 ;;; set a non-blocking wait for a number of jiffyspassed in the accumulator
 .set_wait:
     clc
     adc .jiffy, x
     sta .jiffy, x
-
-    sec
-    sbc my_temp
-    phx
-      tax
-      dex
-      dex
-      lda digits,x
-    plx
-    jsr acia_putchar
-    acia_print_char ' '
-    lda .jiffy, x
-    sta my_temp
-
     rts
 
 ;;; bump the ptr by the value in the accumulator
