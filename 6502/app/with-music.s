@@ -94,8 +94,8 @@ reset_main:
     jsr speed_watch.begin
 
     ldx #task3
-    jsr fib_iter.begin
-    ;jsr primes.begin
+    ;jsr fib_iter.begin
+    jsr primes.begin
     ;jsr clock.begin
 
     jmp switch_to_1
