@@ -18,6 +18,8 @@ music:
     word .start
     word .roots, .evac, .scav
 .start:
+    lda g_ticks
+    sta .jiffy, x
     store16i_x .data, .ptr
     ;; header section
     lda (.ptr, x)
@@ -95,7 +97,7 @@ my_temp = $ff
 ;;; set a non-blocking wait for a number of jiffyspassed in the accumulator
 .set_wait:
     clc
-    adc g_ticks
+    adc .jiffy, x
     sta .jiffy, x
 
     sec
