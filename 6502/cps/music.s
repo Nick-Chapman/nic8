@@ -49,10 +49,18 @@ music:
     word .roots, .evac, .scav
 .play:
     lda g_ticks
-    cmp .jiffy, x
+    sec
+    sbc .jiffy, x ; sbc (rather than cmp) so we can see by how many jiffy we missed
     bpl .send
     enter_fp
 .send:
+    beq .no_print ; if >0 we missed, so print debug to acia to show by how many jiffies we missed
+    phx
+      tax
+      lda digits,x
+    plx
+    jsr acia_putchar
+.no_print:
     ;acia_print_char 'm'
     lda (.ptr, x) ; #bytes to send
     cmp #$ff
