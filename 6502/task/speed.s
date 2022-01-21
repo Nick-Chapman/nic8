@@ -34,7 +34,7 @@ speed:
     bne .skip
     inc .c + 1, x
 .skip:
-    enter_fp
+    yield
 .display:
     copyFrom8_x .screen, g_selected_screen
     jsr screen.return_home
@@ -43,4 +43,4 @@ speed:
     newline
     print_string "speed"
     jsr .again
-    enter_fp
+    yield

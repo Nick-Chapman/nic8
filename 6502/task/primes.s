@@ -84,13 +84,13 @@ search:
     rts
 .scav:
     impossible_scavenge_because_static
-.begin: ; will have jump to here; which call enter_fp
+.begin: ; will have jump to here; which call yield
     clc
     lda g_ticks
     adc #1 ; wait a jiffy
     sta .jiffy, x
     store16i_x search.static_closure, .fp
-    enter_fp
+    yield
 .static_closure:
     word .code
     word .roots, .evac, .scav
@@ -99,7 +99,7 @@ search:
     sec
     sbc .jiffy, x
     bpl .go
-    enter_fp ; self
+    yield ; self
 .go
     heap_alloc 6
     save16i_0 search_continue.code, clo
@@ -109,7 +109,7 @@ search:
     ;; i already in 23; ps already in 45
     copyTo16_x clo, .k
     store16i_x candidate.static_closure, .fp
-    enter_fp
+    yield
 
 ;;; fp            2
 ;;;    .23 .45
@@ -206,12 +206,12 @@ candidate:
     load16_x temp,2, .p
     copyTo16_x clo, .k
     store16i_x divides.static_closure, .fp
-    enter_fp ; divides i p k1
+    yield ; divides i p k1
 .nil:
      copy16_x .k, .fp
      lda #True
      sta .i, x
-     enter_fp ; k True
+     yield ; k True
 
 ;;; make_candidate_cont :: (Int,List Int,(Bool -> r)) -> Bool -> r
 ;;; make_candidate_cont (i,ps,k) = \b -> if b then k False else candidate i ps k
@@ -244,13 +244,13 @@ candidate_cont:
     load16_x temp,.ps, .ps
     load16_x temp,.k, .k
     store16i_x candidate.static_closure, .fp
-    enter_fp
+    yield
 .bTrue:
     copyFrom16_x .fp, temp
     load16_x temp,.k, .fp ; k -> fp
     lda #False
     sta .i, x
-    enter_fp ; k False
+    yield ; k False
 
 ;;; divides :: Int -> Int -> (Bool -> r) -> r
 ;;; divides i p k =
@@ -286,14 +286,14 @@ divides:
     sbc .p + 1, x
     bmi .baseF
     sta .i + 1, x
-    enter_fp ; divides i' p k
+    yield ; divides i' p k
 .baseT:
     copy16_x .k, .fp
     lda #True
     sta .i, x
-    enter_fp ; k True
+    yield ; k True
 .baseF:
     copy16_x .k, .fp
     lda #False
     sta .i, x
-    enter_fp ; k False
+    yield ; k False

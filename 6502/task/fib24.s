@@ -25,7 +25,7 @@ fib_recurse:
     sta .n, x
     copyTo16_x clo, .k
     store16i_x fib_recurse.static_closure, .fp
-    enter_fp
+    yield
 
 ;;;        2 3  4
 ;;; --> K (N #0 #0)
@@ -34,7 +34,7 @@ fib_recurse:
     ;; N (low-byte of result) is already in .res
     stz .res+1, x
     stz .res+2, x
-    enter_fp
+    yield
 .roots:
     gc_root_at_x .k
     rts
@@ -69,7 +69,7 @@ fib_cont1:
     sta .a, x
     copyTo16_x clo, .j
     store16i_x fib_recurse.static_closure, .fp
-    enter_fp
+    yield
 .roots:
     rts
 .evac:
@@ -102,7 +102,7 @@ fib_cont2:
     sta .res+2, x
     ;; return to caller
     load16_x temp,.frame_k, .fp
-    enter_fp
+    yield
 .roots:
     ;impossible_roots
     rts

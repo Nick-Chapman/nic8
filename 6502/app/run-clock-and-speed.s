@@ -35,7 +35,7 @@ panic_if_not_in_rom: macro V
     pla
 endmacro
 
-enter_fp: macro
+yield: macro
     jsr screen.flush_when_time
     jmp (switcher)
 endmacro

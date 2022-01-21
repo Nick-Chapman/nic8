@@ -54,7 +54,7 @@ music:
     sec
     sbc .jiffy, x ; sbc (rather than cmp) so we can see by how many jiffy we missed
     bpl .send
-    enter_fp
+    yield
 .send:
     beq .no_print ; if >0 we missed, so print debug to acia to show by how many jiffies we missed
     phx
@@ -79,7 +79,7 @@ music:
 .send_done:
     lda #2 ; music packet every 1/50s (but we tick every 1/100)
     jsr .set_wait
-    enter_fp
+    yield
 
 .finish:
     jsr sound.silence
@@ -88,7 +88,7 @@ music:
     store16i_x .gap_closure, .fp
     lda #100 ; pause one second between replaying the music again
     jsr .set_wait
-    enter_fp
+    yield
 
 .gap_closure:
     word .gap
@@ -97,7 +97,7 @@ music:
     lda g_ticks
     cmp .jiffy, x
     bpl .gap_over
-    enter_fp
+    yield
 .gap_over:
     jmp .start
 

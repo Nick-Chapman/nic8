@@ -30,7 +30,7 @@ fibs:
     sec
     sbc .jif, x
     bpl .go
-    enter_fp
+    yield
 .go:
     lda .i, x
     heap_alloc 4 ; every heap alloc must be at least size 4 to allow the broken-heart forwarding pointer
@@ -40,7 +40,7 @@ fibs:
     ;; arg2 already contains I
     copyTo16_x clo, fib_recurse.k
     store16i_x fib_recurse.static_closure, .fp
-    enter_fp
+    yield
 
 ;;; fp         234
 ;;;    .2 .3
@@ -58,7 +58,7 @@ fib_iter2:
     inc
     sta .i, x
     jsr fibs.again
-    enter_fp
+    yield
 .roots:
     rts
 .evac:

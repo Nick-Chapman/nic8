@@ -35,7 +35,7 @@ clock:
     lda g_ticks
     cmp .j, x
     bpl .go
-    enter_fp
+    yield
 .go:
     jsr .display
     jsr .tick
@@ -43,7 +43,7 @@ clock:
     lda g_ticks
     adc #100
     sta .j, x
-    enter_fp
+    yield
 
 print_leading_zero: macro V
     lda \V, x

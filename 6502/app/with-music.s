@@ -22,7 +22,7 @@
     include heap.s
     include sound.s
 
-enter_fp: macro ; TODO: rename yield
+yield: macro
     jsr screen.flush_when_time ; TODO: should this be a task like any other?
     jmp (switcher)
 endmacro
