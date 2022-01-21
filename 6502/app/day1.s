@@ -1,13 +1,14 @@
 ;;; AoC 2021, day1, parts 1 & 2
 
-    org $fffc
+    org $fffa
+    word nmi
     word reset_main
     word irq
 
     org $8000
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include lcd.s
     include macs.s
     include decimal16.s
@@ -15,11 +16,6 @@
     include print.s
     include sleep.s
     include arith16.s
-
-irq:
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    rti
 
 reset_main:
     jsr via.init
@@ -69,6 +65,7 @@ g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal16.s
 
 g_nmi_count = $35 ;byte
+g_nmi_blocked = $36
 g_next_screen_flush = $37 ;byte
 
 NUM_SCREENS = 1
