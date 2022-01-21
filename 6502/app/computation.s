@@ -52,6 +52,8 @@ g_screens = $200 ; 8x 32 bytes
 
     include via.s
     include interrupts.s
+    include arith16.s
+    include acia.s
     include sound.s
     include lcd.s
     include screen.s
@@ -59,13 +61,27 @@ g_screens = $200 ; 8x 32 bytes
     include decimal16.s
     include print.s
 
+acia_print_char: macro CHAR
+    pha
+    lda #\CHAR
+    jsr acia.putchar
+    pla
+endmacro
+
 reset_main:
     jsr via.init
+    jsr acia.init
+    acia_print_char 'a'
     jsr init_ticks
+    acia_print_char 'b'
     jsr sound.init ; silence
+    acia_print_char 'c'
     jsr lcd.init
+    acia_print_char 'd'
     jsr lcd.clear_display
+    acia_print_char 'e'
     jsr screen.init
+    acia_print_char 'f'
     jsr example
 spin:
     jmp spin
@@ -74,12 +90,18 @@ spin:
 ;;; example which manipulates 16bit number in mem
 ;;; by dispatching to stack based ops
 example:
+    acia_print_char 'x'
     jsr init_number
+    acia_print_char 'y'
     jsr init_ds_stack
 example_loop:
+    acia_print_char '.'
+
     jsr put_number_dec
     jsr put_dot
+    phy
     jsr screen.flush_when_time
+    ply
     jsr push_number
     jsr ds_increment
     jsr pull_number
