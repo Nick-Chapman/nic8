@@ -134,7 +134,7 @@ example_loop:
     lda $101,x
 
     ldx #0
-    jsr decimal_put_word ; ..so we can print it
+    jsr decimal16.screen_put ; ..so we can print it
     print_char '-'
     flush
     ;jsr pause
@@ -153,12 +153,12 @@ example_loop:
 
     pla ; result-LO into A, and
     plx ; result-HI into X, which..
-    jsr decimal_put_word ; ..is the calling convention to print a word
+    jsr decimal16.screen_put ; ..is the calling convention to print a word
 
     print_string " ("
     pla ; timer-LO into A, and
     plx ; timer-HI into X, which..
-    jsr decimal_put_word ; ..as before
+    jsr decimal16.screen_put ; ..as before
     print_char ')'
     flush
 

@@ -22,7 +22,7 @@ generic_print_decimal_trip_x: macro P, L
     ldy \L + 2, x
     lda \L, x
     plx
-    jsr generic_decimal_put_trip
+    jsr decimal24.generic_put
     ply
     plx
     pla
@@ -42,7 +42,7 @@ generic_print_decimal_word: macro P, L
     store16i \P, g_putchar
     lda \L
     ldx \L + 1
-    jsr generic_decimal_put_word
+    jsr decimal16.generic_put
     plx
     pla
 endmacro
@@ -63,7 +63,7 @@ generic_print_decimal_word_x: macro P, L
     phx
     tax
     tya
-    jsr generic_decimal_put_word
+    jsr decimal16.generic_put
     plx
     pla
 endmacro
@@ -81,7 +81,7 @@ print_decimal_byte: macro L
     phx
     lda \L
     ldx #0
-    jsr decimal_put_word
+    jsr decimal16.screen_put
     plx
     pla
 endmacro
@@ -91,7 +91,7 @@ print_decimal_byte_x: macro L
     lda \L, x
     phx
     ldx #0
-    jsr decimal_put_word
+    jsr decimal16.screen_put
     plx
     pla
 endmacro

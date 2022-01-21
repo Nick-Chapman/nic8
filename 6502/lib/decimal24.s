@@ -1,10 +1,10 @@
-;;; REQUIRES: g_divisor24 (trip), g_modulus24 (trip)
-;;; PROVIDES: decimal_put_trip
 
-;;; decode 24 bit triple-byte pased in A/X/Y as decimal number
-;;; put string to screen
+decimal24:
 
-generic_decimal_put_trip:
+;;; decode 24 bit triple-byte passed in A/X/Y as decimal number
+;;; put string dispatching via g_putchar
+
+.generic_put:
     sta g_divisor24 ;lo
     stx g_divisor24 + 1 ;med
     sty g_divisor24 + 2 ;hi

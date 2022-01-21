@@ -97,7 +97,7 @@ put_number_dec: ; print 1-5 decimal digits for 16 bit number
     jsr screen_return_home
     lda g_number
     ldx g_number + 1
-    jsr decimal_put_word
+    jsr decimal16.screen_put
     rts
 
 put_dot:

@@ -1,16 +1,19 @@
-;;; REQUIRES: g_divisor (word), g_mod10 (word)
-;;; PROVIDES: decimal_put_word, decimal_put_byte
 
-;;; decode 16 bit word pased in A/X as 1-5 digit decimal number
+decimal16:
+
+;;; decode 16 bit word passed in A/X as digit decimal number
 ;;; put string to screen
 
-decimal_put_word:
+.screen_put:
     pha
     store16i screen_putchar, g_putchar
     pla
-    jmp generic_decimal_put_word
+    jmp .generic_put
 
-generic_decimal_put_word:
+;;; decode 16 bit word passed in A/X as digit decimal number
+;;; put string dispatching via g_putchar
+
+.generic_put:
     sta g_divisor ;lo
     stx g_divisor + 1 ;hi
     lda #0
