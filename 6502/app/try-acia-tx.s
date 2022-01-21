@@ -39,7 +39,7 @@ main:
 .received = 1
     ldx #$ff
     txs
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr lcd.init
     jsr lcd.clear_display

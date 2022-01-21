@@ -56,9 +56,9 @@ check_acia:
     jsr handle_acia_interrupt
 .nope:
 check_T1:
-    bit IFR ; test
+    bit via.IFR ; test
     bpl .nope
-    bit T1CL ; ack
+    bit via.T1CL ; ack
     inc g_ticks
 
     ;; debound NMI
@@ -76,7 +76,7 @@ main:
     ldx #$ff
     txs
     cli
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr init_nmi_irq
     jsr lcd.init

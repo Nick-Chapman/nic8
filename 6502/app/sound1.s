@@ -16,7 +16,7 @@ g_ticks = $50
     include sleep.s
 
 main_reset:
-    jsr init_via
+    jsr via.init
     jsr lcd.init
     jsr sound.init
     jsr init_ticks

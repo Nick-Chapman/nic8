@@ -5,7 +5,7 @@ sound:
 
 .init:
     lda #1
-    sta PORTB
+    sta via.PORTB
     jsr .silence
     rts
 
@@ -21,7 +21,7 @@ sound:
     rts
 
 .send_byte:
-    sta PORTA ; set the data, now strobe WE-bar
+    sta via.PORTA ; set the data, now strobe WE-bar
     ;; We need some nops to delay between the negative and positive edge of the strobe on WE-bar.
     ;; The datasheet states:
     ;;   "The SN76489AN requires approximately 32 clock cycles to load the data into the control register"
@@ -30,7 +30,7 @@ sound:
     ;; -  9 nop, #cycles between edges = 6 +  9*2 = 24
     ;; - 10 nop, #cycles between edges = 6 + 10*2 = 26
     lda #0
-    sta PORTB ; (negative edge)
+    sta via.PORTB ; (negative edge)
     nop
     nop
     nop
@@ -42,5 +42,5 @@ sound:
     nop
     nop
     lda #1    ; 2 cycles
-    sta PORTB ; 4 cycles (positive edge)
+    sta via.PORTB ; 4 cycles (positive edge)
     rts

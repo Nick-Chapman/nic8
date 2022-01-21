@@ -38,7 +38,7 @@ g_screens = $200 ; page
 reset_main:
     ldx #$ff
     txs
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr init_nmi_irq
     jsr lcd.init

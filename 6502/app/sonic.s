@@ -21,7 +21,7 @@ g_ptr = $70
 
 main_reset:
 
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr sound.init
     jsr lcd.init

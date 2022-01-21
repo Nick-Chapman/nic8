@@ -20,7 +20,7 @@ g_ptr = $70
     include lcd.s
 
 main_reset:
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr sound.init
     jsr lcd.init

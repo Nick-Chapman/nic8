@@ -17,7 +17,7 @@
     include arith16.s
 
 reset_main:
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr lcd.init
     jsr screen.init

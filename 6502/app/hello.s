@@ -5,8 +5,8 @@
 
     org $8000
 
-PORTB = $6000 ; 7 MSBs for lcd
-DDRB = $6002
+via.PORTB = $6000 ; 7 MSBs for lcd
+via.DDRB = $6002
 
     include lcd.s
 

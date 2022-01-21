@@ -18,7 +18,7 @@ QUICK = 40
     include lcd.s
 
 reset:
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr sound.init ; silence
     jsr lcd.init

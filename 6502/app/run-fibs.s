@@ -86,7 +86,7 @@ find_roots:
 reset_main:
     ldx #$ff
     txs
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr init_nmi_irq
     jsr acia.init

@@ -39,16 +39,16 @@ acia:
 
 .start_timer:
     lda #<.clks_to_wait
-    sta T2CL
+    sta via.T2CL
     lda #>.clks_to_wait
-    sta T2CH
+    sta via.T2CH
     rts
 
 .wait_timer:
     pha
-    lda #timer2_bit_mask
+    lda #via.timer2_bit_mask
 .wait_loop:
-    bit IFR
+    bit via.IFR
     beq .wait_loop
     pla
     rts

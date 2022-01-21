@@ -63,7 +63,7 @@ g_screens = $200 ; 4*32 bytes
 reset_main:
     ldx #$ff
     txs
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr init_nmi_irq
     jsr acia.init

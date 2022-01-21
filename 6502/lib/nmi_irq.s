@@ -14,7 +14,7 @@ nmi:
 
 irq: ; copy & extend version in ticks.s
     pha
-    bit T1CL ; acknowledge interrupt
+    bit via.T1CL ; acknowledge interrupt
     inc g_ticks
     lda g_nmi_blocked
     beq .done

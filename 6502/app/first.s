@@ -1,17 +1,17 @@
 
     ;; first 6502 code for my Ben Eater style 6502 machine
 
-PORTB = $6000
-DDRB = $6002
+via.PORTB = $6000
+via.DDRB = $6002
 
     org $8000
 
 reset:
     lda #$ff
-    sta DDRB
+    sta via.DDRB
     lda #7
 loop:
-    sta PORTB
+    sta via.PORTB
     ror
     jmp loop
 

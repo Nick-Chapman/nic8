@@ -56,7 +56,7 @@ nmi:
 
 irq: ; copy & extend version in ticks.s
     pha
-    bit T1CL ; acknowledge interrupt
+    bit via.T1CL ; acknowledge interrupt
     inc g_ticks
     bne .unblock
     inc g_ticks + 1
@@ -78,7 +78,7 @@ init_nmi:
 reset_main:
     ldx #$ff
     txs
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr lcd.init
     jsr lcd.clear_display

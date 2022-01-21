@@ -46,7 +46,7 @@ nmi:
 
 irq: ; copy & extend version in ticks.s
     pha
-    bit T1CL ; acknowledge interrupt
+    bit via.T1CL ; acknowledge interrupt
     inc g_ticks
     lda g_nmi_blocked
     beq .done
@@ -61,7 +61,7 @@ init_nmi:
     rts
 
 reset_main:
-    jsr init_via
+    jsr via.init
     jsr init_ticks
     jsr init_nmi
     jsr sound.init ; silence

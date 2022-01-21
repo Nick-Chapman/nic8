@@ -16,7 +16,7 @@ lcd:
 
 .send_portB: ; TODO: better as macro?
     ora #(.sound_clock_inactive)
-    sta PORTB
+    sta via.PORTB
     rts
 
 .putchar:
@@ -64,7 +64,7 @@ lcd:
 
 .init: ; TODO: move to top!
     lda #%11111111
-    sta DDRB
+    sta via.DDRB
     ;; (from 8 bit mode) function set: 4 bit
     jsr .wait
     lda #%00100000
@@ -102,23 +102,23 @@ lcd:
 .wait:
     pha
     lda #%00001111              ; temp set read for D-4,5,6,7
-    sta DDRB
+    sta via.DDRB
 .wait_loop:
     lda #(.RW)
     jsr .send_portB
     lda #(.RW | .enable)
     jsr .send_portB
-    lda PORTB
+    lda via.PORTB
     pha
     lda #(.RW)
     jsr .send_portB
     lda #(.RW | .enable)
     jsr .send_portB
-    lda PORTB
+    lda via.PORTB
     pla
     and #%10000000
     bne .wait_loop
     lda #%11111111              ; revert to write
-    sta DDRB
+    sta via.DDRB
     pla
     rts
