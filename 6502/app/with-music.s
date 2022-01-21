@@ -24,7 +24,6 @@
     include sound.s
 
 enter_fp: macro ; TODO: rename yield
-    ;acia_print_char '.'
     jsr screen_flush_when_time ; TODO: should this be a task like any other?
     jmp (switcher)
 endmacro

@@ -196,3 +196,20 @@ print_string_variable_x: macro V
       pla
     pla
 endmacro
+
+
+acia_print_string: macro S ; TODO: dedup with similar (wrapping other put_string)
+    jmp .skip\@
+.embedded\@:
+    string \S
+.skip\@:
+    pha
+      lda #>.embedded\@
+      pha
+      lda #<.embedded\@
+      pha
+      jsr acia.put_string
+      pla
+      pla
+    pla
+endmacro
