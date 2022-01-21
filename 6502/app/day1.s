@@ -2,7 +2,7 @@
 
     org $fffc
     word reset_main
-    word deprecated_ticks_irq
+    word irq
 
     org $8000
 
@@ -15,6 +15,11 @@
     include print.s
     include sleep.s
     include arith16.s
+
+irq:
+    bit via.T1CL ; acknowledge interrupt
+    inc g_ticks
+    rti
 
 reset_main:
     jsr via.init

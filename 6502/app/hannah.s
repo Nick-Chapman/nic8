@@ -3,7 +3,7 @@
 
     org $fffc
     word reset
-    word deprecated_ticks_irq
+    word irq
 
     org $8000
 
@@ -16,6 +16,11 @@ QUICK = 40
     include ticks.s
     include sound.s
     include lcd.s
+
+irq:
+    bit via.T1CL ; acknowledge interrupt
+    inc g_ticks
+    rti
 
 reset:
     jsr via.init

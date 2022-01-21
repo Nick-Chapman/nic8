@@ -3,7 +3,7 @@
 
     org $fffc
     word main_reset
-    word deprecated_ticks_irq
+    word irq
 
     org $8000
 
@@ -18,6 +18,11 @@ g_ptr = $70
     include ticks.s
     include sound.s
     include lcd.s
+
+irq:
+    bit via.T1CL ; acknowledge interrupt
+    inc g_ticks
+    rti
 
 main_reset:
     jsr via.init

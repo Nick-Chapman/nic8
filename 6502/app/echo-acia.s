@@ -1,7 +1,7 @@
     org $fffa
     word nmi
     word main
-    word deprecated_ticks_irq
+    word irq
     org $8000
 
     include via.s
@@ -31,6 +31,11 @@ g_screen_pointers = $80
 g_screens = $200
 
 nmi:
+    rti
+
+irq:
+    bit via.T1CL ; acknowledge interrupt
+    inc g_ticks
     rti
 
 main:
