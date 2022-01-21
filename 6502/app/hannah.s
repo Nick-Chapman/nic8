@@ -1,26 +1,24 @@
 
 ;;; Message for Hannah...
 
-    org $fffc
+    org $fffa
+    word nmi
     word reset
     word irq
 
     org $8000
 
+g_nmi_count = $35
+g_nmi_blocked = $36
 g_ticks = $A0
 
 GAP = 170
 QUICK = 40
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include sound.s
     include lcd.s
-
-irq:
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    rti
 
 reset:
     jsr via.init
