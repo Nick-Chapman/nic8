@@ -1,4 +1,6 @@
 
+;;; TODO: refactoring and deduping!
+
 newline: macro
     phy
     jsr screen_newline
