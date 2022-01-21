@@ -78,9 +78,9 @@ fib_cont1:
     scavenge_cell_at 3
     scavenge_done 5
 
-;;; fp             234 56      234
+;;; fp             234     234
 ;;; .01 .23 .456
-;;; [..  K    A  ] (B  Tmp) --> R (where R = A + B)
+;;; [..  K    A  ] (B) --> R (where R = A + B)
 fib_cont2:
 .fp = 0
 .frame_k = 2

@@ -97,5 +97,6 @@ reset_main:
     acia_print_string "\n\nRESET...\n"
     init_heap 1 ; screen-number
     ldx #task1
+    store8i_x 0, fib_iter.screen
     jsr fib_iter.begin
     enter_fp

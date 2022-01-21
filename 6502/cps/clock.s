@@ -8,6 +8,8 @@ clock:
 .m = 3 ; minutes
 .s = 4 ; seconds
 .j = 5 ; jiffy to tick
+.screen = 6
+.max_locals = 7
 .begin:
     stz .s, x
     stz .m, x
@@ -52,6 +54,7 @@ print_leading_zero: macro V
 endmacro
 
 .display:
+    copyFrom8_x .screen, g_selected_screen
     jsr screen_return_home
     print_leading_zero .h
     print_decimal_byte_x .h

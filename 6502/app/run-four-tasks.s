@@ -34,8 +34,8 @@ find_roots:
     find_roots_from task2
     ldx #task3
     find_roots_from task3
-    ;; TODO: fix bug! also find roots from task4.
-    ;; bug only didn't hit because task4 (below) is not a heap task, but the speed-watcher
+    ldx #task4
+    find_roots_from task4
     plx
     rts
 
@@ -92,11 +92,6 @@ NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1_screen = 0 ; fibs
-task2_screen = 1 ; clock
-task3_screen = 0 ; no matter as primes prints noting to screen
-task4_screen = 2 ; speed
-
 reset_main:
     ldx #$ff
     txs
@@ -113,22 +108,25 @@ reset_main:
     init_heap 3 ; gc_screen
 
     ldx #task1
+    store8i_x 0, fib_iter.screen
     jsr fib_iter.begin
 
     ldx #task2
+    store8i_x 1, clock.screen
     jsr clock.begin
 
     ldx #task3
+    store8i_x 0, primes.screen ; primes/fibs share screen
     jsr primes.begin
 
     ldx #task4
+    store8i_x 2, speed_watch.screen
     jsr speed_watch.begin
 
     jmp switch_to_1
 
 switch_to_1:
     store16i switch_to_2, switcher
-    store8i task1_screen, g_selected_screen
     ldx #task1
     load16_0 task1, cp
     panic_if_not_in_rom cp
@@ -136,7 +134,6 @@ switch_to_1:
 
 switch_to_2:
     store16i switch_to_3, switcher
-    store8i task2_screen, g_selected_screen
     ldx #task2
     load16_0 task2, cp
     panic_if_not_in_rom cp
@@ -144,7 +141,6 @@ switch_to_2:
 
 switch_to_3:
     store16i switch_to_4, switcher
-    store8i task3_screen, g_selected_screen
     ldx #task3
     load16_0 task3, cp
     panic_if_not_in_rom cp
@@ -152,7 +148,6 @@ switch_to_3:
 
 switch_to_4:
     store16i switch_to_1, switcher
-    store8i task4_screen, g_selected_screen
     ldx #task4
     load16_0 task4, cp
     panic_if_not_in_rom cp

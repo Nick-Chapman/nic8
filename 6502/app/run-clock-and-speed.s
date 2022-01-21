@@ -65,12 +65,9 @@ g_putchar = $5a ; decimal.s
 
 switcher = $64 ; switches task, either: 1->2 or 2->1
 
-NUM_SCREENS = 4
+NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200
-
-task1_screen = 0
-task2_screen = 1
 
 task1 = 15
 task2 = 25
@@ -88,16 +85,17 @@ reset_main:
     init_heap 2 ; screen-number
 
     ldx #task1
+    store8i_x 0, clock.screen
     jsr clock.begin
 
     ldx #task2
+    store8i_x 1, speed_watch.screen
     jsr speed_watch.begin
 
     jmp switch_to_1
 
 switch_to_1:
     store16i switch_to_2, switcher
-    store8i task1_screen, g_selected_screen
     ldx #task1
     load16_0 task1, cp
     panic_if_not_in_rom cp
@@ -105,7 +103,6 @@ switch_to_1:
 
 switch_to_2:
     store16i switch_to_1, switcher
-    store8i task2_screen, g_selected_screen
     ldx #task2
     load16_0 task2, cp
     panic_if_not_in_rom cp

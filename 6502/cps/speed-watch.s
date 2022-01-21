@@ -4,8 +4,10 @@
 ;;; [..]       (c  j)
 speed_watch:
 .fp = 0
-.c = 2 ; count executions this jiffy
-.j = 4 ; this jiffy
+.c = 2 ; count (16 bits) executions this jiffy
+.screen = 4
+.j = 5 ; this jiffy
+.size_locals = 6
 .roots:
     rts ; no roots
 .evac:
@@ -34,6 +36,7 @@ speed_watch:
 .skip:
     enter_fp
 .display:
+    copyFrom8_x .screen, g_selected_screen
     jsr screen_return_home
     print_decimal_word_x .c
     print_string "    "

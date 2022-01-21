@@ -106,6 +106,11 @@ store8i: macro IMM, V
     sta \V
 endmacro
 
+store8i_x: macro IMM, V
+    lda #\IMM
+    sta \V, x
+endmacro
+
 store16i: macro IMM, V
     lda #<\IMM
     sta \V

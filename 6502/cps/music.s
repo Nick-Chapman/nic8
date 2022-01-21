@@ -3,6 +3,8 @@ music:
 .fp = 0
 .ptr = 2
 .jiffy = 4
+.screen = 5
+.size_locals = 6
 .begin:
     store16i_x .start_closure, .fp
     rts
@@ -29,7 +31,8 @@ music:
     lda (.ptr, x)
     pha
       lda #1
-    jsr .bump_ptr
+      jsr .bump_ptr
+      copyFrom8_x .screen, g_selected_screen
       newline
       newline
       jsr screen_return_home
@@ -40,7 +43,6 @@ music:
     lda (.ptr, x)
     inc a
     jsr .bump_ptr
-    ;acia_print_string "\nMusic: "
     store16i_x .play_closure, .fp
     jmp .send
 
@@ -61,7 +63,6 @@ music:
     plx
     jsr acia_putchar
 .no_print:
-    ;acia_print_char 'm'
     lda (.ptr, x) ; #bytes to send
     cmp #$ff
     beq .finish
@@ -82,7 +83,7 @@ music:
 
 .finish:
     jsr sound_silence
-    ;acia_print_char '!'
+    copyFrom8_x .screen, g_selected_screen
     print_string "\nDONE"
     store16i_x .gap_closure, .fp
     lda #100 ; pause one second between replaying the music again

@@ -5,6 +5,8 @@ fib_iter:
 .fp = 0
 .i = 2
 .jif = 3 ; time after pause
+.screen = 5 ; (following 5 bytes of args needed for core fib computation routines in fib24.s)
+.max_locals = 6
 .begin:
     stz .i, x
 .again:
@@ -48,10 +50,9 @@ fib_iter2:
 .i = 2
     word .roots, .evac, .scav
 .code:
+    copyFrom8_x fib_iter.screen, g_selected_screen
     print_char ' '
     print_decimal_trip_x .i
-    ;acia_print_string " f-"
-    ;acia_print_decimal_trip_x .i
     copyFrom16_x .fp, temp
     loadA temp, .i
     inc

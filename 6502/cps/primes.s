@@ -53,6 +53,8 @@ primes:
 .i = 2
 .ps = 4
 .jiffy = 6
+.screen = 8
+.size_locals = 9
 .begin:
     lda #2
     sta .i, x
@@ -135,6 +137,7 @@ search_continue:
 .skip_print_no:
     load16_x temp,2, .i
     ;; (1) print to screen, and..
+    copyFrom8_x primes.screen, g_selected_screen
     print_char ' '
     print_decimal_word_x .i
     ;; (2) print to serial link

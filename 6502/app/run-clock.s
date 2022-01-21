@@ -52,7 +52,7 @@ g_mod10 = $56 ; decimal.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal.s
 
-NUM_SCREENS = 2
+NUM_SCREENS = 1
 g_screen_pointers = $80
 g_screens = $200
 
@@ -69,5 +69,6 @@ reset_main:
     init_heap 1 ; screen-number
 
     ldx #task1
+    store8i_x 0, clock.screen
     jsr clock.begin
     enter_fp
