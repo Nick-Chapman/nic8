@@ -58,12 +58,6 @@ NUM_SCREENS = 4
 g_screen_pointers = $80
 g_screens = $200
 
-task1 = $a0
-task2 = $b0
-task3 = $c0
-task4 = $d0
-task5 = $e0
-
 reset_main:
     ldx #$ff
     txs

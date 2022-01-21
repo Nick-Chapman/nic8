@@ -1,5 +1,11 @@
 
-;;; task switching...
+;;; task switching... between exactly 5 tasks ; TODO: allow N tasks!
+
+task1 = $a0
+task2 = $b0
+task3 = $c0
+task4 = $d0
+task5 = $e0
 
 yield: macro
     jsr screen.flush_when_time ; TODO: should this be a task like any other?

@@ -17,31 +17,10 @@
     include macs.s
     include arith16.s
     include heap.s
-
-find_roots:
-    panic "find_roots"
-
-panic_if_not_in_rom_sub:
-    cmp #$80
-    bcc .bad
-    rts
-.bad:
-    panic 'OOR'
-
-panic_if_not_in_rom: macro V
-    pha
-    lda \V + 1
-    jsr panic_if_not_in_rom_sub
-    pla
-endmacro
-
-yield: macro
-    jsr screen.flush_when_time
-    jmp (switcher)
-endmacro
-
+    include tasking.s
     include clock.s
     include speed.s
+    include null.s
 
 ;;; bytes
 heap_end_page = $30
@@ -68,9 +47,6 @@ NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200
 
-task1 = 15
-task2 = 25
-
 reset_main:
     ldx #$ff
     txs
@@ -91,18 +67,13 @@ reset_main:
     store8i_x 1, speed.screen
     jsr speed.begin
 
+    ldx #task3
+    jsr null.begin
+
+    ldx #task4
+    jsr null.begin
+
+    ldx #task5
+    jsr null.begin
+
     jmp switch_to_1
-
-switch_to_1:
-    store16i switch_to_2, switcher
-    ldx #task1
-    load16_0 task1, cp
-    panic_if_not_in_rom cp
-    jmp (cp)
-
-switch_to_2:
-    store16i switch_to_1, switcher
-    ldx #task2
-    load16_0 task2, cp
-    panic_if_not_in_rom cp
-    jmp (cp)
