@@ -41,7 +41,7 @@ enter_fp: macro
 endmacro
 
     include clock.s
-    include speed-watch.s
+    include speed.s
 
 ;;; bytes
 heap_end_page = $30
@@ -88,8 +88,8 @@ reset_main:
     jsr clock.begin
 
     ldx #task2
-    store8i_x 1, speed_watch.screen
-    jsr speed_watch.begin
+    store8i_x 1, speed.screen
+    jsr speed.begin
 
     jmp switch_to_1
 

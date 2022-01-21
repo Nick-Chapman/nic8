@@ -2,7 +2,7 @@
 
 ;;; speed_watch 23 4
 ;;; [..]       (c  j)
-speed_watch:
+speed:
 .fp = 0
 .c = 2 ; count (16 bits) executions this jiffy
 .screen = 4

@@ -28,7 +28,7 @@ enter_fp: macro ; TODO: rename yield
 endmacro
 
     include clock.s
-    include speed-watch.s
+    include speed.s
     include music.s
     include fib24.s
     include fibs.s
@@ -87,8 +87,8 @@ reset_main:
     jsr music.begin
 
     ldx #task2
-    store8i_x 1, speed_watch.screen
-    jsr speed_watch.begin
+    store8i_x 1, speed.screen
+    jsr speed.begin
 
     ldx #task3
     store8i_x 2, clock.screen
