@@ -1,24 +1,22 @@
 
 ;;; Example of using VIA timer & interrupts
 
-    org $fffc
+    org $fffa
+    word nmi
     word main_reset
     word irq
 
     org $8000
 
+g_nmi_count = $35
+g_nmi_blocked = $36
 g_number = $A0
 g_ticks = $A1
 g_last_message_ticks = $A2
 
     include via.s
+    include interrupts.s
     include lcd.s
-    include ticks.s
-
-irq:
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    rti
 
 main_reset:
     jsr init_ticks

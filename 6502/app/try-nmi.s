@@ -12,7 +12,7 @@
     org $8000
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include sleep.s
     include lcd.s
     include screen.s
@@ -40,33 +40,6 @@ g_screen_pointers = $80 ; 8 bytes
 
 ;;; buffers
 g_screens = $200 ; 8x 32 bytes
-
-nmi:
-    pha
-    lda g_nmi_blocked
-    bne .done
-    lda #25 ; debounce time
-    sta g_nmi_blocked
-    inc g_nmi_count
-    bne .done
-    inc g_nmi_count + 1
-.done:
-    pla
-    rti
-
-irq: ; copy & extend version in ticks.s
-    pha
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    bne .unblock
-    inc g_ticks + 1
-.unblock:
-    lda g_nmi_blocked
-    beq .done
-    dec g_nmi_blocked
-.done:
-    pla
-    rti
 
 init_nmi:
     lda #0

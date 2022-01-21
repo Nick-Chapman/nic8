@@ -1,11 +1,14 @@
 
-    org $fffc
+    org $fffa
+    word nmi
     word main_reset
     word irq
 
     org $8000
 
 ;;; bytes
+g_nmi_count = $35
+g_nmi_blocked = $36
 g_ticks = $50
 g_sleep_ticks = $51
 g_repeat = $52
@@ -14,13 +17,9 @@ g_repeat = $52
 g_ptr = $70
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include lcd.s
     include sound.s
-irq:
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    rti
 
 main_reset:
     jsr via.init
