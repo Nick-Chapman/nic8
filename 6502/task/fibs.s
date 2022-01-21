@@ -1,7 +1,7 @@
 
 ;;; fp    2  3
 ;;; [..] (I, Time)
-fib_iter:
+fibs:
 .fp = 0
 .i = 2
 .jif = 3 ; time after pause
@@ -14,7 +14,7 @@ fib_iter:
     lda g_ticks
     adc #10 ; wait 1/10s
     sta .jif, x
-    store16i_x fib_iter.static_closure, .fp
+    store16i_x fibs.static_closure, .fp
     rts
 .roots:
     rts
@@ -50,14 +50,14 @@ fib_iter2:
 .i = 2
     word .roots, .evac, .scav
 .code:
-    copyFrom8_x fib_iter.screen, g_selected_screen
+    copyFrom8_x fibs.screen, g_selected_screen
     print_char ' '
     print_decimal_trip_x .i
     copyFrom16_x .fp, temp
     loadA temp, .i
     inc
     sta .i, x
-    jsr fib_iter.again
+    jsr fibs.again
     enter_fp
 .roots:
     rts

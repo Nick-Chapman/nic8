@@ -99,8 +99,8 @@ reset_main:
     jsr primes.begin
 
     ldx #task5
-    store8i_x 3, fib_iter.screen
-    jsr fib_iter.begin
+    store8i_x 3, fibs.screen
+    jsr fibs.begin
 
     jmp switch_to_1
 
