@@ -1,9 +1,10 @@
+;;; macros for 16 bit arithmetic
 
 increment16: macro A
     inc \A
-    bne .\@
+    bne .done\@
     inc \A + 1
-.\@:
+.done\@:
 endmacro
 
 add16: macro A, B, RES ; A+B --> RES
@@ -16,7 +17,7 @@ add16: macro A, B, RES ; A+B --> RES
     sta \RES + 1
 endmacro
 
-sub16 : macro A, B, RES ; A-B --> RES
+sub16: macro A, B, RES ; A-B --> RES
     sec
     lda \A
     sbc \B
@@ -30,8 +31,8 @@ compare16: macro A,B ; if B > A, clear carry
     sec
     lda \A + 1
     cmp \B + 1
-    bne .\@
+    bne .done\@
     lda \A
     cmp \B
-.\@:
+.done\@:
 endmacro
