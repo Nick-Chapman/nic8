@@ -6,7 +6,7 @@ decimal16:
 
 .screen_put:
     pha
-    store16i screen_putchar, g_putchar
+    store16i screen.putchar, g_putchar
     pla
     jmp .generic_put
 

@@ -71,7 +71,7 @@ endmacro
 enter_fp: macro
     load16_0 task1, cp
     panic_if_not_in_rom cp
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jmp (cp)
 endmacro
 
@@ -92,7 +92,7 @@ reset_main:
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     acia_print_string "\n\nRESET...\n"
     init_heap 1 ; screen-number
     ldx #task1

@@ -67,7 +67,7 @@ reset_main:
     jsr init_sound ; silence
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
 
     ;; write fixed messages to screen #2 and #3
     lda #2
@@ -88,12 +88,12 @@ reset_main:
 example:
     jsr init_put_message
 example_loop:
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jsr put_next_message_char_when_time
     jmp example_loop
 
 spin_with_flush:
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jmp spin_with_flush
 
 init_put_message:
@@ -114,7 +114,7 @@ put_next_message_char_when_time:
     lda (g_message_ptr),y
     beq spin_with_flush ; spin when reach end of message
     pha ;save char
-    jsr screen_putchar
+    jsr screen.putchar
     jsr increment_message_ptr
     pla ;get char
     tay

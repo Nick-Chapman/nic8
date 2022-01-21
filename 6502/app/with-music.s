@@ -24,7 +24,7 @@
     include sound.s
 
 enter_fp: macro ; TODO: rename yield
-    jsr screen_flush_when_time ; TODO: should this be a task like any other?
+    jsr screen.flush_when_time ; TODO: should this be a task like any other?
     jmp (switcher)
 endmacro
 
@@ -79,7 +79,7 @@ reset_main:
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     acia_print_string "\n\nRESET...\n"
     init_heap 0 ; gc_screen
 

@@ -85,7 +85,7 @@ main:
     jsr init_nmi_irq
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr acia.init_buffer
     jmp example
 
@@ -101,7 +101,7 @@ example:
     jsr acia.init_using_rx_interrupts
     jsr process_acia_rx.init
 .loop:
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jsr process_acia_rx.check
     jsr show_acia_buffer_status
     jmp .loop
@@ -110,7 +110,7 @@ example:
 show_acia_buffer_status
     lda #1
     sta g_selected_screen
-    jsr screen_return_home
+    jsr screen.return_home
     print_hex_byte g_acia_buffer_read_ptr
     print_char ' '
     print_hex_byte g_acia_buffer_write_ptr
@@ -138,7 +138,7 @@ process_acia_rx:
     ;; send to lcd and acia
     pha
     stz g_selected_screen
-    jsr screen_putchar
+    jsr screen.putchar
     pla
     jsr acia.putchar
     jmp .init

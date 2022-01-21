@@ -55,7 +55,7 @@ endmacro
 
 .display:
     copyFrom8_x .screen, g_selected_screen
-    jsr screen_return_home
+    jsr screen.return_home
     print_leading_zero .h
     print_decimal_byte_x .h
     print_char ':'

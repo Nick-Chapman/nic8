@@ -48,13 +48,13 @@ print_number:
     lsr
     lsr
     tax
-    lda digits,x
+    lda timer_digits,x
     jsr lcd.putchar
     lda g_number
     and #%1111
     tax
-    lda digits,x
+    lda timer_digits,x
     jsr lcd.putchar
     rts
 
-digits: ascii "0123456789abcdef"
+timer_digits: ascii "0123456789abcdef"

@@ -45,7 +45,7 @@ main:
     jsr init_ticks
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr acia.init
     stz .count
 .again:
@@ -66,7 +66,7 @@ main:
     acia_print_string "press a key\n"
     jsr acia.read_blocking
     sta .received
-    jsr screen_putchar
+    jsr screen.putchar
 
     print_hex_byte .received
     print_char ' '

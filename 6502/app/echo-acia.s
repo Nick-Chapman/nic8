@@ -44,7 +44,7 @@ main:
     jsr init_ticks
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr acia.init
     acia_print_string ">"
     print_string ">"
@@ -55,6 +55,6 @@ main:
     jsr acia.putchar
     ;debug_hex_byte .received
     lda .received
-    jsr screen_putchar
+    jsr screen.putchar
     screen_flush_selected
     jmp .again

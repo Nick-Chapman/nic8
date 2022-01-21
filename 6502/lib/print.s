@@ -3,14 +3,14 @@
 
 newline: macro
     phy
-    jsr screen_newline
+    jsr screen.newline
     ply
 endmacro
 
 print_char: macro CHAR
     pha
     lda #\CHAR
-    jsr screen_putchar
+    jsr screen.putchar
     pla
 endmacro
 
@@ -35,7 +35,7 @@ acia_print_decimal_trip_x: macro L
 endmacro
 
 print_decimal_trip_x: macro L
-    generic_print_decimal_trip_x screen_putchar, \L
+    generic_print_decimal_trip_x screen.putchar, \L
 endmacro
 
 generic_print_decimal_word: macro P, L
@@ -54,7 +54,7 @@ acia_print_decimal_word: macro L
 endmacro
 
 print_decimal_word: macro L
-    generic_print_decimal_word screen_putchar, \L
+    generic_print_decimal_word screen.putchar, \L
 endmacro
 
 generic_print_decimal_word_x: macro P, L
@@ -75,7 +75,7 @@ acia_print_decimal_word_x: macro L
 endmacro
 
 print_decimal_word_x: macro L
-    generic_print_decimal_word_x screen_putchar, \L
+    generic_print_decimal_word_x screen.putchar, \L
 endmacro
 
 print_decimal_byte: macro L
@@ -98,7 +98,7 @@ print_decimal_byte_x: macro L
     pla
 endmacro
 
-put_hex_byte:
+put_hex_byte: ; TODO: dedup
     phx
     pha
     lsr
@@ -106,34 +106,34 @@ put_hex_byte:
     lsr
     lsr
     tax
-    lda digits,x
-    jsr screen_putchar
+    lda screen.digits,x ; TODO: avoid odd nonlocal reference
+    jsr screen.putchar
     pla
     and #%1111
     tax
-    lda digits,x
-    jsr screen_putchar
+    lda screen.digits,x
+    jsr screen.putchar
     plx
     rts
 
 print_hex_word: macro L
     lda #'['
-    jsr screen_putchar
+    jsr screen.putchar
     lda \L + 1
     jsr put_hex_byte
     lda \L
     jsr put_hex_byte
     lda #']'
-    jsr screen_putchar
+    jsr screen.putchar
 endmac
 
 print_hex_byte: macro L
     lda #'['
-    jsr screen_putchar
+    jsr screen.putchar
     lda \L
     jsr put_hex_byte
     lda #']'
-    jsr screen_putchar
+    jsr screen.putchar
 endmac
 
 
@@ -151,7 +151,7 @@ put_string: ; TODO: make this work for long strings (like acia.put_string)
     lda (g_mptr),y
     beq .done
     phy
-      jsr screen_putchar ; changes y
+      jsr screen.putchar ; changes y
     ply
     iny
     jmp .loop

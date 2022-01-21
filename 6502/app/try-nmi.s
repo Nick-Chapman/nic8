@@ -82,7 +82,7 @@ reset_main:
     jsr init_ticks
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr init_nmi
     stz g_ticks + 1
 .loop:
@@ -90,7 +90,7 @@ reset_main:
     sta g_temp
     lda g_ticks + 1
     sta g_temp + 1
-    jsr screen_return_home
+    jsr screen.return_home
     print_decimal_word g_nmi_count
     print_char ' '
     print_decimal_word g_temp

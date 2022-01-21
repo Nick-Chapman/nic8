@@ -37,7 +37,7 @@ speed_watch:
     enter_fp
 .display:
     copyFrom8_x .screen, g_selected_screen
-    jsr screen_return_home
+    jsr screen.return_home
     print_decimal_word_x .c
     print_string "    "
     newline

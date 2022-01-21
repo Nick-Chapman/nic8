@@ -43,13 +43,13 @@ reset_main:
     jsr init_nmi_irq
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr init_speed_check
     jmp cyclic_executive
 
 cyclic_executive:
     jsr check_speed
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jmp cyclic_executive
 
 init_speed_check:
@@ -70,7 +70,7 @@ check_speed:
 .skip:
     rts
 .we_have_advanced:
-    jsr screen_return_home
+    jsr screen.return_home
     print_decimal_word g_speed
     jsr init_speed_check
     rts

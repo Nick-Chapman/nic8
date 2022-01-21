@@ -35,7 +35,7 @@ music:
       copyFrom8_x .screen, g_selected_screen
       newline
       newline
-      jsr screen_return_home
+      jsr screen.return_home
       print_string_variable_x .ptr
     pla
     jsr .bump_ptr
@@ -59,7 +59,7 @@ music:
     beq .no_print ; if >0 we missed, so print debug to acia to show by how many jiffies we missed
     phx
       tax
-      lda digits,x
+      lda screen.digits,x ; TODO: avoid odd nonlocal reference
     plx
     jsr acia.putchar
 .no_print:

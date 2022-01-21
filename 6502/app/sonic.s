@@ -131,16 +131,16 @@ print_hex_number:
     lsr
     lsr
     tax
-    lda digits,x
+    lda sonic_digits,x
     jsr lcd.putchar
     pla
     and #%1111
     tax
-    lda digits,x
+    lda sonic_digits,x
     jsr lcd.putchar
     rts
 
-digits: ascii "0123456789abcdef" ; TODO: move to more a general location (print?)
+sonic_digits: ascii "0123456789abcdef" ; TODO: dedup!
 
 num_songs_minus_1 = (((song_table_end - song_table) >> 1) - 1)
 

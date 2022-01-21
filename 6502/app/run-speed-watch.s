@@ -25,7 +25,7 @@ task1 = 25
 
 enter_fp: macro
     load16_0 task1, cp
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     ldx #task1
     jmp (cp)
 endmacro
@@ -65,7 +65,7 @@ reset_main:
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     init_heap 1 ; screen-number
 
     ldx #task1

@@ -66,7 +66,7 @@ reset_main:
     jsr init_sound ; silence
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jsr example
 spin:
     jmp spin
@@ -80,7 +80,7 @@ example:
 example_loop:
     jsr put_number_dec
     jsr put_dot
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jsr push_number
     jsr ds_increment
     jsr pull_number
@@ -94,7 +94,7 @@ init_number:
     rts
 
 put_number_dec: ; print 1-5 decimal digits for 16 bit number
-    jsr screen_return_home
+    jsr screen.return_home
     lda g_number
     ldx g_number + 1
     jsr decimal16.screen_put
@@ -103,7 +103,7 @@ put_number_dec: ; print 1-5 decimal digits for 16 bit number
 put_dot:
     pha
     lda #'.'
-    jsr screen_putchar
+    jsr screen.putchar
     pla
     rts
 

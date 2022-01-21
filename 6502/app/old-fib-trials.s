@@ -49,7 +49,7 @@ flush: macro
     pha
     lda g_nmi_count
     and #%1 ; use nmi-count to pick screen #0 or #1
-    jsr screen_flush_sub
+    jsr screen.flush
     pla
 endmacro
 
@@ -75,7 +75,7 @@ find_roots:
     rts
 
 NEXT: macro A
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jmp \A
 endmacro
 
@@ -113,7 +113,7 @@ reset_main:
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
     jmp example
 
 example:
@@ -123,7 +123,7 @@ example:
 
     jsr pause
     jsr pause
-    jsr screen_newline
+    jsr screen.newline
     lda #10 ; Compute fib(N) for N = ...
     pha ; keep N on the stack
 
@@ -173,7 +173,7 @@ _1$:
     inc $101,x ; increment N (in place) on stack
 
     jsr pause
-    jsr screen_newline
+    jsr screen.newline
     flush
 
     jmp example_loop

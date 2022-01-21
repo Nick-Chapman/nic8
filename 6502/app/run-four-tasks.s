@@ -54,7 +54,7 @@ panic_if_not_in_rom: macro V
 endmacro
 
 enter_fp: macro
-    jsr screen_flush_when_time
+    jsr screen.flush_when_time
     jmp (switcher)
 endmacro
 
@@ -101,7 +101,7 @@ reset_main:
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display
-    jsr init_screen
+    jsr screen.init
 
     acia_print_string "\n\nRESET...\n"
 
