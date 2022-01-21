@@ -1,7 +1,5 @@
 
-;;; TODO: deprecate/merge this into nmi_irq.s
-;;; TODO: rename ticks -> jiffy
-;;; TODO: move into via.s
+;;; This file is deprecated in favour of interrupts.s
 
 MHz = 1000000
 

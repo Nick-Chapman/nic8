@@ -54,7 +54,7 @@ flush: macro
 endmacro
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include arith16.s
     include acia.s
     include sound.s
@@ -78,8 +78,6 @@ NEXT: macro A
     jsr screen.flush_when_time
     jmp \A
 endmacro
-
-    include nmi_irq.s
 
     ;; various implementations of fib
     include fib1.s

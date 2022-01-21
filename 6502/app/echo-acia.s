@@ -7,7 +7,7 @@
     include via.s
     include arith16.s
     include acia.s
-    include ticks.s
+    include interrupts.s
     include lcd.s
     include screen.s
     include macs.s
@@ -19,6 +19,7 @@ g_ticks = $32
 g_selected_screen = $34
 
 g_nmi_count = $35
+g_nmi_blocked = $36
 g_next_screen_flush = $37
 
 g_divisor = $54 ; decimal16.s
@@ -29,14 +30,6 @@ g_putchar = $5a ; decimal16.s
 NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200
-
-nmi:
-    rti
-
-irq:
-    bit via.T1CL ; acknowledge interrupt
-    inc g_ticks
-    rti
 
 main:
 ;;; local vars in zero page

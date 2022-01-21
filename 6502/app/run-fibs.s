@@ -37,7 +37,7 @@ g_screen_pointers = $80
 g_screens = $200 ; 4*32 bytes
 
     include via.s
-    include ticks.s
+    include interrupts.s
     include arith16.s
     include acia.s
     include lcd.s
@@ -50,7 +50,6 @@ g_screens = $200 ; 4*32 bytes
     include panic.s
     include arith16.s
     include heap.s
-    include nmi_irq.s
 
 task1 = 10
 

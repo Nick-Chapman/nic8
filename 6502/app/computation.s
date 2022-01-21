@@ -51,8 +51,7 @@ g_screen_pointers = $80 ; 8 bytes
 g_screens = $200 ; 8x 32 bytes
 
     include via.s
-    include ticks.s
-    include nmi_irq.s
+    include interrupts.s
     include sound.s
     include lcd.s
     include screen.s

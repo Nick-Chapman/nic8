@@ -1,15 +1,15 @@
 ;;; Use interrupts for ACIA RX
 
     org $fffa
-    word my_nmi
+    word nmi
     word main
     word my_irq
     org $8000
 
     include via.s
+    include interrupts.s
     include arith16.s
     include acia.s
-    include ticks.s
     include lcd.s
     include screen.s
     include print.s
@@ -32,22 +32,8 @@ NUM_SCREENS = 2
 g_screen_pointers = $80
 g_screens = $200
 
-
 ;;; acia read buffer
 g_acia_buffer = $300
-
-
-;;; copied from nmi_irq.s
-my_nmi:
-    pha
-    lda g_nmi_blocked
-    bne .done
-    lda #25 ; debounce time
-    sta g_nmi_blocked
-    inc g_nmi_count
-.done:
-    pla
-    rti
 
 my_irq:
 check_acia:
@@ -61,7 +47,7 @@ check_T1:
     bit via.T1CL ; ack
     inc g_ticks
 
-    ;; debound NMI
+    ;; debounce NMI
     pha
     lda g_nmi_blocked
     beq .after
@@ -82,19 +68,13 @@ main:
     jsr lcd.init
     jsr lcd.clear_display
     jsr screen.init
-    jsr acia.init_buffer
+    jsr acia_init_buffer
     jmp example
 
 
-;;; copied from nmi_irq.s
-init_nmi_irq: ; TODO: combine with (ticks)init_ticks
-    stz g_nmi_blocked
-    stz g_nmi_count
-    rts
-
 example:
     print_char '>'
-    jsr acia.init_using_rx_interrupts
+    jsr acia_init_using_rx_interrupts
     jsr process_acia_rx.init
 .loop:
     jsr screen.flush_when_time
@@ -152,7 +132,7 @@ is_char_in_acia_buffer: ; TODO: inline
     lda #0
     rts
 
-acia.init_using_rx_interrupts:
+acia_init_using_rx_interrupts:
     sta acia.status ; program reset
     ;lda #%00001011 ; no parity, no echo, no interrupts, ready
     lda #%00001001 ; no parity, no echo, no TX interrupt, RX interrupt, ready
@@ -166,7 +146,7 @@ acia.init_using_rx_interrupts:
     jsr acia.start_timer
     rts
 
-acia.init_buffer:
+acia_init_buffer:
     stz g_acia_buffer_read_ptr
     stz g_acia_buffer_write_ptr
     rts

@@ -7,8 +7,7 @@
     org $8000
 
     include via.s
-    include ticks.s
-    include nmi_irq.s
+    include interrupts.s
     include lcd.s
     include arith16.s
     include acia.s
