@@ -1,18 +1,26 @@
 
 ;;; Support for multiple virtual screens
-;;; 4 screens -- TODO: 8 screens!
+;;; 8 screens
 
 screen:
 
 .init_pointers: ; TODO: use loop
-    lda #0
-    sta g_screen_pointers
-    lda #32
+    lda #(0*32)
+    sta g_screen_pointers + 0
+    lda #(1*32)
     sta g_screen_pointers + 1
     lda #(2*32)
     sta g_screen_pointers + 2
     lda #(3*32)
     sta g_screen_pointers + 3
+    lda #(4*32)
+    sta g_screen_pointers + 4
+    lda #(5*32)
+    sta g_screen_pointers + 5
+    lda #(6*32)
+    sta g_screen_pointers + 6
+    lda #(7*32)
+    sta g_screen_pointers + 7
     rts
 
 .init:
@@ -24,8 +32,6 @@ screen:
 .init_each_char:
     sta g_screens,x
     inx
-    sec
-    cpx #(4 * 32)
     bne .init_each_char
     rts
 
@@ -150,12 +156,11 @@ screen:
     rts
 
 .starts:
-    byte 0,32,64,96
-
+    byte 0,32,64,96,128,160,192,224
 .eol1s:
-    byte 16,48,80,112
+    byte 16,48,80,112,144,176,208,240
 .eol2s:
-    byte 32,64,96,128
+    byte 32,64,96,128,160,192,224,0 ; TODO: bug! dont think writing to 8th screen will work
 
 .digits: ascii "0123456789abcdef"
 

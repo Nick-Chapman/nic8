@@ -54,7 +54,7 @@ g_modulus24 = $63 ; decimal24.s
 
 switcher = $66
 
-NUM_SCREENS = 4
+NUM_SCREENS = 8
 g_screen_pointers = $80
 g_screens = $200
 
@@ -70,7 +70,7 @@ reset_main:
     jsr lcd.clear_display
     jsr screen.init
     acia_print_string "\n\nRESET...\n"
-    init_heap 0 ; gc_screen
+    init_heap 5 ; gc_screen
 
     ldx #task1
     store8i_x 0, music.screen
@@ -89,7 +89,7 @@ reset_main:
     jsr primes.begin
 
     ldx #task5
-    store8i_x 3, fibs.screen
+    store8i_x 4, fibs.screen
     jsr fibs.begin
 
     jmp switch_to_1
