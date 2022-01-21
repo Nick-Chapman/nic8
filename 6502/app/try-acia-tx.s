@@ -43,8 +43,8 @@ main:
     txs
     jsr init_via
     jsr init_ticks
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     jsr acia.init
     stz .count

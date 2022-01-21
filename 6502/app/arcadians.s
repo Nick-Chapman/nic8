@@ -23,8 +23,8 @@ main_reset:
     jsr init_via
     jsr init_ticks
     jsr init_sound
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr print_message
     jmp play_music
 
@@ -33,7 +33,7 @@ print_message:
 print_message_loop:
     lda message,y
     beq print_message_done
-    jsr lcd_putchar
+    jsr lcd.putchar
     iny
     jmp print_message_loop
 print_message_done:

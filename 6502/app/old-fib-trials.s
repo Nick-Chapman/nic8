@@ -111,8 +111,8 @@ reset_main:
     jsr init_nmi_irq
     jsr init_sound ; silence
     jsr acia.init
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     jmp example
 

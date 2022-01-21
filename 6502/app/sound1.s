@@ -17,7 +17,7 @@ g_ticks = $50
 
 main_reset:
     jsr init_via
-    jsr init_lcd
+    jsr lcd.init
     jsr init_sound
     jsr init_ticks
 
@@ -53,9 +53,9 @@ pause:
 
 message:
     pha
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     pla
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 tone_d:

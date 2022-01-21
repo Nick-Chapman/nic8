@@ -19,7 +19,7 @@
 reset_main:
     jsr init_via
     jsr init_ticks
-    jsr init_lcd
+    jsr lcd.init
     jsr init_screen
     print_string 'Part1 '
     screen_flush_selected

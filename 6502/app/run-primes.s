@@ -67,8 +67,8 @@ reset_main:
     jsr init_ticks
     jsr init_nmi_irq
     jsr acia.init
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     init_heap 0 ; screen-number
 

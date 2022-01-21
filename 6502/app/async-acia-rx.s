@@ -83,8 +83,8 @@ main:
     jsr init_via
     jsr init_ticks
     jsr init_nmi_irq
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     jsr acia.init_buffer
     jmp example

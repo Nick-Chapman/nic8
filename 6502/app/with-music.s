@@ -77,8 +77,8 @@ reset_main:
     jsr init_nmi_irq
     jsr init_sound
     jsr acia.init
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     acia_print_string "\n\nRESET...\n"
     init_heap 0 ; gc_screen

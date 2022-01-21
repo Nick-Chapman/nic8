@@ -20,7 +20,7 @@ g_ptr = $70
 
 main_reset:
     jsr init_via
-    jsr init_lcd
+    jsr lcd.init
     jsr init_ticks
     jsr init_sound
 
@@ -84,14 +84,14 @@ shift_btr_no_carry:
 
 message:
     pha
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     pla
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 dot:
     lda #'.'
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 finish:

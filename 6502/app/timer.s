@@ -17,7 +17,7 @@ g_last_message_ticks = $A2
 
 main_reset:
     jsr init_ticks
-    jsr init_lcd
+    jsr lcd.init
     lda #$42
     sta g_number
     jsr print_number
@@ -39,9 +39,9 @@ keep_waiting:
     rts
 
 print_number:
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     lda #"x"
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda g_number
     lsr
     lsr
@@ -49,12 +49,12 @@ print_number:
     lsr
     tax
     lda digits,x
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda g_number
     and #%1111
     tax
     lda digits,x
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 digits: ascii "0123456789abcdef"

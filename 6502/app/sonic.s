@@ -24,8 +24,8 @@ main_reset:
     jsr init_via
     jsr init_ticks
     jsr init_sound
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
 
     sec
     lda #num_songs_minus_1
@@ -60,12 +60,12 @@ after_reset_song_0:
     adc #1
     tay
     ;; print title
-    jsr lcd_clear_display
+    jsr lcd.clear_display
 print_title:
     iny
     lda (g_ptr),y
     beq author
-    jsr lcd_putchar
+    jsr lcd.putchar
     jmp print_title
 author:
     iny
@@ -123,7 +123,7 @@ spin:
 ;;; print byte passed in accumulator as 2 digit hex number
 print_hex_number:
     pha
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     pla
     pha
     lsr
@@ -132,12 +132,12 @@ print_hex_number:
     lsr
     tax
     lda digits,x
-    jsr lcd_putchar
+    jsr lcd.putchar
     pla
     and #%1111
     tax
     lda digits,x
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 digits: ascii "0123456789abcdef" ; TODO: move to more a general location (print?)

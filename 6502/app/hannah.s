@@ -21,7 +21,7 @@ reset:
     jsr init_via
     jsr init_ticks
     jsr init_sound ; silence
-    jsr init_lcd
+    jsr lcd.init
 
     ldx #(message1 & $ff)       ;lo
     ldy #(message1 >> 8)        ;hi
@@ -190,11 +190,11 @@ print_message:
     stx MPTR                    ;lo
     sty MPTR + 1                ;hi
     ldy #0
-    jsr lcd_clear_display
+    jsr lcd.clear_display
 print_message_loop:
     lda (MPTR),y
     beq print_message_done
-    jsr lcd_putchar
+    jsr lcd.putchar
     iny
     jmp print_message_loop
 print_message_done:

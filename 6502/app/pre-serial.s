@@ -65,8 +65,8 @@ reset_main:
     jsr init_ticks
     jsr init_nmi
     jsr init_sound ; silence
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
 
     ;; write fixed messages to screen #2 and #3

@@ -11,69 +11,69 @@ DDRB = $6002
     include lcd.s
 
 reset:
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr send_message1
     jsr pause
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     jsr send_message2
 spin:
     jmp spin
 
 send_message1:
     lda #'H'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'e'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'l'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'l'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'o'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #','
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #' '
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'W'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'o'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'r'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'l'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'d'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'!'
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 send_message2:
     lda #'T'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'h'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'i'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'s'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #' '
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'i'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'s'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #' '
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'f'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'u'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'n'
-    jsr lcd_putchar
+    jsr lcd.putchar
     lda #'!'
-    jsr lcd_putchar
+    jsr lcd.putchar
     rts
 
 

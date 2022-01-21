@@ -64,8 +64,8 @@ reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_sound ; silence
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     jsr init_screen
     jsr example
 spin:

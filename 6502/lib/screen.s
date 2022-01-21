@@ -44,14 +44,14 @@ screen_flush_sub:
     ;jsr show_screen_number_in_corner
     pla
     ;; copy screen to lcd
-    jsr lcd_return_home
+    jsr lcd.return_home
     ldx #0
     tay
     lda starts,y
     tay
 .each_line1_char:
     lda g_screens,y
-    jsr lcd_putchar
+    jsr lcd.putchar
     inx
     iny
     sec
@@ -61,13 +61,13 @@ screen_flush_sub:
     lda #'+' ;dont expect to see this
     ldx #24
 .each_dummy_print:
-    jsr lcd_putchar
+    jsr lcd.putchar
     dex
     bne .each_dummy_print
     ldx #16
 .each_line2_char:
     lda g_screens,y
-    jsr lcd_putchar
+    jsr lcd.putchar
     inx
     iny
     sec

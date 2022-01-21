@@ -25,15 +25,15 @@ send_message:
 send_message_loop:
     lda (MPTR),y
     beq send_message_done
-    jsr lcd_putchar
+    jsr lcd.putchar
     iny
     jmp send_message_loop
 send_message_done:
     rts
 
 reset:
-    jsr init_lcd
-    jsr lcd_clear_display
+    jsr lcd.init
+    jsr lcd.clear_display
     ldx #0
 messages_loop:
     lda messages,x
@@ -44,7 +44,7 @@ messages_loop:
     sta MPTR + 1
     inx
     jsr pause
-    jsr lcd_clear_display
+    jsr lcd.clear_display
     jsr send_message
     jmp messages_loop
 spin:
