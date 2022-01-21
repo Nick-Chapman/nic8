@@ -1,10 +1,7 @@
 
 ;;; TODO: deprecate/merge this into nmi_irq.s
-
-T1CL = $6004
-T1CH = $6005
-ACR = $600B
-IER = $600E
+;;; TODO: rename ticks -> jiffy
+;;; TODO: move into via.s
 
 MHz = 1000000
 
