@@ -6,14 +6,10 @@
     word my_irq
     org $8000
 
-;MHz = 1000000
-
-cpu_clks_per_sec = 4 * MHz
-
     include via.s
     include arith16.s
     include acia.s
-    include ticks1.s
+    include ticks.s
     include lcd.s
     include screen.s
     include print.s
