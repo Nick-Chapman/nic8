@@ -63,7 +63,7 @@ g_screens = $200 ; 8x 32 bytes
 reset_main:
     jsr init_via
     jsr init_ticks
-    jsr init_sound ; silence
+    jsr sound.init ; silence
     jsr lcd.init
     jsr lcd.clear_display
     jsr screen.init

@@ -18,7 +18,7 @@ g_ticks = $50
 main_reset:
     jsr init_via
     jsr lcd.init
-    jsr init_sound
+    jsr sound.init
     jsr init_ticks
 
     lda #'!'
@@ -60,16 +60,16 @@ message:
 
 tone_d:
     lda #$8a
-    jsr sound_send_data
+    jsr sound.send_byte
     lda #$06
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 tone_e:
     lda #$8f
-    jsr sound_send_data
+    jsr sound.send_byte
     lda #$05
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 silence_all:
@@ -81,25 +81,25 @@ silence_all:
 
 silence_0:
     lda #$9f
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 silence_1:
     lda #$bf
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 silence_2:
     lda #$df
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 silence_3:
     lda #$ff
-    jsr sound_send_data
+    jsr sound.send_byte
     rts
 
 loud_0:
     lda #$90
-    jsr sound_send_data
+    jsr sound.send_byte
     rts

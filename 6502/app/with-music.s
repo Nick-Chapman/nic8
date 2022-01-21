@@ -75,7 +75,7 @@ reset_main:
     jsr init_via
     jsr init_ticks
     jsr init_nmi_irq
-    jsr init_sound
+    jsr sound.init
     jsr acia.init
     jsr lcd.init
     jsr lcd.clear_display

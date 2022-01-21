@@ -22,7 +22,7 @@ g_ptr = $70
 main_reset:
     jsr init_via
     jsr init_ticks
-    jsr init_sound
+    jsr sound.init
     jsr lcd.init
     jsr lcd.clear_display
     jsr print_message
@@ -73,7 +73,7 @@ continue_send_bytes:
     ;; x: N, N-1 ... 1
     ;; y: 2, 3 ... N+2
     lda (g_ptr),y               ; read data byte to send
-    jsr sound_send_data
+    jsr sound.send_byte
     dex
     bne continue_send_bytes
     iny                     ; y is now N+2

@@ -22,7 +22,7 @@ main_reset:
     jsr init_via
     jsr lcd.init
     jsr init_ticks
-    jsr init_sound
+    jsr sound.init
 
     lda #3
     sta g_repeat
@@ -63,7 +63,7 @@ continue_send_bytes:
     ;; x: N, N-1 ... 1
     ;; y: 3, 4 ... N+3
     lda (g_ptr),y                 ; read data byte to send
-    jsr sound_send_data
+    jsr sound.send_byte
     dex
     bne continue_send_bytes
     iny                     ; y is now N+3

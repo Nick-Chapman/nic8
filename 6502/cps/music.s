@@ -74,7 +74,7 @@ music:
     dey
     beq .send_done
     lda (.ptr, x)
-    jsr sound_send_data
+    jsr sound.send_byte
     jmp .send_loop
 .send_done:
     lda #2 ; music packet every 1/50s (but we tick every 1/100)
@@ -82,7 +82,7 @@ music:
     enter_fp
 
 .finish:
-    jsr sound_silence
+    jsr sound.silence
     copyFrom8_x .screen, g_selected_screen
     print_string "\nDONE"
     store16i_x .gap_closure, .fp

@@ -20,7 +20,7 @@ QUICK = 40
 reset:
     jsr init_via
     jsr init_ticks
-    jsr init_sound ; silence
+    jsr sound.init ; silence
     jsr lcd.init
 
     ldx #(message1 & $ff)       ;lo
