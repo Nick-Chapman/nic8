@@ -40,7 +40,7 @@ g_message_ptr = $70
 g_number = $72
 g_divisor = $74
 g_mod10 = $76
-g_putchar = $78 ; decimal.s
+g_putchar = $78 ; decimal16.s
 g_mptr = $7a ; print.s
 
 
@@ -57,7 +57,7 @@ g_screens = $200 ; 8x 32 bytes
     include lcd.s
     include screen.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include print.s
 
 reset_main:

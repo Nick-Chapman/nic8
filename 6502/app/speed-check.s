@@ -13,7 +13,7 @@
     include lcd.s
     include screen.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include print.s
 
 ;;; bytes
@@ -27,9 +27,9 @@ g_last_speed_check_time = $35
 ;;; words
 g_speed = $40 ; #repeats of cyclic_executive per jiffy
 g_mptr = $42 ; print.s
-g_divisor = $44 ; decimal.s
-g_mod10 = $46 ; decimal.s
-g_putchar = $48 ; decimal.s
+g_divisor = $44 ; decimal16.s
+g_mod10 = $46 ; decimal16.s
+g_putchar = $48 ; decimal16.s
 
 NUM_SCREENS = 1
 g_screen_pointers = $80

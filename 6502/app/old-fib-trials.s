@@ -20,9 +20,9 @@ g_next_screen_flush = $58
 
 ;;; words
 g_res = $70 ; used by fib1
-g_divisor = $72 ; decimal.s
-g_mod10 = $74 ; decimal.s
-g_putchar = $76 ; decimal.s
+g_divisor = $72 ; decimal16.s
+g_mod10 = $74 ; decimal16.s
+g_putchar = $76 ; decimal16.s
 gc_count = $8a
 heap_start = $8c
 g_selected_version_ptr = $90
@@ -62,7 +62,7 @@ endmacro
     include screen.s
     include sleep.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include print.s
     include panic.s
     include macs.s

@@ -13,7 +13,7 @@ cpu_clks_per_sec = 4 * MHz ; run more slowly for the ACIA chip
     include lcd.s
     include screen.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include print.s
     include sleep.s
 
@@ -23,10 +23,10 @@ g_selected_screen = $34
 g_nmi_count = $35
 g_next_screen_flush = $37
 
-g_divisor = $54 ; decimal.s
-g_mod10 = $56 ; decimal.s
+g_divisor = $54 ; decimal16.s
+g_mod10 = $56 ; decimal16.s
 g_mptr = $58 ; print.s / acia.put_string
-g_putchar = $5a ; decimal.s
+g_putchar = $5a ; decimal16.s
 
 NUM_SCREENS = 2
 g_screen_pointers = $80

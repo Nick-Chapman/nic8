@@ -10,7 +10,7 @@
     include ticks.s
     include lcd.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include screen.s
     include print.s
     include sleep.s
@@ -61,7 +61,7 @@ res = $10
 ptr = $12
 ptr2 = $14
 g_mptr = $58 ; print.s
-g_putchar = $5a ; decimal.s
+g_putchar = $5a ; decimal16.s
 
 g_nmi_count = $35 ;byte
 g_next_screen_flush = $37 ;byte

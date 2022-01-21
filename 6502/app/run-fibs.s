@@ -23,10 +23,10 @@ g_heap_pointer = $40
 space_switcher = $4c
 gc_count = $50
 heap_start = $52
-g_divisor = $54 ; decimal.s
-g_mod10 = $56 ; decimal.s
+g_divisor = $54 ; decimal16.s
+g_mod10 = $56 ; decimal16.s
 g_mptr = $58 ; print.s
-g_putchar = $5a ; decimal.s
+g_putchar = $5a ; decimal16.s
 
 ;;; trip
 g_divisor24 = $60 ; decimal24.s
@@ -43,7 +43,7 @@ g_screens = $200 ; 4*32 bytes
     include lcd.s
     include screen.s
     include macs.s
-    include decimal.s
+    include decimal16.s
     include decimal24.s
     include print.s
     include sleep.s
