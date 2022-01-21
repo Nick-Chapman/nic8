@@ -14,13 +14,9 @@ cpu_clks_per_sec = 4 * MHz
     include arith16.s
     include acia.s
     include ticks1.s
-    ;include nmi_irq.s
     include lcd.s
     include screen.s
-    ;; include decimal.s
     include print.s
-    ;include sleep.s
-    ;include debug.s
 
 g_acia_buffer_write_ptr = $30
 g_acia_buffer_read_ptr = $31

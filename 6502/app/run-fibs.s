@@ -47,7 +47,6 @@ g_screens = $200 ; 4*32 bytes
     include decimal24.s
     include print.s
     include sleep.s
-    include debug.s
     include panic.s
     include arith16.s
     include heap.s

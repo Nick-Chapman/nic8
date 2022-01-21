@@ -16,7 +16,6 @@ cpu_clks_per_sec = 4 * MHz ; run more slowly for the ACIA chip
     include decimal.s
     include print.s
     include sleep.s
-    include debug.s
 
 g_ticks = $32
 g_selected_screen = $34
@@ -51,8 +50,11 @@ main:
     stz .count
 .again:
     inc .count
-    debug_decimal_byte .count
-    debug '-'
+
+    print_decimal_byte .count
+    print_char '-'
+    screen_flush_selected
+
     acia_print_string "WALL OF TEXT\n"
     lda #>wall_of_text
     pha
@@ -65,8 +67,11 @@ main:
     jsr acia.read_blocking
     sta .received
     jsr screen_putchar
-    debug_hex_byte .received
-    debug ' '
+
+    print_hex_byte .received
+    print_char ' '
+    screen_flush_selected
+
     jmp .again
 
 

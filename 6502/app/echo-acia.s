@@ -16,7 +16,6 @@ cpu_clks_per_sec = 1 * MHz ; run more slowly for the ACIA chip
     include decimal.s
     include print.s
     include sleep.s
-    include debug.s
 
 g_ticks = $32
 g_selected_screen = $34

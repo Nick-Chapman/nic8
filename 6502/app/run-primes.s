@@ -17,7 +17,6 @@
     include macs.s
     include decimal.s
     include print.s
-    include debug.s
     include panic.s
     include macs.s
     include arith16.s
