@@ -61,7 +61,7 @@ music:
       tax
       lda digits,x
     plx
-    jsr acia_putchar
+    jsr acia.putchar
 .no_print:
     lda (.ptr, x) ; #bytes to send
     cmp #$ff

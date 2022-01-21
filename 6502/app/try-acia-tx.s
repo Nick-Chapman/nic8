@@ -26,7 +26,7 @@ g_next_screen_flush = $37
 
 g_divisor = $54 ; decimal.s
 g_mod10 = $56 ; decimal.s
-g_mptr = $58 ; print.s / acia_put_string
+g_mptr = $58 ; print.s / acia.put_string
 g_putchar = $5a ; decimal.s
 
 NUM_SCREENS = 2
@@ -47,7 +47,7 @@ main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr init_acia
+    jsr acia.init
     stz .count
 .again:
     inc .count
@@ -58,11 +58,11 @@ main:
     pha
     lda #<wall_of_text
     pha
-    jsr acia_put_string
+    jsr acia.put_string
     pla
     pla
     acia_print_string "press a key\n"
-    jsr acia_read_one_byte
+    jsr acia.read_blocking
     sta .received
     jsr screen_putchar
     debug_hex_byte .received

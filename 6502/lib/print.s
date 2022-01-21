@@ -29,7 +29,7 @@ generic_print_decimal_trip_x: macro P, L
 endmacro
 
 acia_print_decimal_trip_x: macro L
-    generic_print_decimal_trip_x acia_putchar, \L
+    generic_print_decimal_trip_x acia.putchar, \L
 endmacro
 
 print_decimal_trip_x: macro L
@@ -48,7 +48,7 @@ generic_print_decimal_word: macro P, L
 endmacro
 
 acia_print_decimal_word: macro L
-    generic_print_decimal_word acia_putchar, \L
+    generic_print_decimal_word acia.putchar, \L
 endmacro
 
 print_decimal_word: macro L
@@ -69,7 +69,7 @@ generic_print_decimal_word_x: macro P, L
 endmacro
 
 acia_print_decimal_word_x: macro L
-    generic_print_decimal_word_x acia_putchar, \L
+    generic_print_decimal_word_x acia.putchar, \L
 endmacro
 
 print_decimal_word_x: macro L
@@ -137,7 +137,7 @@ endmac
 
 ;;; TODO: move these macros to screen; prefix with screen_
 
-put_string: ; TODO: make this work for long strings (like acia_put_string)
+put_string: ; TODO: make this work for long strings (like acia.put_string)
     phx
     tsx
     lda $104,x ; string-pointer-word (under return-address-word, and saved x)

@@ -140,7 +140,7 @@ print_hex_number:
     jsr lcd_putchar
     rts
 
-digits: ascii "0123456789abcdef"
+digits: ascii "0123456789abcdef" ; TODO: move to more a general location (print?)
 
 num_songs_minus_1 = (((song_table_end - song_table) >> 1) - 1)
 

@@ -34,7 +34,7 @@ g_next_screen_flush = $37
 
 ;; g_divisor = $54 ; decimal.s
 ;; g_mod10 = $56 ; decimal.s
-g_mptr = $58 ; print.s / acia_put_string
+g_mptr = $58 ; print.s / acia.put_string
 
 NUM_SCREENS = 2
 g_screen_pointers = $80
@@ -90,7 +90,7 @@ main:
     jsr init_lcd
     jsr lcd_clear_display
     jsr init_screen
-    jsr init_acia_buffer
+    jsr acia.init_buffer
     jmp example
 
 
@@ -102,7 +102,7 @@ init_nmi_irq: ; TODO: combine with (ticks)init_ticks
 
 example:
     print_char '>'
-    jsr init_acia_using_rx_interrupts
+    jsr acia.init_using_rx_interrupts
     jsr process_acia_rx.init
 .loop:
     jsr screen_flush_when_time
@@ -144,7 +144,7 @@ process_acia_rx:
     stz g_selected_screen
     jsr screen_putchar
     pla
-    jsr acia_putchar
+    jsr acia.putchar
     jmp .init
 .done:
     rts
@@ -160,7 +160,7 @@ is_char_in_acia_buffer: ; TODO: inline
     lda #0
     rts
 
-init_acia_using_rx_interrupts:
+acia.init_using_rx_interrupts:
     sta acia.status ; program reset
     ;lda #%00001011 ; no parity, no echo, no interrupts, ready
     lda #%00001001 ; no parity, no echo, no TX interrupt, RX interrupt, ready
@@ -170,11 +170,11 @@ init_acia_using_rx_interrupts:
     ;; Using VIA timer2 to control/limit acia write
     ;; It is already initialize in the mode I need.
     ;; But must start the timer during init, so (after expiration)
-    ;; the wait_timer called by the first acia_putchar will complete
-    jsr start_timer
+    ;; the wait_timer called by the first acia.putchar will complete
+    jsr acia.start_timer
     rts
 
-init_acia_buffer:
+acia.init_buffer:
     stz g_acia_buffer_read_ptr
     stz g_acia_buffer_write_ptr
     rts

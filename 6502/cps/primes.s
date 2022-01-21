@@ -141,8 +141,8 @@ search_continue:
     print_char ' '
     print_decimal_word_x .i
     ;; (2) print to serial link
-    ;acia_print_char ' '
-    ;acia_print_decimal_word_x .i
+    ;acia.print_char ' '
+    ;acia.print_decimal_word_x .i
     ;; alloc cons cell
     heap_alloc 6
     save16i_0 cons_cell_i16.tag, clo
