@@ -1,4 +1,11 @@
 
+acia_print_char: macro CHAR
+    pha
+    lda #\CHAR
+    jsr acia.putchar
+    pla
+endmacro
+
 acia:
 
 ;;; registers

@@ -6,7 +6,7 @@ fibs:
 .i = 2
 .jif = 3 ; time after pause
 .screen = 5 ; (following 5 bytes of args needed for core fib computation routines in fib24.s)
-.max_locals = 6
+.size_locals = 6
 .begin:
     stz .i, x
 .again:

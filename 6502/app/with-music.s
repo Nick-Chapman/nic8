@@ -52,7 +52,8 @@ g_putchar = $5a ; decimal16.s
 g_divisor24 = $60 ; decimal24.s
 g_modulus24 = $63 ; decimal24.s
 
-switcher = $66
+g_first_task = $68 ; byte
+g_task = $70 ; word
 
 NUM_SCREENS = 8
 g_screen_pointers = $80
@@ -69,27 +70,33 @@ reset_main:
     jsr lcd.init
     jsr lcd.clear_display
     jsr screen.init
+    jsr tasking.init
     acia_print_string "\n\nRESET...\n"
     init_heap 5 ; gc_screen
 
-    ldx #task1
+    lda #music.size_locals+1
+    jsr tasking.create
     store8i_x 0, music.screen
     jsr music.begin
 
-    ldx #task2
+    lda #speed.size_locals+1
+    jsr tasking.create
     store8i_x 1, speed.screen
     jsr speed.begin
 
-    ldx #task3
+    lda #clock.size_locals+1
+    jsr tasking.create
     store8i_x 2, clock.screen
     jsr clock.begin
 
-    ldx #task4
+    lda #primes.size_locals+1
+    jsr tasking.create
     store8i_x 3, primes.screen
     jsr primes.begin
 
-    ldx #task5
+    lda #fibs.size_locals+1
+    jsr tasking.create
     store8i_x 4, fibs.screen
     jsr fibs.begin
 
-    jmp switch_to_1
+    jmp tasking.start

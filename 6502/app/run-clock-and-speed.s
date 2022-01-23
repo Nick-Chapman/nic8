@@ -41,7 +41,8 @@ g_mod10 = $56 ; decimal16.s
 g_mptr = $58 ; print.s
 g_putchar = $5a ; decimal16.s
 
-switcher = $64 ; switches task, either: 1->2 or 2->1
+g_first_task = $68 ; byte
+g_task = $70 ; word
 
 NUM_SCREENS = 2
 g_screen_pointers = $80
@@ -57,23 +58,18 @@ reset_main:
     jsr lcd.init
     jsr lcd.clear_display
     jsr screen.init
+    jsr tasking.init
     init_heap 2 ; screen-number
 
-    ldx #task1
-    store8i_x 0, clock.screen
-    jsr clock.begin
-
-    ldx #task2
+    lda #10
+    jsr tasking.create
     store8i_x 1, speed.screen
     jsr speed.begin
 
-    ldx #task3
-    jsr null.begin
+    lda #10
+    jsr tasking.create
+    store8i_x 0, clock.screen
+    jsr clock.begin
 
-    ldx #task4
-    jsr null.begin
-
-    ldx #task5
-    jsr null.begin
-
-    jmp switch_to_1
+    jmp tasking.start
+    

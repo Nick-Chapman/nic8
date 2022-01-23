@@ -9,7 +9,7 @@ clock:
 .s = 4 ; seconds
 .j = 5 ; jiffy to tick
 .screen = 6
-.max_locals = 7
+.size_locals = 7
 .begin:
     stz .s, x
     stz .m, x
