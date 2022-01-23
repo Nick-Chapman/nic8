@@ -72,31 +72,89 @@ reset_main:
     jsr screen.init
     jsr tasking.init
     acia_print_string "\n\nRESET...\n"
-    init_heap 5 ; gc_screen
+    init_heap 6 ; gc_screen
 
-    lda #music.size_locals+1
+    lda #delay_music.size_locals+1
     jsr tasking.create
-    store8i_x 0, music.screen
-    jsr music.begin
+    store8i_x 0, delay_music.screen
+    jsr delay_music.begin
 
     lda #speed.size_locals+1
     jsr tasking.create
-    store8i_x 1, speed.screen
+    store8i_x 2, speed.screen
     jsr speed.begin
 
     lda #clock.size_locals+1
     jsr tasking.create
-    store8i_x 2, clock.screen
+    store8i_x 3, clock.screen
     jsr clock.begin
 
     lda #primes.size_locals+1
     jsr tasking.create
-    store8i_x 3, primes.screen
+    store8i_x 4, primes.screen
     jsr primes.begin
 
     lda #fibs.size_locals+1
     jsr tasking.create
-    store8i_x 4, fibs.screen
+    store8i_x 5, fibs.screen
     jsr fibs.begin
 
     jmp tasking.start
+
+
+;;; Experiment with dynamic task creation...
+;;; This task is created at initialization.
+;;; Then after 1 second it creates the actual music task
+delay_music:
+.fp = 0
+.jiffy = 2
+.screen = 3
+.size_locals = 4
+.begin:
+    store16i_x .start_closure, .fp
+    lda g_ticks
+    sta .jiffy, x
+    lda #100
+    jsr .set_wait
+    copyFrom8_x .screen, g_selected_screen
+    print_string "Waiting..."
+    rts
+.roots:
+    rts ; no roots
+.evac:
+    rts ; static
+.scav:
+    impossible_scavenge_because_static
+
+.start_closure:
+    word .start
+    word .roots, .evac, .scav
+.start:
+    lda g_ticks
+    cmp .jiffy, x
+    bpl .spawn_music
+    yield
+
+.spawn_music:
+    copyFrom8_x .screen, g_selected_screen
+    print_string "\nPLAY"
+    phx
+    lda #music.size_locals+1
+    jsr tasking.create
+    store8i_x 1, music.screen
+    jsr music.begin
+    plx
+    store16i_x .null_closure, .fp
+    yield
+
+.null_closure:
+    word .null
+    word .roots, .evac, .scav
+.null:
+    yield
+
+.set_wait:
+    clc
+    adc .jiffy, x
+    sta .jiffy, x
+    rts
