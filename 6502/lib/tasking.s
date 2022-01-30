@@ -5,7 +5,7 @@ yield: macro
     jmp tasking.yield
 endmacro
 
-find_roots:
+tasking_find_roots:
     phx
     ldx g_first_task
 .loop:

@@ -6,7 +6,37 @@ acia_print_char: macro CHAR
     pla
 endmacro
 
+acia_print_hex_word: macro L
+    pha
+    lda #'['
+    jsr acia.putchar
+    lda \L + 1
+    jsr acia.put_hex_byte
+    lda \L
+    jsr acia.put_hex_byte
+    lda #']'
+    jsr acia.putchar
+    pla
+endmac
+
 acia:
+
+; version which indexes using y instead of x (avoiding save of x)
+.put_hex_byte:
+    pha
+    lsr
+    lsr
+    lsr
+    lsr
+    tay
+    lda screen.digits,y ; use y for indexing
+    jsr acia.putchar
+    pla
+    and #%1111
+    tay
+    lda screen.digits,y
+    jsr acia.putchar
+    rts
 
 ;;; registers
 .data = $5000

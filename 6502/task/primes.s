@@ -17,7 +17,7 @@ cons_cell_i16:
 .scav
     scavenge_cell_at 4 ; tail
     scavenge_done 6
-    byte 'C'
+    byte 'C' ; TODO: kill this relic of old debugging
 
 nil_cell_i16:
     word .roots, .evac, .scav

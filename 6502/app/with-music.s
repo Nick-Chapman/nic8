@@ -59,6 +59,8 @@ NUM_SCREENS = 8
 g_screen_pointers = $80
 g_screens = $200
 
+find_roots = tasking_find_roots
+
 reset_main:
     ldx #$ff
     txs

@@ -215,3 +215,15 @@ acia_print_string: macro S ; TODO: dedup with similar (wrapping other put_string
       pla
     pla
 endmacro
+
+acia_print_string_variable: macro V
+    pha
+      lda \V + 1
+      pha
+      lda \V
+      pha
+      jsr acia.put_string
+      pla
+      pla
+    pla
+endmacro

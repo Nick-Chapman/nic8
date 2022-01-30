@@ -7,7 +7,7 @@ SPACE_B_START = SPACE_B_END - ($100 * PAGES_PER_SEMI_SPACE)
 SPACE_A_END = SPACE_B_START
 SPACE_A_START = SPACE_A_END - ($100 * PAGES_PER_SEMI_SPACE)
 
-;; PAGES_PER_SEMI_SPACE = 1
+;; PAGES_PER_SEMI_SPACE = 4 ; 1K
 ;; SPACE_A_START = $1000
 ;; SPACE_A_END = SPACE_A_START + ($100 * PAGES_PER_SEMI_SPACE)
 ;; SPACE_B_START = $2000
@@ -40,7 +40,7 @@ endmacro
 
 ;;; allocate #bytes in the heap
 
-heap_alloc: macro N
+heap_alloc: macro N ; TODO: preserve acc?
     lda #\N
     jsr heap.allocate_may_gc
 endmacro
@@ -72,6 +72,11 @@ endmacro
 
 ;;; Scavenge...
 
+scavenge_done: macro N
+    lda #\N
+    jmp heap.scavenge_done
+endmacro
+
 impossible_scavenge_because_static: macro
     panic 'Scav'
 endmacro
@@ -80,17 +85,6 @@ scavenge_cell_at: macro N
     load16 lw, \N, ev
     jsr heap.dispatch_evacuate
     save16 ev, lw,\N
-endmacro
-
-scavenge_done: macro N
-    lda lw
-    clc
-    adc #\N
-    sta lw
-    bcc .continue\@
-    inc lw + 1
-.continue\@:
-    jmp heap.scavenge_loop
 endmacro
 
 
@@ -183,17 +177,29 @@ alloc_orelse: macro FAIL ; #bytes in acc
     bne .dispatch_scavenge
     rts ; collection is done
 
+.scavenge_done: ; #bytes in acc
+    clc
+    adc lw
+    sta lw
+    bcc .scavenge_loop
+    inc lw + 1
+    jmp .scavenge_loop
+
 jump_indirect_offset: macro P, N
     lda (\P)
     sec
     sbc #\N ; negative offset from code-pointer
     sta cp
     load8 \P,1, cp + 1
-    bcs .\@
+    bcs .skip\@
     dec cp + 1
-.\@:
+.skip\@:
     load16_0 cp, temp
+    cmp #$80
+    bcc .oor\@
     jmp (temp)
+.oor\@:
+    panic 'JIO' ; out of rom
 endmacro
 
 
