@@ -26,6 +26,7 @@
     include speed.s
     include readline.s
     include churn.s
+    include shell.s
 
 ;;; bytes
 heap_end_page = $30
@@ -57,6 +58,7 @@ g_task = $70 ; word
 
 g_current_line_rev_chars = $72 ; list of chars for current line in reverse order
 g_last_line = $74 ; last line as a string
+g_new_command = $76 ; byte (bool)
 
 NUM_SCREENS = 4
 g_screen_pointers = $80
@@ -94,6 +96,7 @@ reset_main:
 
     spawn_readline 0 ; screen
     spawn_churn
+    spawn_shell
 
     lda #speed.size_locals+1
     jsr tasking.create

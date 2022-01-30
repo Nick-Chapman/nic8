@@ -21,7 +21,7 @@ heap_string:
 initial_message_string:
     word .marker
     byte 0 ; size byte not examined for a static string
-    string "readline:"
+    string "readline:" ; never seen any more!
     byte 0 ; null
     word roots_impossible, evac_static, scav_impossible
 .marker:
@@ -134,7 +134,7 @@ rev_print_char_list:
 .tag = 2
 .next = 4
     phx
-    ldx #16
+    ldx #31
     lda #0
     pha ; marker for end of chars to print
 .loop:
@@ -162,6 +162,7 @@ rev_print_char_list:
     jsr screen.putchar
     jmp .loop2
 .done2:
+    print_char ' ' ; blanking if we back-spaced
     plx
     rts
 
@@ -169,6 +170,7 @@ rev_print_char_list:
 ;;; readline...
 
 init_readline: ; global vars
+    stz g_new_command
     store16i initial_message_string, g_last_line
     store16i nil8.static_closure, g_current_line_rev_chars ; TODO: better a task var!
     rts
@@ -237,9 +239,14 @@ readline:
     jsr fill_string_from_rev_char_list ; fill in clo
     ;; TODO: append to list of collected lines not yet processed
     copy16 clo, g_last_line ; for now, previous line is just lost here (and will be GCed)
-    jsr .echo_last_line ; to acia
+    lda #1
+    sta g_new_command
     ;; set current line chars back to empty list
     store16i nil8.static_closure, g_current_line_rev_chars
+    copyFrom8_x .screen, g_selected_screen
+    ;; TODO: should have a clear-screen routine
+    newline
+    newline
     jsr .show
     yield
 
@@ -253,32 +260,9 @@ readline:
 
 .show:
     copyFrom8_x .screen, g_selected_screen
-    newline
-    jsr .print_last_line ; TODO: remove when have command interpreter task
-    newline
+    jsr screen.return_home
     copy16 g_current_line_rev_chars, rev_print_char_list.list
     jsr rev_print_char_list
-    rts
-
-.print_last_line:
-    copy16 g_last_line, temp
-    ;; very inefficient way of incrementing the pointer by 3
-    increment16 temp
-    increment16 temp
-    increment16 temp
-    print_string_variable temp
-    rts
-
-
-.echo_last_line:
-    acia_print_string "run: "
-    copy16 g_last_line, temp
-    ;; very inefficient way of incrementing the pointer by 3
-    increment16 temp
-    increment16 temp
-    increment16 temp
-    acia_print_string_variable temp
-    acia_print_char '\n'
     rts
 
 ;;; ----------------------------------------------------------------------
