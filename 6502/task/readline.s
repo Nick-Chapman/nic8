@@ -129,21 +129,40 @@ fill_string_from_rev_char_list:
     ply
     rts
 
-;; TODO: have max on #chars printed; print in reverse order!
-print_char_list:
+rev_print_char_list:
 .list = 0
 .tag = 2
 .next = 4
+    phx
+    ldx #16
+    lda #0
+    pha ; marker for end of chars to print
 .loop:
     load16 .list,0, .tag
     lda (.tag)
     beq .done
+    dex
+    beq .done
     loadA .list,cons8.head ; char to print
-    jsr screen.putchar
+    pha ; push char to print
     load16 .list,cons8.tail, .next
     copy16 .next, .list
     jmp .loop
 .done:
+    cpx #0
+    bne .no_elipsis
+    print_char '.'
+    jmp .after_prompt
+.no_elipsis:
+    print_char '>'
+.after_prompt:
+.loop2: ; loop back in reverse over the chars to be printed
+    pla
+    beq .done2
+    jsr screen.putchar
+    jmp .loop2
+.done2:
+    plx
     rts
 
 ;;; ----------------------------------------------------------------------
@@ -237,8 +256,8 @@ readline:
     newline
     jsr .print_last_line ; TODO: remove when have command interpreter task
     newline
-    print_string ">"
-    jsr .print_this_line
+    copy16 g_current_line_rev_chars, rev_print_char_list.list
+    jsr rev_print_char_list
     rts
 
 .print_last_line:
@@ -250,10 +269,6 @@ readline:
     print_string_variable temp
     rts
 
-.print_this_line:
-    copy16 g_current_line_rev_chars, print_char_list.list
-    jsr print_char_list
-    rts
 
 .echo_last_line:
     acia_print_string "run: "
