@@ -7,8 +7,9 @@ module main;
 
    initial begin
       for (int i = 0; i <= 255; i++) ram[i] = 'h00;
-      $readmemh("open-count-loop.hex", ram);
-      //$readmemh("fibs-forever.hex", ram);
+      //$readmemh("prog/fibs-forever.hex", ram);
+      //$readmemh("prog/open-count-loop.hex", ram);
+      $readmemh("prog/tight-count-loop.hex", ram);
    end
 
    reg       clk;
@@ -21,9 +22,9 @@ module main;
    always @(clk) if (ticks >= 10000) $finish();
 
    int lines = 0;
-   //always @(posedge clk) #1 begin
    //always @(clk) #1 begin
-   always @(qreg) #1 begin
+   always @(posedge clk) #1 begin
+   //always @(qreg) #1 begin
       if (lines % 10 == 0) begin
          $display("------------------------------------------------------------");
          $display("ticks(edge)  PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
@@ -51,7 +52,7 @@ module main;
    initial pc = 0;
    initial areg = 0;
    initial breg = 0;
-   initial xreg = 0;
+//   initial xreg = 0;
    initial ir = 0;
 //   initial qreg = 0;
 
