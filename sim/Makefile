@@ -1,6 +1,6 @@
 
-top: main.vvp
+top: system.exe
 	./$^
 
-main.vvp: main.v
-	iverilog -s main $< -o $@
+system.exe: system.v
+	iverilog -g2005-sv -s main $< -o $@
