@@ -5,16 +5,20 @@ module main;
 
    reg [7:0] ram [0:255];
 
-   initial $readmemh("fibs-forever.hex", ram);
-   //initial $readmemh("open-count-loop.hex", ram);
+   initial begin
+      for (int i = 0; i <= 255; i++) ram[i] = 'h00;
+      $readmemh("open-count-loop.hex", ram);
+      //$readmemh("fibs-forever.hex", ram);
+   end
 
    reg       clk;
    initial clk = 1;
    always #5 clk = ~clk;
-   always @(clk) if ($time >= 1520) $finish();
 
    int ticks = 0;
    always @(posedge clk) ticks++;
+
+   always @(clk) if (ticks >= 10000) $finish();
 
    int lines = 0;
    //always @(posedge clk) #1 begin
@@ -22,11 +26,11 @@ module main;
    always @(qreg) #1 begin
       if (lines % 10 == 0) begin
          $display("------------------------------------------------------------");
-         $display("tick(edge) PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
+         $display("ticks(edge)  PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
          $display("------------------------------------------------------------");
       end
       lines++;
-      $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
+      $display("%6d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
                ,ticks,(clk?"pos":"neg")
                ,pc,areg,breg,xreg,ir
                ,provideMem,provideAlu,provideA,provideX
