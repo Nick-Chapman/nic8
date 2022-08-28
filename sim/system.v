@@ -9,7 +9,8 @@ module main;
       for (int i = 0; i <= 255; i++) ram[i] = 'h00;
       //$readmemh("prog/fibs-forever.hex", ram);
       //$readmemh("prog/open-count-loop.hex", ram);
-      $readmemh("prog/tight-count-loop.hex", ram);
+      //$readmemh("prog/tight-count-loop.hex", ram);
+      $readmemh("prog/varProg0.hex", ram);
    end
 
    reg       clk;
@@ -65,6 +66,8 @@ module main;
    always @(posedge clk) if (doOut) qreg <= dbus;
 
    always @(posedge clk) ir <= loadIR ? ram[abus] : 0;
+
+   always @(posedge clk) if (storeMem) ram[abus] = dbus;
 
    wire [7:0] dbus;
    assign dbus = provideMem ? ram[abus] : 'z;
