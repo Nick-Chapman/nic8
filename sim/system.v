@@ -5,12 +5,22 @@ module main;
 
    reg [7:0] ram [0:255];
 
+   int steps;
+   initial begin
+     if (! $value$plusargs("steps=%d", steps)) begin
+        $display("ERROR: please specify +steps=<value>.");
+        $finish;
+     end
+   end
+
+   string prog;
    initial begin
       for (int i = 0; i <= 255; i++) ram[i] = 'h00;
-      //$readmemh("prog/fibs-forever.hex", ram);
-      //$readmemh("prog/open-count-loop.hex", ram);
-      //$readmemh("prog/tight-count-loop.hex", ram);
-      $readmemh("prog/varProg0.hex", ram);
+      if (! $value$plusargs("prog=%s", prog)) begin
+         $display("ERROR: please specify +prog=<value>.");
+         $finish;
+      end
+      $readmemh(prog, ram);
    end
 
    reg       clk;
@@ -20,13 +30,14 @@ module main;
    int ticks = 0;
    always @(posedge clk) ticks++;
 
-   always @(clk) if (ticks >= 10000) $finish();
+   always @(clk) if (ticks >= steps) $finish();
 
    int lines = 0;
    //always @(clk) #1 begin
    always @(posedge clk) #1 begin
    //always @(qreg) #1 begin
-      if (lines % 10 == 0) begin
+      //if (lines % 10 == 0) begin
+      if (lines == 0) begin
          $display("------------------------------------------------------------");
          $display("ticks(edge)  PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
          $display("------------------------------------------------------------");
