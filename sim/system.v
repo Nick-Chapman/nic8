@@ -88,12 +88,18 @@ module main;
    wire       doOut = (dest==6);
 
    wire       immediate = ~indexed;
+
+   wire       aIsZero = (areg == 0);
+   wire       flagCarry = 0;
+
+   wire       jumpIfZero = bit6;
+   wire       jumpIfCarry = bit7;
    wire       unconditionalJump = bit6 && bit7;
 
-   wire       jumpControl = unconditionalJump; //TEMP
-   //wire       jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump; //TODO
+   wire       jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
 
-   wire [7:0] aluOut = areg + breg;
+   wire       doSubtract = bit6;
+   wire [7:0] aluOut = doSubtract ? areg - breg : areg + breg;
 
    wire [7:0] abus = immediate?pc:xreg;
 
