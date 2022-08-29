@@ -36,13 +36,13 @@ module main;
 
    task printBar;
       $display("------------------------------------------------------------");
-      $display("time: ticks(^)   PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
+      $display("ticks(^)   PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
       $display("------------------------------------------------------------");
    endtask
 
    task printStatus;
-      $display("%4d: %4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
-               ,$time,ticks,(clk?"pos":"neg")
+      $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
+               ,ticks,(clk?"pos":"neg")
                ,pc,areg,breg,xreg,ir
                ,provideMem,provideAlu,provideA,provideX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
@@ -54,8 +54,8 @@ module main;
 
    reg [7:0] pc = 0;
    reg [7:0] areg = 0;
-   reg [7:0] breg;
-   reg [7:0] xreg;
+   reg [7:0] breg = 0;
+   reg [7:0] xreg = 0;
    reg [7:0] ir = 0;
    reg [7:0] qreg;
 
