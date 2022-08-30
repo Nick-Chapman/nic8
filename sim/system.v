@@ -58,6 +58,7 @@ module main;
    reg [7:0] xreg = 0;
    reg [7:0] ir = 0;
    reg [7:0] qreg;
+   reg       flagCarry = 0;
 
    always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
    always @(posedge clk) if (immediate) pc <= pc + 1;
@@ -67,6 +68,7 @@ module main;
    always @(posedge clk) if (doOut) qreg <= dbus;
    always @(posedge clk) ir <= loadIR ? ram[abus] : 0;
    always @(posedge clk) if (storeMem) ram[abus] = dbus;
+   always @(posedge clk) if (provideAlu) flagCarry = carry;
 
    wire      bit7, bit6;
    wire [1:0] source;
@@ -90,7 +92,6 @@ module main;
    wire       immediate = ~indexed;
 
    wire       aIsZero = (areg == 0);
-   wire       flagCarry = 0;
 
    wire       jumpIfZero = bit6;
    wire       jumpIfCarry = bit7;
@@ -100,6 +101,7 @@ module main;
 
    wire       doSubtract = bit6;
    wire [7:0] aluOut = doSubtract ? areg - breg : areg + breg;
+   wire       carry = doSubtract ? !(breg > areg) : (areg + breg >= 256);
 
    wire [7:0] abus = immediate?pc:xreg;
 
@@ -107,6 +109,6 @@ module main;
    assign dbus = provideMem ? ram[abus] : 'z;
    assign dbus = provideA ? areg : 'z;
    assign dbus = provideX ? xreg : 'z;
-   assign dbus = provideAlu ? aluOut : 'z; //TODO
+   assign dbus = provideAlu ? aluOut : 'z;
 
 endmodule
