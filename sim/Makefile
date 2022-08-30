@@ -14,7 +14,7 @@ reg/%.out: prog/%.hex system.exe Makefile
 	./system.exe +steps=150 +prog=$< > $@
 
 dev: system.exe Makefile
-	./$< +steps=100 +prog=prog/countdownForeverC.hex
+	./$< +steps=250000 +prog=prog/primes.hex
 
 
 system.exe: system.v Makefile
