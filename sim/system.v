@@ -23,7 +23,7 @@ module main;
       $readmemh(prog, ram);
    end
 
-   reg clk = 1;
+   reg clk = 0;
    always #5 clk = ~clk;
 
    int ticks = 0;
