@@ -66,7 +66,7 @@ module main;
    always @(posedge clk) if (loadB) breg <= dbus;
    always @(posedge clk) if (loadX) xreg <= dbus;
    always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) ir <= loadIR ? ram[abus] : 0;
+   always @(posedge clk) ir <= loadIR ? mbus : 0;
    always @(posedge clk) if (storeMem) ram[abus] = dbus;
    always @(posedge clk) if (provideAlu) flagCarry = carry;
 
@@ -104,9 +104,10 @@ module main;
    wire       carry = doSubtract ? !(breg > areg) : (areg + breg >= 256);
 
    wire [7:0] abus = immediate?pc:xreg;
+   wire [7:0] mbus = ram[abus];
 
    wire [7:0] dbus;
-   assign dbus = provideMem ? ram[abus] : 'z;
+   assign dbus = provideMem ? mbus : 'z;
    assign dbus = provideA ? areg : 'z;
    assign dbus = provideX ? xreg : 'z;
    assign dbus = provideAlu ? aluOut : 'z;
