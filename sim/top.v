@@ -1,4 +1,6 @@
 
+`define Control [1:14]
+
 module main;
 
    initial $display("*nic8 simulation*");
@@ -70,7 +72,7 @@ module main;
    assign dbus = provideX ? xreg : 'z;
    assign dbus = provideAlu ? aluOut : 'z;
 
-   wire [1:14] controlBits;
+   wire `Control controlBits;
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire provideMem,provideA,provideX,provideAlu;
@@ -81,63 +83,9 @@ module main;
            immediate,jumpControl,doSubtract
            } = controlBits;
 
-   registers r (clk,loadIR,loadPC,loadA,loadB,loadX,doOut,immediate,jumpControl,provideAlu,carry,
-                dbus,abus,mbus,
+   registers r (clk,controlBits,carry,dbus,abus,mbus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
-endmodule
-
-
-module control (input [7:0] ir, input aIsZero, flagCarry, output [1:14] controlBits);
-   wire [1:14] controlBits =
-               {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
-                provideMem,provideA,provideX,provideAlu,
-                immediate,jumpControl,doSubtract};
-   wire bit7, bit6;
-   wire [1:0] source;
-   wire [2:0] dest;
-   wire indexed;
-   assign {bit7,bit6,source,dest,indexed} = ir;
-   wire provideMem = (source==0);
-   wire provideAlu = (source==1);
-   wire provideA = (source==2);
-   wire provideX = (source==3);
-   wire loadIR = (dest==0);
-   wire loadPC = (dest==1);
-   wire loadA = (dest==2);
-   wire loadX = (dest==3);
-   wire loadB = (dest==4);
-   wire storeMem = (dest==5);
-   wire doOut = (dest==6);
-   wire immediate = ~indexed;
-   wire jumpIfZero = bit6;
-   wire jumpIfCarry = bit7;
-   wire unconditionalJump = bit6 && bit7;
-   wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
-   wire doSubtract = bit6;
-endmodule
-
-
-module registers
-  (input clk, loadIR, loadPC, loadA, loadB, loadX, doOut, immediate, jumpControl, provideAlu, carry,
-   input [7:0] dbus,abus,mbus,
-   output reg [7:0] ir, pc, areg, breg, xreg, qreg,
-   output reg [0:0] flagCarry
-   );
-   initial ir = 0;
-   initial pc = 0;
-   initial areg = 0;
-   initial breg = 0;
-   initial xreg = 0;
-   initial flagCarry = 0;
-   always @(posedge clk) ir <= loadIR ? mbus : 0;
-   always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
-   always @(posedge clk) if (immediate) pc <= pc + 1;
-   always @(posedge clk) if (loadA) areg <= dbus;
-   always @(posedge clk) if (loadB) breg <= dbus;
-   always @(posedge clk) if (loadX) xreg <= dbus;
-   always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) if (provideAlu) flagCarry = carry;
 endmodule
