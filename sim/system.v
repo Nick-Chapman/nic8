@@ -46,7 +46,7 @@ module main;
                ,pc,areg,breg,xreg,ir
                ,provideMem,provideAlu,provideA,provideX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
-               ,immediate,unconditionalJump
+               ,immediate,jumpControl
                ,qreg
                ,abus,dbus
                );
