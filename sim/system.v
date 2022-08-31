@@ -52,23 +52,10 @@ module main;
                );
    endtask
 
-   reg [7:0] pc = 0;
-   reg [7:0] areg = 0;
-   reg [7:0] breg = 0;
-   reg [7:0] xreg = 0;
-   reg [7:0] ir = 0;
-   reg [7:0] qreg;
-   reg       flagCarry = 0;
+   wire [7:0] ir, pc, areg, breg, xreg, qreg;
+   wire flagCarry;
 
-   always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
-   always @(posedge clk) if (immediate) pc <= pc + 1;
-   always @(posedge clk) if (loadA) areg <= dbus;
-   always @(posedge clk) if (loadB) breg <= dbus;
-   always @(posedge clk) if (loadX) xreg <= dbus;
-   always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) ir <= loadIR ? mbus : 0;
    always @(posedge clk) if (storeMem) ram[abus] = dbus;
-   always @(posedge clk) if (provideAlu) flagCarry = carry;
 
    wire      bit7, bit6;
    wire [1:0] source;
@@ -112,4 +99,31 @@ module main;
    assign dbus = provideX ? xreg : 'z;
    assign dbus = provideAlu ? aluOut : 'z;
 
+   registers r
+     (clk,loadIR,loadPC,loadA,loadB,loadX,doOut,immediate,jumpControl,provideAlu,carry,dbus,abus,mbus,
+      ir,pc,areg,breg,xreg,qreg,flagCarry
+      );
+
+endmodule
+
+module registers
+  (input clk, loadIR, loadPC, loadA, loadB, loadX, doOut, immediate, jumpControl,provideAlu,carry,
+   input [7:0]  dbus,abus,mbus,
+   output reg [7:0] ir, pc, areg, breg, xreg, qreg,
+   output reg [0:0] flagCarry
+   );
+   initial ir = 0;
+   initial pc = 0;
+   initial areg = 0;
+   initial breg = 0;
+   initial xreg = 0;
+   initial flagCarry = 0;
+   always @(posedge clk) ir <= loadIR ? mbus : 0;
+   always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
+   always @(posedge clk) if (immediate) pc <= pc + 1;
+   always @(posedge clk) if (loadA) areg <= dbus;
+   always @(posedge clk) if (loadB) breg <= dbus;
+   always @(posedge clk) if (loadX) xreg <= dbus;
+   always @(posedge clk) if (doOut) qreg <= dbus;
+   always @(posedge clk) if (provideAlu) flagCarry = carry;
 endmodule
