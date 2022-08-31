@@ -3,20 +3,6 @@
 
 module main;
 
-   reg [7:0] ram [0:255];
-
-   string prog;
-   initial begin
-      for (int i = 0; i <= 255; i++) ram[i] = 'h00;
-      if (! $value$plusargs("prog=%s", prog)) begin
-         $display("ERROR: please specify +prog=<value>.");
-         $finish;
-      end
-      $readmemh(prog, ram);
-   end
-
-   always @(posedge clk) if (storeMem) ram[abus] = dbus;
-
    reg clk = 0;
    always #5 clk = ~clk;
 
@@ -28,10 +14,8 @@ module main;
    wire       aIsZero = (areg == 0);
 
    wire [7:0] abus = immediate?pc:xreg;
-   wire [7:0] mbus = ram[abus];
-
    wire [7:0] dbus;
-   assign dbus = assertM ? mbus : 'z;
+
    assign dbus = assertE ? aluOut : 'z;
    assign dbus = assertA ? areg : 'z;
    assign dbus = assertX ? xreg : 'z;
@@ -46,9 +30,11 @@ module main;
            assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract} = controlBits[7:14];
 
+   memory mem (clk,assertM,storeMem,abus,dbus);
+
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,abus,dbus);
 
-   registers r (clk,controlBits,carry,dbus,abus,mbus,
+   registers r (clk,controlBits,carry,dbus,abus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);

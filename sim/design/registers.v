@@ -1,6 +1,6 @@
 
 module registers
-  (input clk, input `Control controlBits, input carry, input [7:0] dbus,abus,mbus,
+  (input clk, input `Control controlBits, input carry, input [7:0] dbus,abus,
    output reg [7:0] ir, pc, areg, breg, xreg, qreg, output reg [0:0] flagCarry
    );
 
@@ -20,7 +20,7 @@ module registers
    initial xreg = 0;
    initial flagCarry = 0;
 
-   always @(posedge clk) ir <= loadIR ? mbus : 0;
+   always @(posedge clk) ir <= loadIR ? dbus : 0;
    always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
    always @(posedge clk) if (immediate) pc <= pc + 1;
    always @(posedge clk) if (loadA) areg <= dbus;
