@@ -23,11 +23,11 @@ module monitor
    always @(clk) if (ticks > steps) $finish();
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
-   wire provideMem,provideA,provideX,provideAlu;
+   wire assertM,assertE,assertA,assertX;
    wire immediate,jumpControl,doSubtract;
 
    assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
-           provideMem,provideA,provideX,provideAlu,
+           assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract
            } = controlBits;
 
@@ -41,7 +41,7 @@ module monitor
       $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
                ,ticks,(clk?"pos":"neg")
                ,pc,areg,breg,xreg,ir
-               ,provideMem,provideAlu,provideA,provideX
+               ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
                ,immediate,jumpControl
                ,qreg

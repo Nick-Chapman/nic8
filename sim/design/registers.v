@@ -5,11 +5,11 @@ module registers
    );
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
-   wire provideMem,provideA,provideX,provideAlu;
+   wire assertM,assertE,assertA,assertX;
    wire immediate,jumpControl,doSubtract;
 
    assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
-           provideMem,provideA,provideX,provideAlu,
+           assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract
            } = controlBits;
 
@@ -27,6 +27,6 @@ module registers
    always @(posedge clk) if (loadB) breg <= dbus;
    always @(posedge clk) if (loadX) xreg <= dbus;
    always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) if (provideAlu) flagCarry = carry;
+   always @(posedge clk) if (assertE) flagCarry = carry;
 
 endmodule

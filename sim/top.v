@@ -31,19 +31,19 @@ module main;
    wire [7:0] mbus = ram[abus];
 
    wire [7:0] dbus;
-   assign dbus = provideMem ? mbus : 'z;
-   assign dbus = provideA ? areg : 'z;
-   assign dbus = provideX ? xreg : 'z;
-   assign dbus = provideAlu ? aluOut : 'z;
+   assign dbus = assertM ? mbus : 'z;
+   assign dbus = assertE ? aluOut : 'z;
+   assign dbus = assertA ? areg : 'z;
+   assign dbus = assertX ? xreg : 'z;
 
    wire `Control controlBits;
 
    wire storeMem;
-   wire provideMem,provideA,provideX,provideAlu;
+   wire assertM,assertE,assertA,assertX;
    wire immediate,jumpControl,doSubtract;
 
    assign {storeMem,
-           provideMem,provideA,provideX,provideAlu,
+           assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract} = controlBits[7:14];
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,abus,dbus);
