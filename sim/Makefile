@@ -18,4 +18,4 @@ dev: system.exe Makefile
 
 
 system.exe: system.v Makefile
-	iverilog -g2005-sv -s main $< -o $@
+	iverilog -Wall -g2005-sv -s main $< -o $@
