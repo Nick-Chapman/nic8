@@ -10,12 +10,12 @@ diff:
 	git diff reg
 
 
-reg/%.out: prog/%.hex system.exe Makefile
-	./system.exe +steps=150 +prog=$< > $@
+reg/%.out: prog/%.hex top.exe Makefile
+	vvp ./top.exe +steps=150 +prog=$< > $@
 
-dev: system.exe Makefile
-	./$< +steps=30 +prog=prog/tight-count-loop.hex
+dev: top.exe Makefile
+	vvp $< +steps=30 +prog=prog/tight-count-loop.hex
 
 
-system.exe: system.v Makefile
+top.exe: top.v Makefile
 	iverilog -Wall -g2005-sv -s main $< -o $@
