@@ -13,7 +13,7 @@ module registers
            immediate,jumpControl,doSubtract
            } = controlBits;
 
-   always #1 if (!reset) begin
+   always #1 if (reset) begin
       pc = 0;
       ir = 0;
       areg = 0;
