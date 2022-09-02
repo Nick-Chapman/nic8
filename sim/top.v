@@ -6,7 +6,7 @@ module main;
    reg reset, clk;
    initial reset = 1;
    initial #2 clk = 0;
-   initial #2 reset = 0;
+   initial #3 reset = 0;
    always #5 clk <= ~clk;
 
    wire [7:0] ir,pc,areg,breg,xreg,qreg,abus,dbus,aluOut;
