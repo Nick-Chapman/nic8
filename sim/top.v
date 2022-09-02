@@ -3,8 +3,10 @@
 
 module main;
 
-   reg clk;
-   initial clk = 0;
+   reg reset, clk;
+   initial reset = 0;
+   initial #2 clk = 0;
+   initial #2 reset = 1;
    always #5 clk <= ~clk;
 
    wire [7:0] ir,pc,areg,breg,xreg,qreg,abus,dbus,aluOut;
@@ -29,7 +31,7 @@ module main;
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,abus,dbus);
 
-   registers r (clk,controlBits,carry,dbus,abus,
+   registers r (reset,clk,controlBits,carry,dbus,abus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);
