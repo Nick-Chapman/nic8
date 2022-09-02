@@ -9,15 +9,13 @@ module main;
    initial #3 reset = 0;
    always #5 clk <= ~clk;
 
-   wire [7:0] ir,pc,areg,breg,xreg,qreg,abus,dbus,aluOut;
+   wire [7:0] ir,pc,areg,breg,xreg,qreg,dbus,aluOut;
    wire flagCarry;
    wire `Control controlBits;
    wire storeMem;
    wire assertM,assertE,assertA,assertX;
    wire immediate,jumpControl,doSubtract;
    wire carry, aIsZero;
-
-   assign abus = immediate?pc:xreg;
 
    assign dbus = assertE ? aluOut : 'z;
    assign dbus = assertA ? areg : 'z;
@@ -27,11 +25,12 @@ module main;
            assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract} = controlBits[7:14];
 
-   memory mem (clk,assertM,storeMem,abus,dbus);
+   memory rom (clk,(assertM &&  immediate),1'b0,pc,dbus);
+   memory ram (clk,(assertM && !immediate),storeMem,xreg,dbus);
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
-   registers r (reset,clk,controlBits,carry,dbus,abus,
+   registers r (reset,clk,controlBits,carry,dbus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);
