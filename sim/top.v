@@ -29,7 +29,7 @@ module main;
 
    memory mem (clk,assertM,storeMem,abus,dbus);
 
-   monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,abus,dbus);
+   monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
    registers r (reset,clk,controlBits,carry,dbus,abus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);

@@ -3,7 +3,7 @@ module monitor
   (input clk,
    input [7:0] ir, pc, areg, breg, xreg, qreg,
    input `Control controlBits,
-   input [7:0] abus, dbus
+   input [7:0] dbus
    );
 
    initial $display("*nic8 simulation*");
@@ -34,20 +34,20 @@ module monitor
            } = controlBits;
 
    task printBar;
-      $display("------------------------------------------------------------");
-      $display("ticks(^)   PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT abus/dbus");
-      $display("------------------------------------------------------------");
+      $display("-------------------------------------------------------");
+      $display("ticks(^)   PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT  dbus");
+      $display("-------------------------------------------------------");
    endtask
 
    task printStatus;
-      $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h/%2h"
+      $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h"
                ,ticks,(clk?"pos":"neg")
                ,pc,areg,breg,xreg,ir
                ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
                ,immediate,jumpControl
                ,qreg
-               ,abus,dbus
+               ,dbus
                );
    endtask
 
