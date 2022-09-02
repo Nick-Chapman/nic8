@@ -59,6 +59,7 @@ op2cat = \case
   JXU -> Cat x x FromX ToP x
   JXZ -> Cat o x FromX ToP x
   JXC -> Cat x o FromX ToP x
+  JIU -> Cat x x FromMem ToP o
   ADD -> Cat o o FromAlu ToA x
   ADDB -> Cat o o FromAlu ToB x
   ADDX -> Cat o o FromAlu ToX x
@@ -256,7 +257,7 @@ step state control = do
   let s' = State
         { mem = if storeMem then Map.insert abus dbus mem else mem
         , rIR = if loadIR then dbus else 0
-        , rPC = if loadPC && jumpControl then abus else if immediate then rPC + 1 else rPC
+        , rPC = if loadPC && jumpControl then dbus else if immediate then rPC + 1 else rPC
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX

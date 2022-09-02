@@ -29,6 +29,7 @@ table =
   , ("collatz",collatz)
   , ("varProg1",varProg1)
   , ("varProg0",varProg0)
+  , ("countdownForeverZ",countdownForeverZ)
   , ("varProg0init",varProg0init)
   ]
 
@@ -265,13 +266,13 @@ varProg0init = assemble $ mdo
   la 0x42
   sxa
   loop <- Here
-  loadA v1
-  --lxa
+  --loadA v1
+  lxa
   out
   add
   --storeA v1
   sxa
-  jump loop
+  jump' loop
   --v1 <- variable 0x42
   pure ()
 
@@ -353,7 +354,7 @@ countdownForeverZ = assemble $ do
   out
   jz start
   sub
-  jump loop
+  jump' loop -- using new JIU instruction
 
 countdownForeverC :: [Op]
 countdownForeverC = assemble $ do
