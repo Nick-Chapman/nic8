@@ -24,8 +24,12 @@ table =
   [ ("fibForever",fibForever)
   , ("openCountLoop", openCountLoop)
   , ("tightCountLoop", tightCountLoop)
-  , ("primes",primes True)
+  , ("primesNoInit",primesNoInit)
+  , ("primes",primes False)
   , ("collatz",collatz)
+  , ("varProg1",varProg1)
+  , ("varProg0",varProg0)
+  , ("varProg0init",varProg0init)
   ]
 
 variousInstructions :: [Op]
@@ -253,6 +257,23 @@ varProg0 = assemble $ mdo
   v1 <- variable 17
   pure ()
 
+varProg0init :: [Op] -- dyamic memory initialization, for Harvard
+varProg0init = assemble $ mdo
+  let v1 = 0x99 -- can be anywhere
+  lb 1
+  lx v1
+  la 0x42
+  sxa
+  loop <- Here
+  loadA v1
+  --lxa
+  out
+  add
+  --storeA v1
+  sxa
+  jump loop
+  --v1 <- variable 0x42
+  pure ()
 
 collatz :: [Op]
 collatz = assemble $ mdo

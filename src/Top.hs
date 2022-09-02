@@ -13,11 +13,11 @@ import qualified Dis76489 as Dis (main)
 
 main :: IO ()
 main = do
-  Dis.main
+  let _ = Dis.main
   let _ = Arc.generateSoundData
   let _ = Rom2k.generateAll
-  let _ = Test.run -- regression tests
-  let _ = printAndRunExamples Examples.table
+  Test.run -- regression tests
+  printAndRunExamples Examples.table
   pure ()
 
 printAndRunExamples :: [(String,[Op])] -> IO ()

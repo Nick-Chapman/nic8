@@ -11,6 +11,7 @@ module monitor
 
    //always @(posedge clk) #1 printStatus;
    always @(clk) begin printStatus; #1 printStatus; end
+   //always @(qreg) #1 printStatus;
 
    int steps;
    initial begin

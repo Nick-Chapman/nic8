@@ -13,7 +13,7 @@ reg/%.out: prog/%.hex top.exe Makefile
 	vvp ./top.exe +steps=150 +prog=$< > $@
 
 dev: top.exe Makefile
-	vvp $< +steps=10 +prog=prog/tight-count-loop.hex
+	vvp $< +steps=200000 +prog=prog/primes.hex
 
 vs = $(wildcard *.v design/*.v)
 
