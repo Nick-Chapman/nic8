@@ -24,12 +24,12 @@ module registers
    end
 
    always @(posedge clk) ir <= loadIR ? dbus : 0;
-   always @(posedge clk) if (loadPC && jumpControl) pc <= abus;
-   always @(posedge clk) if (immediate) pc <= pc + 1;
-   always @(posedge clk) if (loadA) areg <= dbus;
-   always @(posedge clk) if (loadB) breg <= dbus;
-   always @(posedge clk) if (loadX) xreg <= dbus;
-   always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) if (assertE) flagCarry = carry;
+   always @(posedge(clk || ~(loadPC && jumpControl))) pc <= abus;
+   always @(posedge(clk || ~immediate)) pc <= pc + 1;
+   always @(posedge(clk || ~loadA)) areg <= dbus;
+   always @(posedge(clk || ~loadB)) breg <= dbus;
+   always @(posedge(clk || ~loadX)) xreg <= dbus;
+   always @(posedge(clk || ~doOut)) qreg <= dbus;
+   always @(posedge(clk || ~assertE)) flagCarry = carry;
 
 endmodule
