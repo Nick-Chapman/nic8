@@ -20,7 +20,7 @@ module monitor
 
    int ticks = 0;
    always @(posedge clk) ticks++;
-   always @(clk) if (ticks > steps) $finish();
+   always #1 if ($time > (10*steps)) $finish();
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire assertM,assertE,assertA,assertX;

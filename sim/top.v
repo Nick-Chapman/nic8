@@ -3,8 +3,9 @@
 
 module main;
 
-   reg clk = 0;
-   always #5 clk = ~clk;
+   reg clk;
+   initial clk = 0;
+   always #5 clk <= ~clk;
 
    wire [7:0] ir,pc,areg,breg,xreg,qreg,abus,dbus,aluOut;
    wire flagCarry;
