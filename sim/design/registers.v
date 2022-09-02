@@ -19,6 +19,7 @@ module registers
       areg = 0;
       breg = 0;
       xreg = 0;
+      qreg = 0;
       flagCarry = 0;
    end
 
