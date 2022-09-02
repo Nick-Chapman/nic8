@@ -30,7 +30,7 @@ module main;
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
-   registers r (reset,clk,controlBits,carry,dbus,
+   registersNET r (reset,clk,controlBits,carry,dbus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);
