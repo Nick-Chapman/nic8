@@ -25,8 +25,8 @@ module main;
            assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract} = controlBits[7:14];
 
-   memory rom (clk,(assertM &&  immediate),1'b0,pc,dbus);
-   memory ram (clk,(assertM && !immediate),storeMem,xreg,dbus);
+   rom prog (    (assertM &&  immediate),         pc,dbus);
+   ram data (clk,(assertM && !immediate),storeMem,xreg,dbus);
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
