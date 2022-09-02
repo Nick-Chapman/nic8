@@ -6,12 +6,16 @@ module monitor
    input [7:0] dbus
    );
 
-   initial $display("*nic8 simulation*");
-   initial printBar;
+   reg verbose;
+   initial verbose = $test$plusargs("verbose");
+
+   initial if (verbose) $display("*nic8 simulation*");
+   initial if (verbose) printBar;
 
    //always @(posedge clk) #1 printStatus;
-   always @(clk) begin printStatus; #1 printStatus; end
-   //always @(qreg) #1 printStatus;
+   always @(clk) if (verbose) begin printStatus; #1 printStatus; end
+
+   always @(qreg) if (!verbose) #1 $display("%03d",qreg);
 
    int steps;
    initial begin
@@ -23,7 +27,7 @@ module monitor
 
    int ticks = 0;
    always @(posedge clk) ticks++;
-   always #1 if ($time > (10*steps)) $finish();
+   always #1 if (verbose) if ($time > (10*steps)) $finish();
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire assertM,assertE,assertA,assertX;

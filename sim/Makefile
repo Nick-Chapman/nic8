@@ -10,7 +10,7 @@ diff:
 	git diff reg
 
 reg/%.out: prog/%.hex top.exe Makefile
-	vvp ./top.exe +steps=150 +prog=$< > $@
+	vvp ./top.exe +steps=150 +prog=$< +verbose > $@
 
 dev: top.exe Makefile
 	vvp $< +steps=200 +prog=prog/countdownForeverZ.hex
