@@ -17,6 +17,7 @@ module monitor
 
    //always @(posedge clk) #1 printStatus;
    always @(clk) if (verbose) begin printStatus; #1 printStatus; end
+   //always @(pc,ir,areg,breg,xreg,qreg) #1 printStatus;
 
    always @(qreg) if (!verbose) #1 $display("%03d",qreg);
 

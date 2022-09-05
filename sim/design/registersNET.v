@@ -18,11 +18,10 @@ module registersNET
 
    always #1 if (reset) begin
       pc = 0;
-      ir = 0;
       flagCarry = 0;
    end
 
-   always @(posedge clk) ir <= loadIR ? dbus : 0;
+   LS273 u0 (.MRB(!reset), .CP(clk), .D(loadIR ? dbus : 8'b0), .Q(ir));
 
    always @(posedge(clk || ~(loadPC && jumpControl))) pc <= dbus;
    always @(posedge(clk || ~immediate)) pc <= pc + 1;
