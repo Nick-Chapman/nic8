@@ -1,3 +1,3 @@
 #!/bin/bash
 
-make top.exe; vvp -n top.exe +change +verbose +steps=5 +prog=$1
+make top.exe; vvp -n top.exe +change +verbose +steps=100 +prog=$1

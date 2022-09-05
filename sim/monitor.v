@@ -51,7 +51,7 @@ module monitor
    wire [1:8] star = " ";
 
    task printStatus;
-      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b%s{%03d}  %s"
+      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%s}  %s"
                ,ticks,(clk?"pos":"neg")
 
                ,show(pc,pc1)
@@ -63,7 +63,7 @@ module monitor
                ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
                ,immediate,jumpControl
-               ,(qreg==qreg1?same:star),qreg
+               ,show(qreg,qreg1)
                ,show(dbus,dbus1)
                );
       snap;
