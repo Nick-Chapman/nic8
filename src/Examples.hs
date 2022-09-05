@@ -21,16 +21,14 @@ import Primes
 
 table :: [(String,[Op])]
 table =
-  [ ("fibForever",fibForever)
-  , ("openCountLoop", openCountLoop)
+  [ ("openCountLoop", openCountLoop)
   , ("tightCountLoop", tightCountLoop)
-  , ("primesNoInit",primesNoInit)
+  , ("fibForever",fibForever)
+  , ("countdownForeverZ",countdownForeverZ)
+  , ("countdownForeverC",countdownForeverC)
+  , ("varProg0init",varProg0init)
   , ("primes",primes False)
   , ("collatz",collatz)
-  , ("varProg1",varProg1)
-  , ("varProg0",varProg0)
-  , ("countdownForeverZ",countdownForeverZ)
-  , ("varProg0init",varProg0init)
   ]
 
 variousInstructions :: [Op]
