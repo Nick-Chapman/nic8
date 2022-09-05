@@ -52,7 +52,7 @@ module monitor
    wire [1:8] star = " ";
 
    task printStatus;
-      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%s}  %s"
+      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %s"
                ,ticks,(clk?"pos":"neg")
 
                ,show(pc,pc1)
@@ -64,7 +64,7 @@ module monitor
                ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
                ,immediate,jumpControl
-               ,show(qreg,qreg1)
+               ,qreg
                ,show(dbus,dbus1)
                );
       snap;
@@ -98,14 +98,13 @@ module monitor
       endcase
    endfunction
 
-   reg [7:0] ir1, pc1, areg1, breg1, xreg1, qreg1, dbus1;
+   reg [7:0] ir1, pc1, areg1, breg1, xreg1, dbus1;
    task snap;
       ir1 = ir;
       pc1 = pc;
       areg1 = areg;
       breg1 = breg;
       xreg1 = xreg;
-      qreg1 = qreg;
       dbus1 = dbus;
    endtask
 
