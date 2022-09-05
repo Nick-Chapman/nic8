@@ -10,7 +10,7 @@ diff:
 	git diff reg
 
 reg/%.out: prog/%.hex top.exe Makefile
-	vvp ./top.exe +steps=150 +prog=$< +verbose > $@
+	vvp ./top.exe +steps=150 +prog=$< +verbose +change > $@
 
 vs = $(wildcard *.v design/*.v)
 
