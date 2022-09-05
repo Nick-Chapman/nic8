@@ -9,6 +9,9 @@ module monitor
    reg verbose;
    initial verbose = $test$plusargs("verbose");
 
+   reg showNoChange; //show no-change info
+   initial showNoChange = $test$plusargs("change");
+
    initial if (verbose) $display("*nic8 simulation*");
    initial if (verbose) printBar;
 
@@ -44,16 +47,65 @@ module monitor
       $display("-------------------------------------------------------");
    endtask
 
+   wire [1:8] same = " ";
+   wire [1:8] star = " ";
+
    task printStatus;
-      $display("%4d(%s)  %2h %2h %2h %2h %2h |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %2h"
+      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b%s{%03d}  %s"
                ,ticks,(clk?"pos":"neg")
-               ,pc,areg,breg,xreg,ir
+
+               ,show(pc,pc1)
+               ,show(areg,areg1)
+               ,show(breg,breg1)
+               ,show(xreg,xreg1)
+               ,show(ir,ir1)
+
                ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
                ,immediate,jumpControl
-               ,qreg
-               ,dbus
+               ,(qreg==qreg1?same:star),qreg
+               ,show(dbus,dbus1)
                );
+      snap;
+   endtask
+
+   function [1:16] show(input [1:8] w, w1);
+      if (showNoChange && (w == w1))
+        show="~~";
+      else
+        show = {hex(w[1:4]),hex(w[5:8])};
+   endfunction
+
+   function [1:8] hex(input [1:4] w);
+      case (w)
+        0: hex="0";
+        1: hex="1";
+        2: hex="2";
+        3: hex="3";
+        4: hex="4";
+        5: hex="5";
+        6: hex="6";
+        7: hex="7";
+        8: hex="8";
+        9: hex="9";
+        10: hex="a";
+        11: hex="b";
+        12: hex="c";
+        13: hex="d";
+        14: hex="e";
+        15: hex="f";
+      endcase
+   endfunction
+
+   reg [7:0] ir1, pc1, areg1, breg1, xreg1, qreg1, dbus1;
+   task snap;
+      ir1 = ir;
+      pc1 = pc;
+      areg1 = areg;
+      breg1 = breg;
+      xreg1 = xreg;
+      qreg1 = qreg;
+      dbus1 = dbus;
    endtask
 
 endmodule
