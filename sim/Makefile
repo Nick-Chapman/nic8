@@ -12,9 +12,6 @@ diff:
 reg/%.out: prog/%.hex top.exe Makefile
 	vvp ./top.exe +steps=150 +prog=$< +verbose > $@
 
-dev: top.exe Makefile
-	vvp $< +steps=200 +prog=prog/countdownForeverZ.hex
-
 vs = $(wildcard *.v design/*.v)
 
 top.exe: $(vs)
