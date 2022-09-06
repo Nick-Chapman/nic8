@@ -1,5 +1,5 @@
 
-module registersNET
+module registers_NET
   (input reset, clk, input `Control controlBits, inout [7:0] dbus,
    output [7:0] areg, breg, xreg, qreg);
 

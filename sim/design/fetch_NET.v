@@ -1,6 +1,6 @@
 
-module fetch_unit_NET(input clk,resetBar,loadBarIR, inout [7:0] dbus,
-                      output [7:0] ir);
+module fetch_NET(input clk,resetBar,loadBarIR, inout [7:0] dbus,
+                 output [7:0] ir);
 
    wire [7:0] dbusOrZero;
 

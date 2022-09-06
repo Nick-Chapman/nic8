@@ -1,6 +1,6 @@
 
-module fetch_unit(input clk,resetBar,loadBarIR, input [7:0] dbus,
-                  output reg [7:0] ir);
+module fetch(input clk,resetBar,loadBarIR, input [7:0] dbus,
+             output reg [7:0] ir);
 
    always #1 if (~resetBar) begin
       ir = 0;

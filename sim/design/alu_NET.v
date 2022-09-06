@@ -1,9 +1,9 @@
 
-module aluNET(input clk, reset, doSubtract, assertBarE,
-           input [7:0] areg, breg,
-           output [7:0] dbus,
-           output aIsZero,
-           output reg [0:0] flagCarry);
+module alu_NET(input clk, reset, doSubtract, assertBarE,
+               input [7:0] areg, breg,
+               output [7:0] dbus,
+               output aIsZero,
+               output reg [0:0] flagCarry);
 
    wire coutLO,coutHI;
    wire [7:0] other,aluOut;

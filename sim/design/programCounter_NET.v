@@ -1,5 +1,5 @@
 
-module programCounterNET
+module programCounter_NET
   (input resetBar, clk, doJumpBar, immediate, input [7:0] dbus,
    output wire [7:0] pc);
 
