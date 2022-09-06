@@ -36,3 +36,16 @@ module LS283 (E2,B2,A2,E1,A1,B1,CIN,COUT,E4,B4,A4,E3,A3,B3);
    assign {COUT,E4,E3,E2,E1} = {A4,A3,A2,A1} + {B4,B3,B2,B1} + CIN;
 
 endmodule
+
+
+module LS86 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
+
+   input A1,A2,A3,A4, B1,B2,B3,B4;
+   output Y1,Y2,Y3,Y4;
+
+   assign Y1 = A1 ^ B1;
+   assign Y2 = A2 ^ B2;
+   assign Y3 = A3 ^ B3;
+   assign Y4 = A4 ^ B4;
+
+endmodule

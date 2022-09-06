@@ -6,11 +6,9 @@ module aluNET(input clk, reset, doSubtract, assertE,
            output reg [0:0] flagCarry);
 
    wire coutLO,coutHI;
-   wire [7:0] aluOut;
+   wire [7:0] other,aluOut;
 
    assign aIsZero = (areg == 0); // TODO: 8-wide nor
-
-   wire [7:0] bin = doSubtract ? ~breg : breg; //TODO: invertor+mux ?
 
    // TODO: replace with latch chip:
    always #1 if (reset) flagCarry = 0;
@@ -18,15 +16,43 @@ module aluNET(input clk, reset, doSubtract, assertE,
 
    LS245 u0 (.ENB(~assertE), .DIR(1'b1), .A(aluOut), .B(dbus));
 
+   LS86 u1
+     (.A1(doSubtract),
+      .A2(doSubtract),
+      .A3(doSubtract),
+      .A4(doSubtract),
+      .B1(breg[0]),
+      .B2(breg[1]),
+      .B3(breg[2]),
+      .B4(breg[3]),
+      .Y1(other[0]),
+      .Y2(other[1]),
+      .Y3(other[2]),
+      .Y4(other[3]));
+
+   LS86 u2
+     (.A1(doSubtract),
+      .A2(doSubtract),
+      .A3(doSubtract),
+      .A4(doSubtract),
+      .B1(breg[4]),
+      .B2(breg[5]),
+      .B3(breg[6]),
+      .B4(breg[7]),
+      .Y1(other[4]),
+      .Y2(other[5]),
+      .Y3(other[6]),
+      .Y4(other[7]));
+
    LS283 lo
      (.A1(areg[0] ),
       .A2(areg[1]),
       .A3(areg[2]),
       .A4(areg[3]),
-      .B1(bin[0]),
-      .B2(bin[1]),
-      .B3(bin[2]),
-      .B4(bin[3]),
+      .B1(other[0]),
+      .B2(other[1]),
+      .B3(other[2]),
+      .B4(other[3]),
       .E1(aluOut[0]),
       .E2(aluOut[1]),
       .E3(aluOut[2]),
@@ -39,10 +65,10 @@ module aluNET(input clk, reset, doSubtract, assertE,
       .A2(areg[5]),
       .A3(areg[6]),
       .A4(areg[7]),
-      .B1(bin[4]),
-      .B2(bin[5]),
-      .B3(bin[6]),
-      .B4(bin[7]),
+      .B1(other[4]),
+      .B2(other[5]),
+      .B3(other[6]),
+      .B4(other[7]),
       .E1(aluOut[4]),
       .E2(aluOut[5]),
       .E3(aluOut[6]),
