@@ -30,7 +30,7 @@ module whole_cpu
    registersNET r (reset,clk,controlBits,dbus,
                 areg,breg,xreg,qreg);
 
-   alu a (clk,reset,doSubtract,assertE,areg,breg,
+   aluNET a (clk,reset,doSubtract,assertE,areg,breg,
           dbus,aIsZero,flagCarry);
 
 endmodule
