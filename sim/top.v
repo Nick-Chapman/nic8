@@ -17,9 +17,7 @@ module top;
               cpu.registers.A.contents,
               cpu.registers.B.contents,
               cpu.registers.X.contents,
-              cpu.registers.Q.contents,
-              cpu.controlBits,
-              cpu.dbus
+              cpu.registers.Q.contents
               );
 
 endmodule

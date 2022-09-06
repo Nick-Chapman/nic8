@@ -1,10 +1,5 @@
 
-module monitor
-  (input clk,
-   input [7:0] pc, ir, areg, breg, xreg, qreg,
-   input `Control controlBits,
-   input [7:0] dbus
-   );
+module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
 
    reg verbose;
    initial verbose = $test$plusargs("verbose");
@@ -33,51 +28,24 @@ module monitor
    always @(posedge clk) ticks++;
    always #1 if (verbose) if ($time > (10*steps)) $finish();
 
-   wire loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem;
-   wire assertBarM,assertBarE,assertBarA,assertBarX;
-   wire immediate,jumpControl,doSubtract,doJump;
-
-   assign {loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem,
-           assertBarM,assertBarE,assertBarA,assertBarX,
-           immediate,doSubtract,doJump
-           } = controlBits;
-
    task printBar;
-      $display("-------------------------------------------------------");
-      $display("ticks(^)   PC AR BR XR IR  MEAX IPAXBMQ  i j  OUT  dbus");
-      $display("-------------------------------------------------------");
+      $display("---------------------------------");
+      $display("ticks (^)   PC AR BR XR IR  {OUT}");
+      $display("---------------------------------");
    endtask
 
    wire [1:8] same = " ";
    wire [1:8] star = " ";
 
    task printStatus;
-      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %s",
+      $display("%5d(%s)  %s %s %s %s %s  {%03d}",
                ticks,(clk?"pos":"neg"),
-
                show(pc,pc1),
                show(areg,areg1),
                show(breg,breg1),
                show(xreg,xreg1),
                show(ir,ir1),
-
-               ~assertBarM,
-               ~assertBarE,
-               ~assertBarA,
-               ~assertBarX,
-
-               loadIR,
-               loadPC,
-               loadA,
-               loadX,
-               loadB,
-               storeMem,
-               loadQ,
-
-               immediate,doJump,
-               qreg,
-               show(dbus,dbus1)
-               );
+               qreg);
       snap;
    endtask
 
@@ -109,14 +77,13 @@ module monitor
       endcase
    endfunction
 
-   reg [7:0] ir1, pc1, areg1, breg1, xreg1, dbus1;
+   reg [7:0] ir1, pc1, areg1, breg1, xreg1;
    task snap;
       ir1 = ir;
       pc1 = pc;
       areg1 = areg;
       breg1 = breg;
       xreg1 = xreg;
-      dbus1 = dbus;
    endtask
 
 endmodule
