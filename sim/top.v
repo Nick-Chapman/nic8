@@ -1,5 +1,5 @@
 
-`define Control [1:14]
+`define Control [1:15]
 
 module main;
 
@@ -30,7 +30,7 @@ module main;
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
-   registersNET r (reset,clk,controlBits,carry,dbus,
+   registers r (reset,clk,controlBits,carry,dbus,
                 ir,pc,areg,breg,xreg,qreg,flagCarry);
 
    control c (ir,aIsZero,flagCarry,controlBits);

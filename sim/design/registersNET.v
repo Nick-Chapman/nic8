@@ -9,11 +9,11 @@ module registersNET
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire assertM,assertE,assertA,assertX;
-   wire immediate,jumpControl,doSubtract;
+   wire immediate,jumpControl,doSubtract,doJump;
 
    assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
            assertM,assertE,assertA,assertX,
-           immediate,jumpControl,doSubtract
+           immediate,jumpControl,doSubtract,doJump
            } = controlBits;
 
    always #1 if (reset) begin
@@ -22,8 +22,6 @@ module registersNET
    end
 
    LS273 u0 (.MRB(!reset), .CP(clk), .D(loadIR ? dbus : 8'b0), .Q(ir));
-
-   wire doJump = loadPC && jumpControl;
 
    always @(posedge(clk || ~doJump),
             posedge(clk || ~immediate))

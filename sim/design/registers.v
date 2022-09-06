@@ -6,11 +6,11 @@ module registers
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire assertM,assertE,assertA,assertX;
-   wire immediate,jumpControl,doSubtract;
+   wire immediate,jumpControl,doSubtract,doJump;
 
    assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
            assertM,assertE,assertA,assertX,
-           immediate,jumpControl,doSubtract
+           immediate,jumpControl,doSubtract,doJump
            } = controlBits;
 
    always #1 if (reset) begin
@@ -24,8 +24,6 @@ module registers
    end
 
    always @(posedge clk) ir <= loadIR ? dbus : 0;
-
-   wire doJump = loadPC && jumpControl;
 
    always @(posedge(clk)) begin
       if (doJump) pc <= dbus;
