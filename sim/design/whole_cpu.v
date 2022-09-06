@@ -11,6 +11,9 @@ module whole_cpu (input clk, reset);
    wire assertBarM,assertBarE,assertBarA,assertBarX;
    wire immediate,doSubtract,doJump;
 
+   wire clkBar = ~clk;
+   wire resetBar = ~reset;
+
    wire _;
    assign {loadIR,_,_,_,_,_,storeMem,
            assertBarM,assertBarE,_,_,
@@ -20,15 +23,16 @@ module whole_cpu (input clk, reset);
    rom prog (    (~assertBarM &&  immediate),         pc,dbus);
    ram data (clk,(~assertBarM && !immediate),storeMem,xreg,dbus);
 
-   programCounter`suff p (~reset,clk,~doJump,immediate,dbus,pc);
+   programCounter`suff p (resetBar,clk,~doJump,immediate,dbus,pc);
 
-   fetch`suff f (clk,~reset,~loadIR,dbus,ir);
+   fetch`suff f (clk,resetBar,~loadIR,dbus,ir);
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
-   registers`suff registers (reset,clk,controlBits,dbus,areg,breg,xreg,qreg);
+   registers`suff registers
+     (clkBar,resetBar,controlBits,dbus,areg,breg,xreg,qreg);
 
-   alu`suff a (clk,reset,doSubtract,assertBarE,areg,breg,
-               dbus,aIsZero,flagCarry);
+   alu`suff a
+     (clk,reset,doSubtract,assertBarE,areg,breg,dbus,aIsZero,flagCarry);
 
 endmodule

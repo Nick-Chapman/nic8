@@ -1,6 +1,6 @@
 
 module registers
-  (input reset, clk, input `Control controlBits, inout [7:0] dbus,
+  (input clkBar, resetBar, input `Control controlBits, inout [7:0] dbus,
    output [7:0] areg, breg, xreg, qreg);
 
    wire _;
@@ -11,10 +11,10 @@ module registers
            _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
 
-   GPR A(clk,reset,loadA,dbus,areg);
-   GPR B(clk,reset,loadB,dbus,breg);
-   GPR X(clk,reset,loadX,dbus,xreg);
-   GPR Q(clk,reset,loadQ,dbus,qreg);
+   GPR A(~clkBar,~resetBar,loadA,dbus,areg);
+   GPR B(~clkBar,~resetBar,loadB,dbus,breg);
+   GPR X(~clkBar,~resetBar,loadX,dbus,xreg);
+   GPR Q(~clkBar,~resetBar,loadQ,dbus,qreg);
 
    assign dbus = ~assertBarA ? areg : 'z;
    assign dbus = ~assertBarX ? xreg : 'z;

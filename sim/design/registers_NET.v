@@ -1,6 +1,6 @@
 
 module registers_NET
-  (input reset, clk, input `Control controlBits, inout [7:0] dbus,
+  (input clkBar, resetBar, input `Control controlBits, inout [7:0] dbus,
    output [7:0] areg, breg, xreg, qreg);
 
    wire _;
@@ -10,8 +10,6 @@ module registers_NET
    assign {_,_,loadA,loadB,loadX,loadQ,_,
            _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
-
-   wire clkBar = ~clk;
 
    wire triggerA, triggerB, triggerX, triggerQ;
 
@@ -31,8 +29,6 @@ module registers_NET
 
    wire assertBarB = 1'b1;
    wire assertBarQ = 1'b1;
-
-   wire resetBar = ~reset;
 
    GPR_NET A(resetBar, assertBarA, triggerA, dbus, areg);
    GPR_NET B(resetBar, assertBarB, triggerB, dbus, breg);
