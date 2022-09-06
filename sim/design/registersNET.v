@@ -1,10 +1,9 @@
 
 module registersNET
   (input reset, clk, input `Control controlBits, input carry, input [7:0] dbus,
-   output [7:0] ir, areg, breg, xreg, qreg, output [0:0] flagCarry
+   output [7:0] areg, breg, xreg, qreg, output [0:0] flagCarry
    );
 
-   reg [7:0] ir;
    reg [0:0] flagCarry;
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
@@ -19,8 +18,6 @@ module registersNET
    always #1 if (reset) begin
       flagCarry = 0;
    end
-
-   LS273 u0 (.MRB(!reset), .CP(clk), .D(loadIR ? dbus : 8'b0), .Q(ir));
 
    always @(posedge(clk || ~assertE)) flagCarry = carry;
 

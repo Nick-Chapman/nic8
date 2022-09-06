@@ -4,17 +4,17 @@ module whole_cpu
    output [7:0] ir, pc, areg, breg, xreg, qreg, dbus,
    output `Control controlBits);
 
-   wire [7:0] ir,pc,areg,breg,xreg,qreg,dbus,aluOut;
+   wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus,aluOut;
    wire flagCarry;
    wire `Control controlBits;
    wire carry, aIsZero;
 
-   wire storeMem;
+   wire loadIR,storeMem;
    wire assertM,assertE,assertA,assertX;
    wire immediate,doSubtract,doJump;
 
    wire _;
-   assign {_,_,_,_,_,_,storeMem,
+   assign {loadIR,_,_,_,_,_,storeMem,
            assertM,assertE,assertA,assertX,
            immediate,_,doSubtract,doJump
            } = controlBits;
@@ -28,12 +28,13 @@ module whole_cpu
 
    programCounterNET p (reset,clk,doJump,immediate,dbus,pc);
 
-   registers r (reset,clk,controlBits,carry,dbus,
-                ir,areg,breg,xreg,qreg,flagCarry);
+   fetch_unit f (clk,reset,loadIR,dbus,ir);
 
    control c (ir,aIsZero,flagCarry,controlBits);
+
+   registers r (reset,clk,controlBits,carry,dbus,
+                areg,breg,xreg,qreg,flagCarry);
 
    alu a (areg,breg,doSubtract,aluOut,carry,aIsZero);
 
 endmodule
-
