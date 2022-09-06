@@ -17,7 +17,7 @@ module registersNET
    LS273 u3 (.MRB(!reset), .CP(clk || ~loadX), .D(dbus), .Q(xreg));
    LS273 u4 (.MRB(!reset), .CP(clk || ~doOut), .D(dbus), .Q(qreg));
 
-   assign dbus = assertA ? areg : 'z;
-   assign dbus = assertX ? xreg : 'z;
+   LS245 u5 (.ENB(~assertA), .DIR(1'b1), .A(areg), .B(dbus));
+   LS245 u6 (.ENB(~assertX), .DIR(1'b1), .A(xreg), .B(dbus));
 
 endmodule

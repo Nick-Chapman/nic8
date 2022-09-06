@@ -18,3 +18,11 @@ module LS161(input CLRB,CLK,A,B,C,D,ENP,LOADB,ENT,
    assign CO = &{QD,QC,QB,QA,ENT};
 
 endmodule
+
+
+module LS245(input ENB,DIR, inout [7:0] A,B);
+
+   assign A = ~ENB & ~DIR ? B : 8'bz;
+   assign B = ~ENB &  DIR ? A : 8'bz;
+
+endmodule
