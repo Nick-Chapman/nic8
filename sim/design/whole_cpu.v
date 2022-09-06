@@ -15,7 +15,8 @@ module whole_cpu (input clk, reset);
    wire resetBar = ~reset;
 
    wire _;
-   assign {loadIR,_,_,_,_,_,storeMem,
+   assign {loadIR,_,storeMem,
+           _,_,_,_,
            assertBarM,assertBarE,_,_,
            immediate,doSubtract,doJump
            } = controlBits;
@@ -27,7 +28,7 @@ module whole_cpu (input clk, reset);
 
    fetch`suff f (clk,resetBar,~loadIR,dbus,ir);
 
-   control c (ir,aIsZero,flagCarry,controlBits);
+   control c (ir,clk,aIsZero,flagCarry,controlBits);
 
    registers`suff registers
      (clkBar,resetBar,controlBits,dbus,areg,breg,xreg,qreg);

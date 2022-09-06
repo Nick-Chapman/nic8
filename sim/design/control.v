@@ -1,7 +1,9 @@
 
-module control (input [7:0] ir, input aIsZero, flagCarry, output `Control controlBits);
+module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
-        {loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem,
+        {loadIR,loadPC,
+         storeMem,
+         triggerA,triggerB,triggerX,triggerQ,
          assertBarM,assertBarE,assertBarA,assertBarX,
          immediate,doSubtract,doJump};
    wire bit7, bit6;
@@ -27,4 +29,24 @@ module control (input [7:0] ir, input aIsZero, flagCarry, output `Control contro
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
    wire doSubtract = bit6;
    wire doJump = loadPC && jumpControl;
+
+   wire triggerA = ~(~clk & loadA);
+   wire triggerB = ~(~clk & loadB);
+   wire triggerX = ~(~clk & loadX);
+   wire triggerQ = ~(~clk & loadQ);
+
+   /*LS00 u1
+     (.A1(clkBar),
+      .A2(clkBar),
+      .A3(clkBar),
+      .A4(clkBar),
+      .B1(loadA),
+      .B2(loadB),
+      .B3(loadX),
+      .B4(loadQ),
+      .Y1(triggerA),
+      .Y2(triggerB),
+      .Y3(triggerX),
+      .Y4(triggerQ));*/
+
 endmodule

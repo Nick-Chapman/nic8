@@ -4,28 +4,30 @@ module registers
    output [7:0] areg, breg, xreg, qreg);
 
    wire _;
-   wire loadA,loadB,loadX,loadQ;
+   wire triggerA, triggerB, triggerX, triggerQ;
    wire assertBarA,assertBarX;
 
-   assign {_,_,loadA,loadB,loadX,loadQ,_,
+   assign {_,_,_,
+           triggerA,triggerB,triggerX,triggerQ,
            _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
 
-   GPR A(~clkBar,~resetBar,loadA,dbus,areg);
-   GPR B(~clkBar,~resetBar,loadB,dbus,breg);
-   GPR X(~clkBar,~resetBar,loadX,dbus,xreg);
-   GPR Q(~clkBar,~resetBar,loadQ,dbus,qreg);
+   wire clk = ~clkBar;
+
+   GPR A(~resetBar,triggerA,dbus,areg);
+   GPR B(~resetBar,triggerB,dbus,breg);
+   GPR X(~resetBar,triggerX,dbus,xreg);
+   GPR Q(~resetBar,triggerQ,dbus,qreg);
 
    assign dbus = ~assertBarA ? areg : 'z;
    assign dbus = ~assertBarX ? xreg : 'z;
 
 endmodule
 
-module GPR(input clk,reset,load,
-           input [7:0] data,
+module GPR(input reset,trigger, input [7:0] data,
            output reg [7:0] contents);
 
    always #1 if (reset) contents = 0;
-   always @(posedge clk) if (load) contents <= data;
+   always @(posedge trigger) contents <= data;
 
 endmodule
