@@ -23,7 +23,7 @@ module whole_cpu
 
    programCounterNET p (reset,clk,doJump,immediate,dbus,pc);
 
-   fetch_unit f (clk,reset,loadIR,dbus,ir);
+   fetch_unit_NET f (clk,reset,loadIR,dbus,ir);
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
