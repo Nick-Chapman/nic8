@@ -13,10 +13,4 @@ module programCounter
       else if (immediate) pc <= pc + 1;
    end
 
-/*
-   always @(posedge(clk || ~doJump),
-            posedge(clk || ~immediate))
-     pc <=  doJump ? dbus : pc + 1;
-*/
-
 endmodule

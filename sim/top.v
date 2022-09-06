@@ -32,7 +32,7 @@ module main;
 
    monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
 
-   programCounter p (reset,clk,doJump,immediate,dbus,pc);
+   programCounterNET p (reset,clk,doJump,immediate,dbus,pc);
 
    registers r (reset,clk,controlBits,carry,dbus,
                 ir,areg,breg,xreg,qreg,flagCarry);
