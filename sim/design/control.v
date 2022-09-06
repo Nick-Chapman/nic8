@@ -1,7 +1,7 @@
 
 module control (input [7:0] ir, input aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
-        {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
+        {loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem,
          assertM,assertE,assertA,assertX,
          immediate,doSubtract,doJump};
    wire bit7, bit6;
@@ -19,7 +19,7 @@ module control (input [7:0] ir, input aIsZero, flagCarry, output `Control contro
    wire loadX = (dest==3);
    wire loadB = (dest==4);
    wire storeMem = (dest==5);
-   wire doOut = (dest==6);
+   wire loadQ = (dest==6);
    wire immediate = ~indexed;
    wire jumpIfZero = bit6;
    wire jumpIfCarry = bit7;

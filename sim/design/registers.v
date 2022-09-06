@@ -3,14 +3,13 @@ module registers
   (input reset, clk, input `Control controlBits, inout [7:0] dbus,
    output reg [7:0] areg, breg, xreg, qreg);
 
-   wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
-   wire assertM,assertE,assertA,assertX;
-   wire immediate,doSubtract,doJump;
+   wire _;
+   wire loadA,loadB,loadX,loadQ;
+   wire assertA,assertX;
 
-   assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
-           assertM,assertE,assertA,assertX,
-           immediate,doSubtract,doJump
-           } = controlBits;
+   assign {_,_,loadA,loadB,loadX,loadQ,_,
+           _,_,assertA,assertX,
+           _,_,_} = controlBits;
 
    always #1 if (reset) begin
       areg = 0;
@@ -22,7 +21,7 @@ module registers
    always @(posedge clk) if (loadA) areg <= dbus;
    always @(posedge clk) if (loadB) breg <= dbus;
    always @(posedge clk) if (loadX) xreg <= dbus;
-   always @(posedge clk) if (doOut) qreg <= dbus;
+   always @(posedge clk) if (loadQ) qreg <= dbus;
 
    assign dbus = assertA ? areg : 'z;
    assign dbus = assertX ? xreg : 'z;
