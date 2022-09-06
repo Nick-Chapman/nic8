@@ -39,7 +39,7 @@ module monitor
 
    assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
            assertM,assertE,assertA,assertX,
-           immediate,jumpControl,doSubtract,doJump
+           immediate,doSubtract,doJump
            } = controlBits;
 
    task printBar;

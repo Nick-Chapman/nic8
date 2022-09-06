@@ -3,7 +3,7 @@ module control (input [7:0] ir, input aIsZero, flagCarry, output `Control contro
    wire `Control controlBits =
         {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
          assertM,assertE,assertA,assertX,
-         immediate,jumpControl,doSubtract,doJump};
+         immediate,doSubtract,doJump};
    wire bit7, bit6;
    wire [1:0] source;
    wire [2:0] dest;

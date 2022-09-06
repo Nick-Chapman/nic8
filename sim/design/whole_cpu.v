@@ -15,7 +15,7 @@ module whole_cpu
    wire _;
    assign {loadIR,_,_,_,_,_,storeMem,
            assertM,assertE,assertA,assertX,
-           immediate,_,doSubtract,doJump
+           immediate,doSubtract,doJump
            } = controlBits;
 
    assign dbus = assertE ? aluOut : 'z;
