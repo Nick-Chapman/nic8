@@ -15,4 +15,4 @@ reg/%.out: prog/%.hex top.exe Makefile
 vs = $(wildcard *.v design/*.v)
 
 top.exe: $(vs)
-	iverilog $^ -Wall -g2005-sv -s main -o $@ 2>&1 | diff /dev/null - || rm $@
+	iverilog $^ -Wall -g2005-sv -s top -o $@ 2>&1 | diff /dev/null - || rm $@
