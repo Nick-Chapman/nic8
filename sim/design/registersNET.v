@@ -23,8 +23,12 @@ module registersNET
 
    LS273 u0 (.MRB(!reset), .CP(clk), .D(loadIR ? dbus : 8'b0), .Q(ir));
 
-   always @(posedge(clk || ~(loadPC && jumpControl))) pc <= dbus;
-   always @(posedge(clk || ~immediate)) pc <= pc + 1;
+   wire doJump = loadPC && jumpControl;
+
+   always @(posedge(clk || ~doJump),
+            posedge(clk || ~immediate))
+     pc <=  doJump ? dbus : pc + 1;
+
    always @(posedge(clk || ~assertE)) flagCarry = carry;
 
    LS273 u1 (.MRB(!reset), .CP(clk || ~loadA), .D(dbus), .Q(areg));
