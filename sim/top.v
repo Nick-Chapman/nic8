@@ -9,10 +9,17 @@ module top;
    initial #3 reset = 0;
    always #5 clk <= ~clk;
 
-   wire [7:0] ir,pc,areg,breg,xreg,qreg,dbus;
-   wire `Control controlBits;
+   whole_cpu cpu (clk,reset);
 
-   whole_cpu c (clk,reset,ir,pc,areg,breg,xreg,qreg,dbus,controlBits);
-   monitor m (clk,ir,pc,areg,breg,xreg,qreg,controlBits,dbus);
+   monitor m (clk,
+              cpu.pc,
+              cpu.ir,
+              cpu.registers.A.contents,
+              cpu.registers.B.contents,
+              cpu.registers.X.contents,
+              cpu.registers.Q.contents,
+              cpu.controlBits,
+              cpu.dbus
+              );
 
 endmodule

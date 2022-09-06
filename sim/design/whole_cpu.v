@@ -1,8 +1,5 @@
 
-module whole_cpu
-  (input clk, reset,
-   output [7:0] ir, pc, areg, breg, xreg, qreg, dbus,
-   output `Control controlBits);
+module whole_cpu (input clk, reset);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire `Control controlBits;
@@ -27,10 +24,9 @@ module whole_cpu
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
-   registersNET r (reset,clk,controlBits,dbus,
-                areg,breg,xreg,qreg);
+   registersNET registers (reset,clk,controlBits,dbus,areg,breg,xreg,qreg);
 
    aluNET a (clk,reset,doSubtract,assertE,areg,breg,
-          dbus,aIsZero,flagCarry);
+             dbus,aIsZero,flagCarry);
 
 endmodule

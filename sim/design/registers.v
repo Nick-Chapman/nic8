@@ -1,7 +1,7 @@
 
 module registers
   (input reset, clk, input `Control controlBits, inout [7:0] dbus,
-   output reg [7:0] areg, breg, xreg, qreg);
+   output [7:0] areg, breg, xreg, qreg);
 
    wire _;
    wire loadA,loadB,loadX,loadQ;
@@ -11,19 +11,21 @@ module registers
            _,_,assertA,assertX,
            _,_,_} = controlBits;
 
-   always #1 if (reset) begin
-      areg = 0;
-      breg = 0;
-      xreg = 0;
-      qreg = 0;
-   end
-
-   always @(posedge clk) if (loadA) areg <= dbus;
-   always @(posedge clk) if (loadB) breg <= dbus;
-   always @(posedge clk) if (loadX) xreg <= dbus;
-   always @(posedge clk) if (loadQ) qreg <= dbus;
+   GPR A(clk,reset,loadA,dbus,areg);
+   GPR B(clk,reset,loadB,dbus,breg);
+   GPR X(clk,reset,loadX,dbus,xreg);
+   GPR Q(clk,reset,loadQ,dbus,qreg);
 
    assign dbus = assertA ? areg : 'z;
    assign dbus = assertX ? xreg : 'z;
+
+endmodule
+
+module GPR(input clk,reset,load,
+           input [7:0] data,
+           output reg [7:0] contents);
+
+   always #1 if (reset) contents = 0;
+   always @(posedge clk) if (load) contents <= data;
 
 endmodule

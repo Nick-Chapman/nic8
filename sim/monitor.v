@@ -1,7 +1,7 @@
 
 module monitor
   (input clk,
-   input [7:0] ir, pc, areg, breg, xreg, qreg,
+   input [7:0] pc, ir, areg, breg, xreg, qreg,
    input `Control controlBits,
    input [7:0] dbus
    );
