@@ -11,10 +11,23 @@ module registersNET
            _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
 
-   wire triggerA = clk || ~loadA;
-   wire triggerB = clk || ~loadB;
-   wire triggerX = clk || ~loadX;
-   wire triggerQ = clk || ~loadQ;
+   wire clkBar = ~clk;
+
+   wire triggerA, triggerB, triggerX, triggerQ;
+
+   LS00 u1
+     (.A1(clkBar),
+      .A2(clkBar),
+      .A3(clkBar),
+      .A4(clkBar),
+      .B1(loadA),
+      .B2(loadB),
+      .B3(loadX),
+      .B4(loadQ),
+      .Y1(triggerA),
+      .Y2(triggerB),
+      .Y3(triggerX),
+      .Y4(triggerQ));
 
    wire assertBarB = 1'b1;
    wire assertBarQ = 1'b1;
