@@ -1,7 +1,7 @@
 
 module registers
   (input reset, clk, input `Control controlBits, input carry, input [7:0] dbus,
-   output reg [7:0] ir, pc, areg, breg, xreg, qreg, output reg [0:0] flagCarry
+   output reg [7:0] ir, areg, breg, xreg, qreg, output reg [0:0] flagCarry
    );
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
@@ -14,7 +14,6 @@ module registers
            } = controlBits;
 
    always #1 if (reset) begin
-      pc = 0;
       ir = 0;
       areg = 0;
       breg = 0;
@@ -24,11 +23,6 @@ module registers
    end
 
    always @(posedge clk) ir <= loadIR ? dbus : 0;
-
-   always @(posedge(clk)) begin
-      if (doJump) pc <= dbus;
-      else if (immediate) pc <= pc + 1;
-   end
 
    always @(posedge clk) if (loadA) areg <= dbus;
    always @(posedge clk) if (loadB) breg <= dbus;
