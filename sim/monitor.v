@@ -63,7 +63,7 @@ module monitor
 
                ,assertM,assertE,assertA,assertX
                ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
-               ,immediate,jumpControl
+               ,immediate,doJump
                ,qreg
                ,show(dbus,dbus1)
                );
