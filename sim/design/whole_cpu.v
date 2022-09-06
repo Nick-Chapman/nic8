@@ -4,7 +4,7 @@ module whole_cpu
    output [7:0] ir, pc, areg, breg, xreg, qreg, dbus,
    output `Control controlBits);
 
-   wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus,aluOut;
+   wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire `Control controlBits;
    wire aIsZero,flagCarry;
 
@@ -14,13 +14,9 @@ module whole_cpu
 
    wire _;
    assign {loadIR,_,_,_,_,_,storeMem,
-           assertM,assertE,assertA,assertX,
+           assertM,assertE,_,_,
            immediate,doSubtract,doJump
            } = controlBits;
-
-   assign dbus = assertE ? aluOut : 'z;
-   assign dbus = assertA ? areg : 'z;
-   assign dbus = assertX ? xreg : 'z;
 
    rom prog (    (assertM &&  immediate),         pc,dbus);
    ram data (clk,(assertM && !immediate),storeMem,xreg,dbus);
@@ -31,10 +27,10 @@ module whole_cpu
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
-   registers r (reset,clk,controlBits,dbus,
+   registersNET r (reset,clk,controlBits,dbus,
                 areg,breg,xreg,qreg);
 
    alu a (clk,reset,doSubtract,assertE,areg,breg,
-          aluOut,aIsZero,flagCarry);
+          dbus,aIsZero,flagCarry);
 
 endmodule

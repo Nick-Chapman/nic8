@@ -1,10 +1,13 @@
 
 module alu(input clk, reset, doSubtract, assertE,
            input [7:0] areg, breg,
-           output [7:0] aluOut, output aIsZero,
+           output [7:0] dbus,
+           output aIsZero,
            output reg [0:0] flagCarry);
 
-   assign aluOut = doSubtract ? areg - breg : areg + breg;
+   wire [7:0] aluOut = doSubtract ? areg - breg : areg + breg;
+   assign dbus = assertE ? aluOut : 'z;
+
    assign aIsZero = (areg == 0);
 
    wire carry = doSubtract ? !(breg > areg) : (areg + breg >= 256);
