@@ -45,7 +45,7 @@ module aluNET(input clk, reset, doSubtract, assertBarE,
       .Y4(other[7]));
 
    LS283 lo
-     (.A1(areg[0] ),
+     (.A1(areg[0]),
       .A2(areg[1]),
       .A3(areg[2]),
       .A4(areg[3]),

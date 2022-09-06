@@ -18,9 +18,9 @@ module whole_cpu (input clk, reset);
    rom prog (    (~assertBarM &&  immediate),         pc,dbus);
    ram data (clk,(~assertBarM && !immediate),storeMem,xreg,dbus);
 
-   programCounterNET p (reset,clk,doJump,immediate,dbus,pc);
+   programCounterNET p (~reset,clk,~doJump,immediate,dbus,pc);
 
-   fetch_unit_NET f (clk,reset,loadIR,dbus,ir);
+   fetch_unit_NET f (clk,~reset,~loadIR,dbus,ir);
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
