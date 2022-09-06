@@ -11,12 +11,17 @@ module registersNET
            _,_,assertA,assertX,
            _,_,_} = controlBits;
 
-   LS273 u1 (.MRB(!reset), .CP(clk || ~loadA), .D(dbus), .Q(areg));
-   LS273 u2 (.MRB(!reset), .CP(clk || ~loadB), .D(dbus), .Q(breg));
-   LS273 u3 (.MRB(!reset), .CP(clk || ~loadX), .D(dbus), .Q(xreg));
-   LS273 u4 (.MRB(!reset), .CP(clk || ~loadQ), .D(dbus), .Q(qreg));
+   wire triggerA = clk || ~loadA;
+   wire triggerB = clk || ~loadB;
+   wire triggerX = clk || ~loadX;
+   wire triggerQ = clk || ~loadQ;
 
-   LS245 u5 (.ENB(~assertA), .DIR(1'b1), .A(areg), .B(dbus));
-   LS245 u6 (.ENB(~assertX), .DIR(1'b1), .A(xreg), .B(dbus));
+   wire assertB = 1'b0;
+   wire assertQ = 1'b0;
+
+   GPR_NET A(reset, ~assertA, triggerA, dbus, areg);
+   GPR_NET B(reset, ~assertB, triggerB, dbus, breg);
+   GPR_NET X(reset, ~assertX, triggerX, dbus, xreg);
+   GPR_NET Q(reset, ~assertQ, triggerQ, dbus, qreg);
 
 endmodule
