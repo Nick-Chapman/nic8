@@ -1,10 +1,8 @@
 
 module registersNET
-  (input reset, clk, input `Control controlBits, input carry, input [7:0] dbus,
-   output [7:0] areg, breg, xreg, qreg, output [0:0] flagCarry
+  (input reset, clk, input `Control controlBits, input [7:0] dbus,
+   output [7:0] areg, breg, xreg, qreg
    );
-
-   reg [0:0] flagCarry;
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
    wire assertM,assertE,assertA,assertX;
@@ -14,12 +12,6 @@ module registersNET
            assertM,assertE,assertA,assertX,
            immediate,jumpControl,doSubtract,doJump
            } = controlBits;
-
-   always #1 if (reset) begin
-      flagCarry = 0;
-   end
-
-   always @(posedge(clk || ~assertE)) flagCarry = carry;
 
    LS273 u1 (.MRB(!reset), .CP(clk || ~loadA), .D(dbus), .Q(areg));
    LS273 u2 (.MRB(!reset), .CP(clk || ~loadB), .D(dbus), .Q(breg));

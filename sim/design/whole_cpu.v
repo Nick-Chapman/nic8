@@ -5,9 +5,8 @@ module whole_cpu
    output `Control controlBits);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus,aluOut;
-   wire flagCarry;
    wire `Control controlBits;
-   wire carry, aIsZero;
+   wire aIsZero,flagCarry;
 
    wire loadIR,storeMem;
    wire assertM,assertE,assertA,assertX;
@@ -32,9 +31,10 @@ module whole_cpu
 
    control c (ir,aIsZero,flagCarry,controlBits);
 
-   registers r (reset,clk,controlBits,carry,dbus,
-                areg,breg,xreg,qreg,flagCarry);
+   registers r (reset,clk,controlBits,dbus,
+                areg,breg,xreg,qreg);
 
-   alu a (areg,breg,doSubtract,aluOut,carry,aIsZero);
+   alu a (clk,reset,doSubtract,assertE,areg,breg,
+          aluOut,aIsZero,flagCarry);
 
 endmodule

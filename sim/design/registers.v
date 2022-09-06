@@ -1,7 +1,7 @@
 
 module registers
-  (input reset, clk, input `Control controlBits, input carry, input [7:0] dbus,
-   output reg [7:0] areg, breg, xreg, qreg, output reg [0:0] flagCarry
+  (input reset, clk, input `Control controlBits, input [7:0] dbus,
+   output reg [7:0] areg, breg, xreg, qreg
    );
 
    wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
@@ -18,13 +18,11 @@ module registers
       breg = 0;
       xreg = 0;
       qreg = 0;
-      flagCarry = 0;
    end
 
    always @(posedge clk) if (loadA) areg <= dbus;
    always @(posedge clk) if (loadB) breg <= dbus;
    always @(posedge clk) if (loadX) xreg <= dbus;
    always @(posedge clk) if (doOut) qreg <= dbus;
-   always @(posedge clk) if (assertE) flagCarry = carry;
 
 endmodule
