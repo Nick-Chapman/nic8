@@ -33,12 +33,12 @@ module monitor
    always @(posedge clk) ticks++;
    always #1 if (verbose) if ($time > (10*steps)) $finish();
 
-   wire loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem;
-   wire assertM,assertE,assertA,assertX;
+   wire loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem;
+   wire assertBarM,assertBarE,assertBarA,assertBarX;
    wire immediate,jumpControl,doSubtract,doJump;
 
-   assign {loadIR,loadPC,loadA,loadB,loadX,doOut,storeMem,
-           assertM,assertE,assertA,assertX,
+   assign {loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem,
+           assertBarM,assertBarE,assertBarA,assertBarX,
            immediate,doSubtract,doJump
            } = controlBits;
 
@@ -52,20 +52,31 @@ module monitor
    wire [1:8] star = " ";
 
    task printStatus;
-      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %s"
-               ,ticks,(clk?"pos":"neg")
+      $display("%4d(%s)  %s %s %s %s %s |%b%b%b%b|%b%b%b%b%b%b%b| %b %b {%03d}  %s",
+               ticks,(clk?"pos":"neg"),
 
-               ,show(pc,pc1)
-               ,show(areg,areg1)
-               ,show(breg,breg1)
-               ,show(xreg,xreg1)
-               ,show(ir,ir1)
+               show(pc,pc1),
+               show(areg,areg1),
+               show(breg,breg1),
+               show(xreg,xreg1),
+               show(ir,ir1),
 
-               ,assertM,assertE,assertA,assertX
-               ,loadIR,loadPC,loadA,loadX,loadB,storeMem,doOut
-               ,immediate,doJump
-               ,qreg
-               ,show(dbus,dbus1)
+               ~assertBarM,
+               ~assertBarE,
+               ~assertBarA,
+               ~assertBarX,
+
+               loadIR,
+               loadPC,
+               loadA,
+               loadX,
+               loadB,
+               storeMem,
+               loadQ,
+
+               immediate,doJump,
+               qreg,
+               show(dbus,dbus1)
                );
       snap;
    endtask

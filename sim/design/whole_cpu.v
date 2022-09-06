@@ -6,17 +6,17 @@ module whole_cpu (input clk, reset);
    wire aIsZero,flagCarry;
 
    wire loadIR,storeMem;
-   wire assertM,assertE,assertA,assertX;
+   wire assertBarM,assertBarE,assertBarA,assertBarX;
    wire immediate,doSubtract,doJump;
 
    wire _;
    assign {loadIR,_,_,_,_,_,storeMem,
-           assertM,assertE,_,_,
+           assertBarM,assertBarE,_,_,
            immediate,doSubtract,doJump
            } = controlBits;
 
-   rom prog (    (assertM &&  immediate),         pc,dbus);
-   ram data (clk,(assertM && !immediate),storeMem,xreg,dbus);
+   rom prog (    (~assertBarM &&  immediate),         pc,dbus);
+   ram data (clk,(~assertBarM && !immediate),storeMem,xreg,dbus);
 
    programCounterNET p (reset,clk,doJump,immediate,dbus,pc);
 
@@ -26,7 +26,7 @@ module whole_cpu (input clk, reset);
 
    registersNET registers (reset,clk,controlBits,dbus,areg,breg,xreg,qreg);
 
-   aluNET a (clk,reset,doSubtract,assertE,areg,breg,
+   aluNET a (clk,reset,doSubtract,assertBarE,areg,breg,
              dbus,aIsZero,flagCarry);
 
 endmodule

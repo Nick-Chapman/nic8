@@ -5,10 +5,10 @@ module registersNET
 
    wire _;
    wire loadA,loadB,loadX,loadQ;
-   wire assertA,assertX;
+   wire assertBarA,assertBarX;
 
    assign {_,_,loadA,loadB,loadX,loadQ,_,
-           _,_,assertA,assertX,
+           _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
 
    wire triggerA = clk || ~loadA;
@@ -16,12 +16,14 @@ module registersNET
    wire triggerX = clk || ~loadX;
    wire triggerQ = clk || ~loadQ;
 
-   wire assertB = 1'b0;
-   wire assertQ = 1'b0;
+   wire assertBarB = 1'b1;
+   wire assertBarQ = 1'b1;
 
-   GPR_NET A(reset, ~assertA, triggerA, dbus, areg);
-   GPR_NET B(reset, ~assertB, triggerB, dbus, breg);
-   GPR_NET X(reset, ~assertX, triggerX, dbus, xreg);
-   GPR_NET Q(reset, ~assertQ, triggerQ, dbus, qreg);
+   wire resetBar = ~reset;
+
+   GPR_NET A(resetBar, assertBarA, triggerA, dbus, areg);
+   GPR_NET B(resetBar, assertBarB, triggerB, dbus, breg);
+   GPR_NET X(resetBar, assertBarX, triggerX, dbus, xreg);
+   GPR_NET Q(resetBar, assertBarQ, triggerQ, dbus, qreg);
 
 endmodule

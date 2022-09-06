@@ -1,5 +1,5 @@
 
-module aluNET(input clk, reset, doSubtract, assertE,
+module aluNET(input clk, reset, doSubtract, assertBarE,
            input [7:0] areg, breg,
            output [7:0] dbus,
            output aIsZero,
@@ -12,9 +12,9 @@ module aluNET(input clk, reset, doSubtract, assertE,
 
    // TODO: replace with latch chip:
    always #1 if (reset) flagCarry = 0;
-   always @(posedge(clk || ~assertE)) flagCarry = coutHI;
+   always @(posedge(clk || assertBarE)) flagCarry = coutHI;
 
-   LS245 u0 (.ENB(~assertE), .DIR(1'b1), .A(aluOut), .B(dbus));
+   LS245 u0 (.ENB(assertBarE), .DIR(1'b1), .A(aluOut), .B(dbus));
 
    LS86 u1
      (.A1(doSubtract),

@@ -5,10 +5,10 @@ module registers
 
    wire _;
    wire loadA,loadB,loadX,loadQ;
-   wire assertA,assertX;
+   wire assertBarA,assertBarX;
 
    assign {_,_,loadA,loadB,loadX,loadQ,_,
-           _,_,assertA,assertX,
+           _,_,assertBarA,assertBarX,
            _,_,_} = controlBits;
 
    GPR A(clk,reset,loadA,dbus,areg);
@@ -16,8 +16,8 @@ module registers
    GPR X(clk,reset,loadX,dbus,xreg);
    GPR Q(clk,reset,loadQ,dbus,qreg);
 
-   assign dbus = assertA ? areg : 'z;
-   assign dbus = assertX ? xreg : 'z;
+   assign dbus = ~assertBarA ? areg : 'z;
+   assign dbus = ~assertBarX ? xreg : 'z;
 
 endmodule
 

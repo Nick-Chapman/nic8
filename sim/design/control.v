@@ -2,17 +2,17 @@
 module control (input [7:0] ir, input aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
         {loadIR,loadPC,loadA,loadB,loadX,loadQ,storeMem,
-         assertM,assertE,assertA,assertX,
+         assertBarM,assertBarE,assertBarA,assertBarX,
          immediate,doSubtract,doJump};
    wire bit7, bit6;
    wire [1:0] source;
    wire [2:0] dest;
    wire indexed;
    assign {bit7,bit6,source,dest,indexed} = ir;
-   wire assertM = (source==0);
-   wire assertE = (source==1);
-   wire assertA = (source==2);
-   wire assertX = (source==3);
+   wire assertBarM = ~(source==0);
+   wire assertBarE = ~(source==1);
+   wire assertBarA = ~(source==2);
+   wire assertBarX = ~(source==3);
    wire loadIR = (dest==0);
    wire loadPC = (dest==1);
    wire loadA = (dest==2);
