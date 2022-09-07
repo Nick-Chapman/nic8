@@ -1,5 +1,5 @@
 
-module ram (input clk, outputEnable, writeEnable,
+module ram (input clk, outputEnable, writeEnableBar,
             input [7:0] addr,
             inout [7:0] data);
 
@@ -7,6 +7,6 @@ module ram (input clk, outputEnable, writeEnable,
 
    assign data = outputEnable ? mem[addr] : 'z;
 
-   always @(posedge clk) if (writeEnable) mem[addr] = data;
+   always @(posedge clk) if (~writeEnableBar) mem[addr] = data;
 
 endmodule

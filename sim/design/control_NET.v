@@ -1,8 +1,7 @@
 
 module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
-        {~loadBarIR,~loadBarPC,
-         ~storeMemBar,
+        {loadBarIR,storeMemBar,
          triggerA,triggerB,triggerX,triggerQ,
          assertBarM,assertBarE,assertBarA,assertBarX,
          immediate,doSubtract,doJump};

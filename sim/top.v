@@ -1,5 +1,5 @@
 
-`define Control [1:14]
+`define Control [1:13]
 
 module top;
 
