@@ -28,7 +28,7 @@ module whole_cpu (input clk, reset);
 
    fetch`suff f (clk,resetBar,~loadIR,dbus,ir);
 
-   control c (ir,clk,aIsZero,flagCarry,controlBits);
+   control`suff c (ir,clk,aIsZero,flagCarry,controlBits);
 
    registers`suff registers
      (clkBar,resetBar,controlBits,dbus,areg,breg,xreg,qreg);

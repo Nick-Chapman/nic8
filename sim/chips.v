@@ -51,6 +51,19 @@ module LS00 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
 endmodule
 
 
+module LS32 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
+
+   input A1,A2,A3,A4, B1,B2,B3,B4;
+   output Y1,Y2,Y3,Y4;
+
+   assign Y1 = A1 | B1;
+   assign Y2 = A2 | B2;
+   assign Y3 = A3 | B3;
+   assign Y4 = A4 | B4;
+
+endmodule
+
+
 module LS86 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
 
    input A1,A2,A3,A4, B1,B2,B3,B4;
@@ -60,5 +73,23 @@ module LS86 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
    assign Y2 = A2 ^ B2;
    assign Y3 = A3 ^ B3;
    assign Y4 = A4 ^ B4;
+
+endmodule
+
+
+module LS138 (input A,B,C,G2A,G2B,G1,
+              output Y7,Y6,Y5,Y4,Y3,Y2,Y1,Y0);
+
+   wire [1:3] select = {C,B,A};
+   wire enable = G1 & ~G2A & ~G2B;
+
+   assign Y0 = ~(enable & (select == 0));
+   assign Y1 = ~(enable & (select == 1));
+   assign Y2 = ~(enable & (select == 2));
+   assign Y3 = ~(enable & (select == 3));
+   assign Y4 = ~(enable & (select == 4));
+   assign Y5 = ~(enable & (select == 5));
+   assign Y6 = ~(enable & (select == 6));
+   assign Y7 = ~(enable & (select == 7));
 
 endmodule
