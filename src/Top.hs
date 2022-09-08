@@ -3,13 +3,14 @@ module Top (main) where
 import Arc (generateSoundData)
 import Asm (Op,Byte)
 import Control.Monad (forM_)
-import Data.List (intercalate)
+import Data.List (intercalate,sortBy)
 import Data.List.Split (chunksOf)
+import Data.Ord (comparing)
 import Text.Printf (printf)
 import qualified Dis76489 as Dis (main)
 import qualified Emu (runCollectOutput,encodeOp)
 import qualified Examples (table)
-import qualified Op (Op(NOP))
+import qualified Op (Op(NOP),allOps)
 import qualified Rom2k (generateAll,pad)
 import qualified Test (run)
 
@@ -20,6 +21,7 @@ main = do
   let _ = Rom2k.generateAll
   let _ = printAndRunExamples Examples.table
   Test.run -- regression tests
+  generateAsmCrib
   assembleExamples Examples.table
   pure ()
 
@@ -38,6 +40,15 @@ printProg name prog = do
     printf "%3d: %08b : (0x%02x) %08b : %s\n" i i b b(show op)
   printf "int program[] = {%s};\n"
     (intercalate ", "(map (\op -> printf "0x%02x" (Emu.encodeOp op) :: String) prog))
+
+generateAsmCrib :: IO ()
+generateAsmCrib = do
+  let filename = "asm.encoding"
+  printf "Generating: %s\n" filename
+  writeFile filename $ unlines
+    [ printf "%02x : %s" b (show op) :: String
+    | (b,op) <- sortBy (comparing fst) [ (Emu.encodeOp op,op) | op <- Op.allOps ]
+    ]
 
 assembleExamples :: [(String,[Op])] -> IO () -- for verilog sim
 assembleExamples examples = do

@@ -1,5 +1,5 @@
 
-module Op (Op(..), Byte) where
+module Op (Op(..), Byte, allOps) where
 
 import Data.Word8 (Word8)
 
@@ -45,3 +45,35 @@ data Op
   -- Misc
   | IMM Byte
   deriving Show
+
+
+allOps :: [Op]
+allOps =
+  [ NOP
+  , LIA
+  , LIB
+  , LIX
+  , LXA
+  , LXB
+  , LXX
+  , SXA
+  , JXU
+  , JXZ
+  , JXC
+  , JIU
+  , ADD
+  , ADDB
+  , ADDX
+  , ADDM
+  , ADDOUT
+  , SUB
+  , SUBB
+  , SUBX
+  , TAB
+  , TAX
+  , TXA
+  , OUT
+  , OUTX
+  , OUTI
+  , OUTM
+  ]
