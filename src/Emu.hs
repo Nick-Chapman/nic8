@@ -55,10 +55,10 @@ op2cat = \case
   LXB -> Cat o o FromDataRam ToB
   LXX -> Cat o o FromDataRam ToX
   SXA -> Cat o o FromA ToDataRam
-  JXU -> Cat x x FromX ToP
+  JXU -> Cat o o FromX ToP
   JXZ -> Cat o x FromX ToP
   JXC -> Cat x o FromX ToP
-  JIU -> Cat x x FromProgRom ToP
+  JIU -> Cat o o FromProgRom ToP
   ADD -> Cat o o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
@@ -193,7 +193,7 @@ cat2control = \case
     let doSubtract = xbit3
     let jumpIfZero = xbit3
     let jumpIfCarry = xbit7
-    let unconditionalJump = xbit3 && xbit7
+    let unconditionalJump = not xbit3 && not xbit7
 
     Control {provideRom,provideRam,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem

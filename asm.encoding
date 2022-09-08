@@ -16,6 +16,8 @@
 42 : TAX
 45 : ADDX
 4d : SUBX
+50 : JIU
+54 : JXU
 5c : JXZ
 60 : OUTI
 61 : OUTM
@@ -23,5 +25,3 @@
 64 : OUTX
 65 : ADDOUT
 d4 : JXC
-d8 : JIU
-dc : JXU

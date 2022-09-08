@@ -27,7 +27,7 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
    wire loadQ = (dest==6);
    wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
-   wire unconditionalJump = bit3 && bit7;
+   wire unconditionalJump = ~bit3 && ~bit7;
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
    wire doSubtract = bit3;
    wire doJump = loadPC && jumpControl;
