@@ -28,7 +28,7 @@ table =
   , ("countdownForeverC",countdownForeverC)
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
---  , ("collatz",collatz) -- TODO: fix variable initialization
+  , ("collatz",collatz)
   ]
 
 variousInstructions :: [Op]
@@ -276,6 +276,9 @@ varProg0init = assemble $ mdo
 
 collatz :: [Op]
 collatz = assemble $ mdo
+  la 3
+  storeA next
+
   main <- Here
   loadA next
   storeA current
