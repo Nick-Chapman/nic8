@@ -4,16 +4,10 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
    reg verbose;
    initial verbose = $test$plusargs("verbose");
 
-   reg showNoChange; //show no-change info
-   initial showNoChange = $test$plusargs("change");
-
    initial if (verbose) $display("*nic8 simulation*");
    initial if (verbose) printBar;
 
    always @(posedge clk) if (verbose) #1 printStatus;
-   //always @(clk) if (verbose) begin printStatus; #1 printStatus; end
-   //always @(pc,ir,areg,breg,xreg,qreg) if (verbose) #1 printStatus;
-
    always @(qreg) if (!verbose) #1 $display("%03d",qreg);
 
    int steps;
@@ -50,7 +44,7 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
    endtask
 
    function [1:16] show(input [1:8] w, w1);
-      if (showNoChange && (w == w1))
+      if ((w == w1))
         show="~~";
       else
         show = {hex(w[1:4]),hex(w[5:8])};
