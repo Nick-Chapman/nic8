@@ -152,10 +152,11 @@ decodeDest = \case
 -- Control
 
 data Control = Control
-  { provideMem
-  , provideAlu
-  , provideA
-  , provideX
+  { provideRom :: Bool
+  , provideRam :: Bool
+  , provideAlu :: Bool
+  , provideA :: Bool
+  , provideX :: Bool
   , loadIR :: Bool
   , loadPC :: Bool
   , loadA :: Bool
@@ -163,7 +164,6 @@ data Control = Control
   , loadX :: Bool
   , storeMem :: Bool
   , doOut :: Bool
-  , immediate :: Bool
   , doSubtract :: Bool
   , jumpIfZero :: Bool
   , jumpIfCarry :: Bool
@@ -175,6 +175,9 @@ cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
   Cat{xbit7,xbit6,dest,source,indexed} -> do
     let provideMem = (source == FromMem)
+    let immediate = not indexed
+    let provideRom = (immediate && provideMem)
+    let provideRam = (not immediate && provideMem)
     let provideAlu = (source == FromAlu)
     let provideA = (source == FromA)
     let provideX = (source == FromX)
@@ -185,14 +188,14 @@ cat2control = \case
     let loadX = (dest == ToX)
     let storeMem = (dest == ToMem)
     let doOut = (dest == ToOut)
-    let immediate = not indexed
     let doSubtract = xbit6
     let jumpIfZero = xbit6
     let jumpIfCarry = xbit7
     let unconditionalJump = xbit6 && xbit7
-    Control {provideMem,provideAlu,provideA,provideX
+
+    Control {provideRom,provideRam,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
-            ,doOut,immediate,doSubtract
+            ,doOut,doSubtract
             ,jumpIfZero,jumpIfCarry,unconditionalJump}
 
 ----------------------------------------------------------------------
@@ -234,30 +237,32 @@ data Output = Output Byte
 step :: State -> Control -> (State,Maybe Output)
 step state control = do
   let State{mem,rIR=_,rPC,rA,rB,rX,flagCarry} = state
-  let Control{provideMem,provideAlu,provideA,provideX
+  let Control{provideRom,provideRam,provideAlu,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
-             ,doOut,immediate,doSubtract
+             ,doOut,doSubtract
              ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
   let aIsZero = (rA == 0)
   let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
-  let abus = if immediate then rPC else rX
   let alu = if doSubtract then (rA - rB) else (rA + rB)
   let carry =
         if doSubtract
         then not (rB > rA)
         else fromIntegral rA + fromIntegral rB >= (256::Int)
+
   let dbus =
-        case (provideMem,provideAlu,provideA,provideX) of
-          (True,False,False,False) -> maybe 0 id (Map.lookup abus mem)
-          (False,True,False,False) -> alu
-          (False,False,True,False) -> rA
-          (False,False,False,True) -> rX
-          (False,False,False,False) -> error "no drivers for data bus"
+        case (provideRom,provideRam,provideAlu,provideA,provideX) of
+          (True,False,False,False,False) -> maybe 0 id (Map.lookup rPC mem)
+          (False,True,False,False,False) -> maybe 0 id (Map.lookup rX mem)
+          (False,False,True,False,False) -> alu
+          (False,False,False,True,False) -> rA
+          (False,False,False,False,True) -> rX
+          (False,False,False,False,False) -> error "no drivers for data bus"
           p -> error (show ("multiple drivers for data bus",p))
+
   let s' = State
-        { mem = if storeMem then Map.insert abus dbus mem else mem
+        { mem = if storeMem then Map.insert rX dbus mem else mem
         , rIR = if loadIR then dbus else 0
-        , rPC = if loadPC && jumpControl then dbus else if immediate then rPC + 1 else rPC
+        , rPC = if loadPC && jumpControl then dbus else if provideRom then rPC + 1 else rPC
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
