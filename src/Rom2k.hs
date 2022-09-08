@@ -1,4 +1,4 @@
-module Rom2k (generateAll) where
+module Rom2k (generateAll,pad) where
 
 import Data.Bits (shiftL)
 import Data.Word8 (Word8)

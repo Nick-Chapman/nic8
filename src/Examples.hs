@@ -21,14 +21,14 @@ import Primes
 
 table :: [(String,[Op])]
 table =
-  [ ("openCountLoop", openCountLoop)
-  , ("tightCountLoop", tightCountLoop)
-  , ("fibForever",fibForever)
+  [ ("open-count-loop", openCountLoop)
+  , ("tight-count-loop", tightCountLoop)
+  , ("fibs-forever",fibForever)
   , ("countdownForeverZ",countdownForeverZ)
   , ("countdownForeverC",countdownForeverC)
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
-  , ("collatz",collatz)
+--  , ("collatz",collatz) -- TODO: fix variable initialization
   ]
 
 variousInstructions :: [Op]
@@ -264,13 +264,13 @@ varProg0init = assemble $ mdo
   la 0x42
   sxa
   loop <- Here
-  --loadA v1
-  lxa
+  loadA v1
+  --lxa
   out
   add
   --storeA v1
   sxa
-  jump' loop
+  jump loop -- or use jump' !
   --v1 <- variable 0x42
   pure ()
 
@@ -321,7 +321,7 @@ collatz = assemble $ mdo
   loadA steps; out
   jump main
 
-  next <- variable 3
+  next <- variable 3 -- TODO: initialize vars (as no longer in program text)
   current <- variable 0
   steps <- variable 0
   pure ()
