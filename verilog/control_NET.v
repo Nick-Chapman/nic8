@@ -7,10 +7,9 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
          assertBarE,assertBarA,assertBarX,
          doSubtract,doJump};
    wire bit7, bit6;
-   wire [1:0] source;
+   wire [2:0] source;
    wire [2:0] dest;
-   wire indexed;
-   assign {bit7,bit6,source,indexed,dest} = ir;
+   assign {bit7,bit6,source,dest} = ir;
 
    wire loadBarIR, loadBarPC, loadBarA, loadBarB, loadBarX, storeMemBar, loadBarQ;
 
@@ -30,12 +29,11 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y6(loadBarQ),
       .Y7());
 
-   wire assertBarE = ~(source==1);
+   wire assertBarRom = ~(source==0);
+   wire assertBarRam = ~(source==1);
    wire assertBarA = ~(source==2);
    wire assertBarX = ~(source==3);
-   wire immediate = ~indexed;
-   wire assertBarRom = ~(source==0 &  immediate);
-   wire assertBarRam = ~(source==0 & ~immediate);
+   wire assertBarE = ~(source==4);
    wire jumpIfZero = bit6;
    wire jumpIfCarry = bit7;
    wire unconditionalJump = bit6 && bit7;

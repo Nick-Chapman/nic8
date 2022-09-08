@@ -9,16 +9,14 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
          assertBarE,assertBarA,assertBarX,
          doSubtract,doJump};
    wire bit7, bit6;
-   wire [1:0] source;
+   wire [2:0] source;
    wire [2:0] dest;
-   wire indexed;
-   assign {bit7,bit6,source,indexed,dest} = ir;
-   wire assertBarE = ~(source==1);
+   assign {bit7,bit6,source,dest} = ir;
+   wire assertBarRom = ~(source==0);
+   wire assertBarRam = ~(source==1);
    wire assertBarA = ~(source==2);
    wire assertBarX = ~(source==3);
-   wire immediate = ~indexed;
-   wire assertBarRom = ~(source==0 &  immediate);
-   wire assertBarRam = ~(source==0 & ~immediate);
+   wire assertBarE = ~(source==4);
    wire loadIR = (dest==0);
    wire loadPC = (dest==1);
    wire loadA = (dest==2);

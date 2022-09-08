@@ -39,42 +39,41 @@ newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 data Cat = Cat -- Control atributes
   { xbit7 :: Bool
   , xbit6 :: Bool -- if-zero bit for jump instruction; sub-bit for alu
-  , source :: Source -- bit 5,4
+  , source :: Source -- bit 5,4,3
   , dest :: Dest -- bit 2,1,0
-  , indexed :: Bool -- bit 3 (address bus driven from X otherwise PC++)
   }
   | Lit Byte
   deriving Show
 
 op2cat :: Op -> Cat
 op2cat = \case
-  NOP -> Cat o o FromMem ToI o
-  LIA -> Cat o o FromMem ToA o
-  LIB -> Cat o o FromMem ToB o
-  LIX -> Cat o o FromMem ToX o
-  LXA -> Cat o o FromMem ToA x
-  LXB -> Cat o o FromMem ToB x
-  LXX -> Cat o o FromMem ToX x
-  SXA -> Cat o o FromA ToMem x
-  JXU -> Cat x x FromX ToP x
-  JXZ -> Cat o x FromX ToP x
-  JXC -> Cat x o FromX ToP x
-  JIU -> Cat x x FromMem ToP o
-  ADD -> Cat o o FromAlu ToA x
-  ADDB -> Cat o o FromAlu ToB x
-  ADDX -> Cat o o FromAlu ToX x
-  ADDM -> Cat o o FromAlu ToMem x
-  ADDOUT -> Cat o o FromAlu ToOut x
-  SUB -> Cat o x FromAlu ToA x
-  SUBB -> Cat o x FromAlu ToB x
-  SUBX -> Cat o x FromAlu ToX x
-  OUT -> Cat o o FromA ToOut x
-  OUTX -> Cat o o FromX ToOut x
-  OUTI -> Cat o o FromMem ToOut o
-  OUTM -> Cat o o FromMem ToOut x
-  TAB -> Cat o o FromA ToB x
-  TAX -> Cat o o FromA ToX x
-  TXA -> Cat o o FromX ToA x
+  NOP -> Cat o o FromRom ToI
+  LIA -> Cat o o FromRom ToA
+  LIB -> Cat o o FromRom ToB
+  LIX -> Cat o o FromRom ToX
+  LXA -> Cat o o FromRam ToA
+  LXB -> Cat o o FromRam ToB
+  LXX -> Cat o o FromRam ToX
+  SXA -> Cat o o FromA ToMem
+  JXU -> Cat x x FromX ToP
+  JXZ -> Cat o x FromX ToP
+  JXC -> Cat x o FromX ToP
+  JIU -> Cat x x FromRom ToP
+  ADD -> Cat o o FromAlu ToA
+  ADDB -> Cat o o FromAlu ToB
+  ADDX -> Cat o o FromAlu ToX
+  ADDM -> Cat o o FromAlu ToMem
+  ADDOUT -> Cat o o FromAlu ToOut
+  SUB -> Cat o x FromAlu ToA
+  SUBB -> Cat o x FromAlu ToB
+  SUBX -> Cat o x FromAlu ToX
+  OUT -> Cat o o FromA ToOut
+  OUTX -> Cat o o FromX ToOut
+  OUTI -> Cat o o FromRom ToOut
+  OUTM -> Cat o o FromRam ToOut
+  TAB -> Cat o o FromA ToB
+  TAX -> Cat o o FromA ToX
+  TXA -> Cat o o FromX ToA
   IMM b -> Lit b
   where
     o = False
@@ -82,12 +81,11 @@ op2cat = \case
 
 encodeCat :: Cat -> Byte
 encodeCat = \case
-  Cat{xbit7,xbit6,source,dest,indexed} ->
+  Cat{xbit7,xbit6,source,dest} ->
     0
     + (if xbit7 then 1 else 0) `shiftL` 7
     + (if xbit6 then 1 else 0) `shiftL` 6
-    + encodeSource source `shiftL` 4
-    + (if indexed then 1 else 0) `shiftL` 3
+    + encodeSource source `shiftL` 3
     + encodeDest dest
   Lit b ->
     b
@@ -96,28 +94,33 @@ decodeCat :: Byte -> Cat
 decodeCat b = do
   let xbit7 = b `testBit` 7
   let xbit6 = b `testBit` 6
-  let source = decodeSource ((b `shiftR` 4) .&. 3)
-  let indexed = b `testBit` 3
+  let source = decodeSource ((b `shiftR` 3) .&. 7)
   let dest = decodeDest (b .&. 7)
-  Cat {xbit7,xbit6,source,dest,indexed}
+  Cat {xbit7,xbit6,source,dest}
 
 
-data Source = FromMem | FromAlu | FromA | FromX
+data Source = FromRom | FromRam | FromA | FromX | FromAlu | FromNowhere
   deriving (Eq,Show)
 
 encodeSource :: Source -> Byte
 encodeSource = \case
-  FromMem -> 0
-  FromAlu -> 1
+  FromRom -> 0
+  FromRam -> 1
   FromA -> 2
   FromX -> 3
+  FromAlu -> 4
+  FromNowhere -> 5
 
 decodeSource :: Byte -> Source
 decodeSource = \case
-  0 -> FromMem
-  1 -> FromAlu
+  0 -> FromRom
+  1 -> FromRam
   2 -> FromA
   3 -> FromX
+  4 -> FromAlu
+  5 -> FromNowhere
+  6 -> FromNowhere
+  7 -> FromNowhere
   x -> error (show ("decodeSource",x))
 
 
@@ -173,11 +176,9 @@ data Control = Control
 cat2control :: Cat -> Control
 cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
-  Cat{xbit7,xbit6,dest,source,indexed} -> do
-    let provideMem = (source == FromMem)
-    let immediate = not indexed
-    let provideRom = (immediate && provideMem)
-    let provideRam = (not immediate && provideMem)
+  Cat{xbit7,xbit6,dest,source} -> do
+    let provideRom = (source == FromRom)
+    let provideRam = (source == FromRam)
     let provideAlu = (source == FromAlu)
     let provideA = (source == FromA)
     let provideX = (source == FromX)
