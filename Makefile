@@ -3,14 +3,18 @@ top: regen-outs diff
 
 progs = $(patsubst prog/%.hex, %, $(wildcard prog/*.hex))
 traces = $(patsubst %, _gen/%.trace, $(progs))
+outputs = $(patsubst %, _gen/%.out, $(progs))
 
-regen-outs: .regen-progs $(traces) Makefile
+regen-outs: .regen-progs $(traces) $(outputs) Makefile
 
 diff:
 	git diff _gen
 
 _gen/%.trace: prog/%.hex simulation.exe Makefile
 	vvp ./simulation.exe +steps=150 +prog=$< +verbose +change > $@
+
+_gen/%.out: prog/%.hex simulation.exe Makefile
+	vvp ./simulation.exe +steps=1500 +prog=$< > $@
 
 vs = $(wildcard verilog/*.v)
 
