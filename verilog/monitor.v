@@ -42,7 +42,7 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
       if ((w == w1))
         show="~~";
       else
-        show = {hex(w[1:4]),hex(w[5:8])};
+        show = (w === 8'bx) ? "XX" : {hex(w[1:4]),hex(w[5:8])};
    endfunction
 
    function [1:8] hex(input [1:4] w);
