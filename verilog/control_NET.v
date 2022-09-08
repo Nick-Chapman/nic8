@@ -29,12 +29,24 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y6(loadBarQ),
       .Y7());
 
-   wire assertBarRom = ~(source==0);
-   wire assertBarRam = ~(source==1);
-   wire assertBarA = ~(source==2);
-   wire assertBarB = ~(source==3); //TODO
-   wire assertBarX = ~(source==4);
-   wire assertBarE = ~(source==5);
+   wire assertBarRom, assertBarRam, assertBarA, assertBarB, assertBarX, assertBarE;
+
+   LS138 s
+     (.A(source[0]),
+      .B(source[1]),
+      .C(source[2]),
+      .G2A(1'b0),
+      .G2B(1'b0),
+      .G1(1'b1),
+      .Y0(assertBarRom),
+      .Y1(assertBarRam),
+      .Y2(assertBarA),
+      .Y3(assertBarB),
+      .Y4(assertBarX),
+      .Y5(assertBarE),
+      .Y6(),
+      .Y7());
+
    wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
    wire unconditionalJump = ~bit3 && ~bit7;
