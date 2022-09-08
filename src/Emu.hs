@@ -40,8 +40,8 @@ data Cat = Cat -- Control atributes
   { xbit7 :: Bool
   , xbit6 :: Bool -- if-zero bit for jump instruction; sub-bit for alu
   , source :: Source -- bit 5,4
-  , dest :: Dest -- bit 3,2,1
-  , indexed :: Bool -- bit 0 (address bus driven from X otherwise PC++)
+  , dest :: Dest -- bit 2,1,0
+  , indexed :: Bool -- bit 3 (address bus driven from X otherwise PC++)
   }
   | Lit Byte
   deriving Show
@@ -87,8 +87,8 @@ encodeCat = \case
     + (if xbit7 then 1 else 0) `shiftL` 7
     + (if xbit6 then 1 else 0) `shiftL` 6
     + encodeSource source `shiftL` 4
-    + encodeDest dest `shiftL` 1
-    + (if indexed then 1 else 0)
+    + (if indexed then 1 else 0) `shiftL` 3
+    + encodeDest dest
   Lit b ->
     b
 
@@ -97,8 +97,8 @@ decodeCat b = do
   let xbit7 = b `testBit` 7
   let xbit6 = b `testBit` 6
   let source = decodeSource ((b `shiftR` 4) .&. 3)
-  let dest = decodeDest ((b `shiftR` 1) .&. 7)
-  let indexed = b `testBit` 0
+  let indexed = b `testBit` 3
+  let dest = decodeDest (b .&. 7)
   Cat {xbit7,xbit6,source,dest,indexed}
 
 

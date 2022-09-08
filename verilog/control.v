@@ -11,7 +11,7 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
    wire [1:0] source;
    wire [2:0] dest;
    wire indexed;
-   assign {bit7,bit6,source,dest,indexed} = ir;
+   assign {bit7,bit6,source,indexed,dest} = ir;
    wire assertBarM = ~(source==0);
    wire assertBarE = ~(source==1);
    wire assertBarA = ~(source==2);

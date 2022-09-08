@@ -8,7 +8,7 @@ outputs = $(patsubst %, _gen/%.out, $(progs))
 regen-outs: .regen-progs $(traces) $(outputs) Makefile
 
 diff:
-	git diff _gen
+	git diff _gen/*.out
 
 _gen/%.trace: prog/%.hex simulation.exe Makefile
 	vvp -n ./simulation.exe +steps=150 +prog=$< +verbose > $@
