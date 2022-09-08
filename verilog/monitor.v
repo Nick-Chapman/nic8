@@ -11,16 +11,11 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
    always @(qreg) if (!verbose) #1 $display("%03d",qreg);
 
    int steps;
-   initial begin
-     if (! $value$plusargs("steps=%d", steps)) begin
-        $display("ERROR: please specify +steps=<value>.");
-        $finish;
-     end
-   end
+   initial if (!$value$plusargs("steps=%d", steps)) $display("Running forever...");
 
    int ticks = 0;
    always @(posedge clk) ticks++;
-   always #1 if ($time > (10*steps)) $finish();
+   always #1 if (steps>0) if ($time > (10*steps)) $finish();
 
    task printBar;
       $display("---------------------------------");

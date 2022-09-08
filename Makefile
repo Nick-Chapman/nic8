@@ -11,10 +11,10 @@ diff:
 	git diff _gen
 
 _gen/%.trace: prog/%.hex simulation.exe Makefile
-	vvp ./simulation.exe +steps=150 +prog=$< +verbose > $@
+	vvp -n ./simulation.exe +steps=150 +prog=$< +verbose > $@
 
 _gen/%.out: prog/%.hex simulation.exe Makefile
-	vvp ./simulation.exe +steps=1500 +prog=$< > $@
+	vvp -n ./simulation.exe +steps=1500 +prog=$< > $@
 
 vs = $(wildcard verilog/*.v)
 
