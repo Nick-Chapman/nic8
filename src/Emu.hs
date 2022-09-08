@@ -204,7 +204,8 @@ cat2control = \case
 -- State
 
 data State = State
-  { mem :: Map Byte Byte
+  { rom :: Map Byte Byte
+  -- , ram :: Map Byte Byte -- h/w will have harvard arch. but some tests here have only unified ram
   , rIR :: Byte
   , rPC :: Byte
   , rA :: Byte
@@ -219,7 +220,8 @@ instance Show State where
 
 initState :: [Op] -> State
 initState prog = State
-  { mem = initMem prog
+  { rom = initMem prog
+  -- , ram = Map.empty
   , rIR = 0
   , rPC = 0
   , rA = 0
@@ -238,7 +240,7 @@ data Output = Output Byte
 
 step :: State -> Control -> (State,Maybe Output)
 step state control = do
-  let State{mem,rIR=_,rPC,rA,rB,rX,flagCarry} = state
+  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry} = state
   let Control{provideRom,provideRam,provideAlu,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,doSubtract
@@ -253,8 +255,8 @@ step state control = do
 
   let dbus =
         case (provideRom,provideRam,provideAlu,provideA,provideX) of
-          (True,False,False,False,False) -> maybe 0 id (Map.lookup rPC mem)
-          (False,True,False,False,False) -> maybe 0 id (Map.lookup rX mem)
+          (True,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
+          (False,True,False,False,False) -> maybe 0 id (Map.lookup rX rom)
           (False,False,True,False,False) -> alu
           (False,False,False,True,False) -> rA
           (False,False,False,False,True) -> rX
@@ -262,7 +264,8 @@ step state control = do
           p -> error (show ("multiple drivers for data bus",p))
 
   let s' = State
-        { mem = if storeMem then Map.insert rX dbus mem else mem
+        { rom = if storeMem then Map.insert rX dbus rom else rom
+        -- , ram = if storeMem then Map.insert rX dbus ram else ram
         , rIR = if loadIR then dbus else 0
         , rPC = if loadPC && jumpControl then dbus else if provideRom then rPC + 1 else rPC
         , rA = if loadA then dbus else rA
