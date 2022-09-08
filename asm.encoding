@@ -1,4 +1,5 @@
 00 : NOP
+10 : SXI
 12 : SXA
 15 : ADDM
 20 : LIA

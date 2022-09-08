@@ -278,6 +278,7 @@ collatz :: [Op]
 collatz = assemble $ mdo
   la 3
   storeA next
+  --storeI 3 next
 
   main <- Here
   loadA next

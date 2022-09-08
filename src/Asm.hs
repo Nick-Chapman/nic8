@@ -6,7 +6,7 @@ module Asm
   , la, lb, lx, jump, jump', jz, jc, jxu
   , lxa, lxb, lxx
   , variable
-  , loadA, loadB, loadX, storeA, storeAdd, sxa
+  , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
   , increment
   ) where
 
@@ -26,8 +26,10 @@ jump,jump',jz,jc :: Byte -> Asm () -- jumps
 variable :: Byte -> Asm Byte -- allocate space for a variable
 loadA,loadB,loadX :: Byte -> Asm () -- load vars into regs
 storeA :: Byte -> Asm () -- store A into var
+storeI :: Byte -> Byte -> Asm () -- store immediate into var
 storeAdd :: Byte -> Asm () -- store A+B into var
 sxa :: Asm () -- store A into *X
+sxi :: Asm () -- store immediate into *X
 
 add = Emit [ADD]
 addb = Emit [ADDB]
@@ -72,6 +74,7 @@ loadB loc = Emit [LIX, IMM loc, LXB]
 loadX loc = Emit [LIX, IMM loc, LXX]
 
 storeA loc = Emit [LIX, IMM loc, SXA]
+storeI b loc = Emit [LIX, IMM loc, SXI, IMM b]
 storeAdd loc = Emit [LIX, IMM loc, ADDM]
 
 increment :: Byte -> Byte -> Asm ()
@@ -82,6 +85,7 @@ increment var n = do
   storeA var
 
 sxa = Emit [SXA]
+sxi = Emit [SXI]
 
 instance Functor Asm where fmap = liftM
 instance Applicative Asm where pure = return; (<*>) = ap

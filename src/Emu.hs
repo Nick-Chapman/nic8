@@ -55,6 +55,7 @@ op2cat = \case
   LXB -> Cat o o FromDataRam ToB
   LXX -> Cat o o FromDataRam ToX
   SXA -> Cat o o FromA ToDataRam
+  SXI -> Cat o o FromProgRom ToDataRam
   JXU -> Cat o o FromX ToP
   JXZ -> Cat o x FromX ToP
   JXC -> Cat x o FromX ToP

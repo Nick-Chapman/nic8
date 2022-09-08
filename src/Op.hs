@@ -18,6 +18,7 @@ data Op
   | LXX -- X := M[X]
   -- Store indexed
   | SXA -- M[X] := A
+  | SXI -- M[X] := ROM[pc], pc++
   -- Jumps
   | JXU -- pc := X
   | JXZ -- pc := zero(A) ? X : pc+1
@@ -57,6 +58,7 @@ allOps =
   , LXB
   , LXX
   , SXA
+  , SXI
   , JXU
   , JXZ
   , JXC
