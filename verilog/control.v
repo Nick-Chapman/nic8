@@ -1,4 +1,6 @@
 
+`define Control [1:13]
+
 module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
         {~loadIR,~storeMem,

@@ -42,7 +42,7 @@ printProg name prog = do
 assembleExamples :: [(String,[Op])] -> IO () -- for verilog sim
 assembleExamples examples = do
   forM_ examples $ \(name,ops) -> do
-    let filename = "sim/prog/" ++ name ++ ".hex"
+    let filename = "prog/" ++ name ++ ".hex"
     printf "writing: %s\n" filename
     writeFile filename (commentedVerilogHexDump ops)
 

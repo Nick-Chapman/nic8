@@ -1,6 +1,4 @@
 
-`define Control [1:13]
-
 module top;
 
    reg clk, reset;
