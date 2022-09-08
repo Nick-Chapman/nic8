@@ -8,6 +8,7 @@ module whole_cpu (input clk, reset);
    wire aIsZero,flagCarry;
 
    wire loadBarIR,storeMemBar;
+   wire assertBarRom,assertBarRam;
    wire assertBarM,assertBarE,assertBarA,assertBarX;
    wire immediate,doSubtract,doJump;
 
@@ -17,14 +18,15 @@ module whole_cpu (input clk, reset);
    wire _;
    assign {loadBarIR,storeMemBar,
            _,_,_,_,
-           assertBarM,assertBarE,_,_,
-           immediate,doSubtract,doJump
+           assertBarRom,assertBarRam,
+           assertBarE,_,_,
+           doSubtract,doJump
            } = controlBits;
 
-   rom prog (    (~assertBarM &&  immediate),            pc,  dbus);
-   ram data (clk,(~assertBarM && !immediate),storeMemBar,xreg,dbus);
+   rom prog (    ~assertBarRom,            pc,  dbus);
+   ram data (clk,~assertBarRam,storeMemBar,xreg,dbus);
 
-   programCounter`suff p (resetBar,clk,~doJump,immediate,dbus,pc);
+   programCounter`suff p (resetBar,clk,~doJump,!assertBarRom,dbus,pc);
 
    fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
 

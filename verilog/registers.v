@@ -9,8 +9,9 @@ module registers
 
    assign {_,_,_,
            triggerA,triggerB,triggerX,triggerQ,
-           _,_,assertBarA,assertBarX,
-           _,_,_} = controlBits;
+           _,_,
+           _,assertBarA,assertBarX,
+           _,_} = controlBits;
 
    wire clk = ~clkBar;
 

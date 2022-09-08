@@ -9,8 +9,9 @@ module registers_NET
 
    assign {_,_,_,
            triggerA,triggerB,triggerX,triggerQ,
-           _,_,assertBarA,assertBarX,
-           _,_,_} = controlBits;
+           _,_,
+           _,assertBarA,assertBarX,
+           _,_} = controlBits;
 
    wire assertBarB = 1'b1;
    wire assertBarQ = 1'b1;
