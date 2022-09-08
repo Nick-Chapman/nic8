@@ -23,8 +23,8 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y0(loadBarIR),
       .Y1(loadBarPC),
       .Y2(loadBarA),
-      .Y3(loadBarX),
-      .Y4(loadBarB),
+      .Y3(loadBarB),
+      .Y4(loadBarX),
       .Y5(storeMemBar),
       .Y6(loadBarQ),
       .Y7());

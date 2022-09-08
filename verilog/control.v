@@ -19,8 +19,8 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
    wire loadIR = (dest==0);
    wire loadPC = (dest==1);
    wire loadA = (dest==2);
-   wire loadX = (dest==3);
-   wire loadB = (dest==4);
+   wire loadB = (dest==3);
+   wire loadX = (dest==4);
    wire storeMem = (dest==5);
    wire loadQ = (dest==6);
    wire immediate = ~indexed;

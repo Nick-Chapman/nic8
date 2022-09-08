@@ -17,9 +17,9 @@ main :: IO ()
 main = do
   let _ = Dis.main
   let _ = Arc.generateSoundData
-  let _ = Test.run -- regression tests
   let _ = Rom2k.generateAll
   let _ = printAndRunExamples Examples.table
+  Test.run -- regression tests
   assembleExamples Examples.table
   pure ()
 
