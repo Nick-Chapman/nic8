@@ -55,3 +55,5 @@ The [original data](src/ArcRawData.hs) was captured by making a small mod to my 
 [The Oddbloke Geek Blog](http://danceswithferrets.org/geekblog/?p=93).
 
 I also wrote a [player](6502/sonic.s) for some _Sonic the Hedgehog_ tunes which I found on the [bitshifters github](https://github.com/bitshifters/beeb-tracker).
+
+[More here](6502/README.md).
