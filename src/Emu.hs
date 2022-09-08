@@ -38,39 +38,39 @@ newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 
 data Cat = Cat -- Control atributes
   { xbit7 :: Bool
-  , xbit6 :: Bool -- if-zero bit for jump instruction; sub-bit for alu
-  , source :: Source -- bit 5,4,3
-  , dest :: Dest -- bit 2,1,0
+  , xbit3 :: Bool -- if-zero bit for jump instruction; sub-bit for alu
+  , source :: Source -- bit 2,1,0
+  , dest :: Dest -- bit 6,5,4
   }
   | Lit Byte
   deriving Show
 
 op2cat :: Op -> Cat
 op2cat = \case
-  NOP -> Cat o o FromRom ToI
-  LIA -> Cat o o FromRom ToA
-  LIB -> Cat o o FromRom ToB
-  LIX -> Cat o o FromRom ToX
-  LXA -> Cat o o FromRam ToA
-  LXB -> Cat o o FromRam ToB
-  LXX -> Cat o o FromRam ToX
-  SXA -> Cat o o FromA ToMem
+  NOP -> Cat o o FromProgRom ToInstructionRegister
+  LIA -> Cat o o FromProgRom ToA
+  LIB -> Cat o o FromProgRom ToB
+  LIX -> Cat o o FromProgRom ToX
+  LXA -> Cat o o FromDataRam ToA
+  LXB -> Cat o o FromDataRam ToB
+  LXX -> Cat o o FromDataRam ToX
+  SXA -> Cat o o FromA ToDataRam
   JXU -> Cat x x FromX ToP
   JXZ -> Cat o x FromX ToP
   JXC -> Cat x o FromX ToP
-  JIU -> Cat x x FromRom ToP
+  JIU -> Cat x x FromProgRom ToP
   ADD -> Cat o o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
-  ADDM -> Cat o o FromAlu ToMem
+  ADDM -> Cat o o FromAlu ToDataRam
   ADDOUT -> Cat o o FromAlu ToOut
   SUB -> Cat o x FromAlu ToA
   SUBB -> Cat o x FromAlu ToB
   SUBX -> Cat o x FromAlu ToX
   OUT -> Cat o o FromA ToOut
   OUTX -> Cat o o FromX ToOut
-  OUTI -> Cat o o FromRom ToOut
-  OUTM -> Cat o o FromRam ToOut
+  OUTI -> Cat o o FromProgRom ToOut
+  OUTM -> Cat o o FromDataRam ToOut
   TAB -> Cat o o FromA ToB
   TAX -> Cat o o FromA ToX
   TXA -> Cat o o FromX ToA
@@ -81,72 +81,73 @@ op2cat = \case
 
 encodeCat :: Cat -> Byte
 encodeCat = \case
-  Cat{xbit7,xbit6,source,dest} ->
+  Cat{xbit7,xbit3,source,dest} ->
     0
     + (if xbit7 then 1 else 0) `shiftL` 7
-    + (if xbit6 then 1 else 0) `shiftL` 6
-    + encodeSource source `shiftL` 3
-    + encodeDest dest
+    + encodeDest dest `shiftL` 4
+    + (if xbit3 then 1 else 0) `shiftL` 3
+    + encodeSource source
   Lit b ->
     b
 
 decodeCat :: Byte -> Cat
 decodeCat b = do
   let xbit7 = b `testBit` 7
-  let xbit6 = b `testBit` 6
-  let source = decodeSource ((b `shiftR` 3) .&. 7)
-  let dest = decodeDest (b .&. 7)
-  Cat {xbit7,xbit6,source,dest}
+  let dest = decodeDest ((b `shiftR` 4) .&. 7)
+  let xbit3 = b `testBit` 3
+  let source = decodeSource (b .&. 7)
+  Cat {xbit7,xbit3,source,dest}
 
 
-data Source = FromRom | FromRam | FromA | FromX | FromAlu | FromNowhere
+data Source = FromProgRom | FromDataRam | FromA | FromB | FromX | FromAlu | FromNowhere
   deriving (Eq,Show)
 
 encodeSource :: Source -> Byte
 encodeSource = \case
-  FromRom -> 0
-  FromRam -> 1
+  FromProgRom -> 0
+  FromDataRam -> 1
   FromA -> 2
-  FromX -> 3
-  FromAlu -> 4
-  FromNowhere -> 5
+  FromB -> 3
+  FromX -> 4
+  FromAlu -> 5
+  FromNowhere -> 6
 
 decodeSource :: Byte -> Source
 decodeSource = \case
-  0 -> FromRom
-  1 -> FromRam
+  0 -> FromProgRom
+  1 -> FromDataRam
   2 -> FromA
-  3 -> FromX
-  4 -> FromAlu
-  5 -> FromNowhere
+  3 -> FromB
+  4 -> FromX
+  5 -> FromAlu
   6 -> FromNowhere
   7 -> FromNowhere
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToI | ToP | ToA | ToB | ToX | ToMem | ToOut | ToNowhere
+data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToP | ToOut | ToNowhere
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
 encodeDest =  \case
-  ToI -> 0
-  ToP -> 1
+  ToInstructionRegister -> 0
+  ToDataRam -> 1
   ToA -> 2
   ToB -> 3
   ToX -> 4
-  ToMem -> 5
+  ToP -> 5
   ToOut -> 6
   ToNowhere -> 7
-  -- destination 7 available for future expansions!
+  -- destination 7 available for future expansions! - OutHi ?
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
-  0 -> ToI
-  1 -> ToP
+  0 -> ToInstructionRegister
+  1 -> ToDataRam
   2 -> ToA
   3 -> ToB
   4 -> ToX
-  5 -> ToMem
+  5 -> ToP
   6 -> ToOut
   7 -> ToNowhere
   x -> error (show ("decodeDest",x))
@@ -176,23 +177,23 @@ data Control = Control
 cat2control :: Cat -> Control
 cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
-  Cat{xbit7,xbit6,dest,source} -> do
-    let provideRom = (source == FromRom)
-    let provideRam = (source == FromRam)
+  Cat{xbit7,xbit3,dest,source} -> do
+    let provideRom = (source == FromProgRom)
+    let provideRam = (source == FromDataRam)
     let provideAlu = (source == FromAlu)
     let provideA = (source == FromA)
     let provideX = (source == FromX)
-    let loadIR = (dest == ToI)
+    let loadIR = (dest == ToInstructionRegister)
     let loadPC = (dest == ToP)
     let loadA = (dest == ToA)
     let loadB = (dest == ToB)
     let loadX = (dest == ToX)
-    let storeMem = (dest == ToMem)
+    let storeMem = (dest == ToDataRam)
     let doOut = (dest == ToOut)
-    let doSubtract = xbit6
-    let jumpIfZero = xbit6
+    let doSubtract = xbit3
+    let jumpIfZero = xbit3
     let jumpIfCarry = xbit7
-    let unconditionalJump = xbit6 && xbit7
+    let unconditionalJump = xbit3 && xbit7
 
     Control {provideRom,provideRam,provideAlu,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem

@@ -6,10 +6,10 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
          assertBarRom,assertBarRam,
          assertBarE,assertBarA,assertBarX,
          doSubtract,doJump};
-   wire bit7, bit6;
+   wire bit7, bit3;
    wire [2:0] source;
    wire [2:0] dest;
-   assign {bit7,bit6,source,dest} = ir;
+   assign {bit7,dest,bit3,source} = ir;
 
    wire loadBarIR, loadBarPC, loadBarA, loadBarB, loadBarX, storeMemBar, loadBarQ;
 
@@ -21,24 +21,25 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .G2B(1'b0),
       .G1(1'b1),
       .Y0(loadBarIR),
-      .Y1(loadBarPC),
+      .Y1(storeMemBar),
       .Y2(loadBarA),
       .Y3(loadBarB),
       .Y4(loadBarX),
-      .Y5(storeMemBar),
+      .Y5(loadBarPC),
       .Y6(loadBarQ),
       .Y7());
 
    wire assertBarRom = ~(source==0);
    wire assertBarRam = ~(source==1);
    wire assertBarA = ~(source==2);
-   wire assertBarX = ~(source==3);
-   wire assertBarE = ~(source==4);
-   wire jumpIfZero = bit6;
+   wire assertBarB = ~(source==3); //TODO
+   wire assertBarX = ~(source==4);
+   wire assertBarE = ~(source==5);
+   wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
-   wire unconditionalJump = bit6 && bit7;
+   wire unconditionalJump = bit3 && bit7;
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
-   wire doSubtract = bit6;
+   wire doSubtract = bit3;
    wire doJump = ~loadBarPC && jumpControl;
 
    wire triggerA, triggerB, triggerX, triggerQ;
