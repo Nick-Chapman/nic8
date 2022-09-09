@@ -60,6 +60,8 @@ op2cat = \case
   JXZ -> Cat o x FromX ToP
   JXC -> Cat x o FromX ToP
   JIU -> Cat o o FromProgRom ToP
+  JIZ -> Cat o x FromProgRom ToP
+  JIC -> Cat x o FromProgRom ToP
   ADD -> Cat o o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
