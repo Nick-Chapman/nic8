@@ -14,7 +14,7 @@ module alu(input clk, reset, doSubtract, assertBarE, assertBarS,
 
    assign aIsZero = (areg == 0);
 
-   wire carry = doSubtract ? !(breg > areg) : (areg + breg >= 256);
+   wire carry = doSubtract ? ~(breg > areg) : (areg + breg >= 256);
 
    always #1 if (reset) begin
       flagCarry = 0;

@@ -26,7 +26,7 @@ module whole_cpu (input clk, reset);
    rom prog (    ~assertBarRom,            pc,  dbus);
    ram data (clk,~assertBarRam,storeMemBar,xreg,dbus);
 
-   programCounter`suff p (resetBar,clk,~doJump,!assertBarRom,dbus,pc);
+   programCounter`suff p (resetBar,clk,~doJump,~assertBarRom,dbus,pc);
 
    fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
 
