@@ -8,12 +8,6 @@ module control_NET
    output doSubtract,doJumpBar
    );
 
-   wire assertBarRom;
-   assign assertRom = ~assertBarRom;
-
-   wire assertBarRam;
-   assign assertRam = ~assertBarRam;
-
    wire bit7, bit3;
    wire [2:0] source;
    wire [2:0] dest;
@@ -37,6 +31,9 @@ module control_NET
       .Y6(loadBarQ),
       .Y7());
 
+   wire assertBarRom;
+   wire assertBarRam;
+
    LS138 s
      (.A(source[0]),
       .B(source[1]),
@@ -53,16 +50,6 @@ module control_NET
       .Y6(assertBarE),
       .Y7(assertBarS));
 
-   wire jumpIfZero = bit3;
-   wire jumpIfCarry = bit7;
-   wire unconditionalJump = ~bit3 && ~bit7;
-   wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
-   assign doSubtract = bit3;
-
-   wire doJump;
-   assign doJump = ~loadBarPC && jumpControl;
-   assign doJumpBar = ~doJump;
-
    LS32 u1
      (.A1(clk),
       .A2(clk),
@@ -76,5 +63,17 @@ module control_NET
       .Y2(triggerB),
       .Y3(triggerX),
       .Y4(triggerQ));
+
+   assign doSubtract = bit3;
+
+   assign assertRom = ~assertBarRom;
+   assign assertRam = ~assertBarRam;
+
+   wire jumpIfZero = bit3;
+   wire jumpIfCarry = bit7;
+   wire unconditionalJump = ~bit3 && ~bit7;
+   wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
+   wire doJump = ~loadBarPC && jumpControl;
+   assign doJumpBar = ~doJump;
 
 endmodule
