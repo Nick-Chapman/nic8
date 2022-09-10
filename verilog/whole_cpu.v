@@ -10,7 +10,7 @@ module whole_cpu (input clk, reset);
    wire loadBarIR,storeMemBar;
    wire assertBarRom,assertBarRam;
    wire assertBarM,assertBarE,assertBarS,assertBarA,assertBarX;
-   wire immediate,doSubtract,doJump;
+   wire doSubtract,doJump;
 
    wire clkBar = ~clk;
    wire resetBar = ~reset;

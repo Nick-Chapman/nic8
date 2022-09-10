@@ -1,6 +1,6 @@
 
 module programCounter_NET
-  (input resetBar, clk, doJumpBar, immediate, input [7:0] dbus,
+  (input resetBar, clk, doJumpBar, assertRom, input [7:0] dbus,
    output wire [7:0] pc);
 
    wire carryLo2Hi;
@@ -12,7 +12,7 @@ module programCounter_NET
       .B(dbus[1]),
       .C(dbus[2]),
       .D(dbus[3]),
-      .ENP(immediate),
+      .ENP(assertRom),
       .LOADB(doJumpBar),
       .ENT(1'b1),
       .QD(pc[3]),
@@ -28,7 +28,7 @@ module programCounter_NET
       .B(dbus[5]),
       .C(dbus[6]),
       .D(dbus[7]),
-      .ENP(immediate),
+      .ENP(assertRom),
       .LOADB(doJumpBar),
       .ENT(carryLo2Hi),
       .QD(pc[7]),
