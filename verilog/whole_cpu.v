@@ -5,13 +5,10 @@ module whole_cpu (input clk, reset);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire aIsZero,flagCarry,flagShift;
-   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ, assertBarRom,assertBarRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJump;
+   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ, assertRom,assertRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
 
    wire clkBar = ~clk;
    wire resetBar = ~reset;
-   wire assertRom = ~assertBarRom;
-   wire assertRam = ~assertBarRam;
-   wire doJumpBar = ~doJump;
 
    rom prog (    assertRom,            pc,  dbus);
    ram data (clk,assertRam,storeMemBar,xreg,dbus);
@@ -31,14 +28,14 @@ module whole_cpu (input clk, reset);
       .triggerB(triggerB),
       .triggerX(triggerX),
       .triggerQ(triggerQ),
-      .assertBarRom(assertBarRom),
-      .assertBarRam(assertBarRam),
+      .assertRom(assertRom),
+      .assertRam(assertRam),
       .assertBarE(assertBarE),
       .assertBarS(assertBarS),
       .assertBarA(assertBarA),
       .assertBarX(assertBarX),
       .doSubtract(doSubtract),
-      .doJump(doJump));
+      .doJumpBar(doJumpBar));
 
    registers`suff registers
      (clkBar,resetBar,

@@ -3,10 +3,16 @@ module control_NET
   (input [7:0] ir, input clk, aIsZero, flagCarry,
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,
-   output assertBarRom,assertBarRam,
+   output assertRom,assertRam,
    output assertBarE,assertBarS,assertBarA,assertBarX,
-   output doSubtract,doJump
+   output doSubtract,doJumpBar
    );
+
+   wire assertBarRom;
+   assign assertRom = ~assertBarRom;
+
+   wire assertBarRam;
+   assign assertRam = ~assertBarRam;
 
    wire bit7, bit3;
    wire [2:0] source;
@@ -52,7 +58,10 @@ module control_NET
    wire unconditionalJump = ~bit3 && ~bit7;
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
    assign doSubtract = bit3;
+
+   wire doJump;
    assign doJump = ~loadBarPC && jumpControl;
+   assign doJumpBar = ~doJump;
 
    LS32 u1
      (.A1(clk),
