@@ -21,13 +21,24 @@ module whole_cpu (input clk, reset);
    fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
 
    control`suff c
-     (ir,clk,aIsZero,flagCarry,
-      loadBarIR,storeMemBar,
-      triggerA,triggerB,triggerX,triggerQ,
-      assertBarRom,assertBarRam,
-      assertBarE,assertBarS,assertBarA,assertBarX,
-      doSubtract,doJump
-      );
+     (.ir(ir),
+      .clk(clk),
+      .aIsZero(aIsZero),
+      .flagCarry(flagCarry),
+      .loadBarIR(loadBarIR),
+      .storeMemBar(storeMemBar),
+      .triggerA(triggerA),
+      .triggerB(triggerB),
+      .triggerX(triggerX),
+      .triggerQ(triggerQ),
+      .assertBarRom(assertBarRom),
+      .assertBarRam(assertBarRam),
+      .assertBarE(assertBarE),
+      .assertBarS(assertBarS),
+      .assertBarA(assertBarA),
+      .assertBarX(assertBarX),
+      .doSubtract(doSubtract),
+      .doJump(doJump));
 
    registers`suff registers
      (clkBar,resetBar,
