@@ -18,7 +18,7 @@ main :: IO ()
 main = do
   let _ = Dis.main
   let _ = Arc.generateSoundData
-  let _ = Rom2k.generateAll
+  Rom2k.generateAll
   let _ = printAndRunExamples Examples.table
   Test.run -- regression tests
   generateAsmCrib
@@ -53,13 +53,14 @@ generateAsmCrib = do
 
 assembleExamples :: [(String,[Op])] -> IO () -- for verilog sim
 assembleExamples examples = do
-  forM_ examples $ \(name,ops) -> do
+  forM_ (zip [0::Int ..] examples) $ \(i,(name,ops)) -> do
     let filename = "prog/" ++ name ++ ".hex"
-    printf "writing: %s\n" filename
-    writeFile filename (commentedVerilogHexDump ops)
+    printf "writing: (%d) %s\n" i filename
+    writeFile filename (commentedVerilogHexDump i name ops)
 
-commentedVerilogHexDump :: [Op] -> String
-commentedVerilogHexDump ops = do
+commentedVerilogHexDump :: Int -> String -> [Op] -> String
+commentedVerilogHexDump i name ops = do
+  let banner = printf "// (%d) %s" i name
   let hex = [ intercalate " " [ printf "%02x" (Emu.encodeOp op) | op <- ops ]
             | ops <- chunksOf 16 (Rom2k.pad Op.NOP 256 ops)
             ]
@@ -67,4 +68,4 @@ commentedVerilogHexDump ops = do
             | (i,op) <- zip [0::Byte ..] ops
             , let b = Emu.encodeOp op
             ]
-  unlines $ hex ++ ["/*"] ++ ass ++ ["*/"]
+  unlines $ [banner] ++ hex ++ ["/*"] ++ ass ++ ["*/"]
