@@ -8,48 +8,40 @@ module control
    output doSubtract,doJumpBar
    );
 
-   wire assertBarRom;
-   assign assertRom = ~assertBarRom;
-
-   wire assertBarRam;
-   assign assertRam = ~assertBarRam;
-
-   assign loadBarIR = ~loadIR;
-   assign storeMemBar = ~storeMem;
-
    wire bit7, bit3;
    wire [2:0] source;
    wire [2:0] dest;
    assign {bit7,dest,bit3,source} = ir;
-   assign assertBarRom = ~(source==0);
-   // TODO: (source==1) -- drive zero on bus
-   assign assertBarA = ~(source==2);
-   //assign assertBarB = ~(source==3); //TODO: connect to register
-   assign assertBarX = ~(source==4);
-   assign assertBarRam = ~(source==5);
-   assign assertBarE = ~(source==6);
-   assign assertBarS = ~(source==7);
-   wire loadIR = (dest==0);
+
    wire loadPC = (dest==1);
    wire loadA = (dest==2);
    wire loadB = (dest==3);
    wire loadX = (dest==4);
-   wire storeMem = (dest==5); //TODO: rename
    wire loadQ = (dest==6);
    //wire loadQhi = (dest==7); //TODO
+
+   assign loadBarIR = ~(dest==0);
+   assign triggerA = ~(~clk & loadA);
+   assign triggerB = ~(~clk & loadB);
+   assign triggerX = ~(~clk & loadX);
+   assign storeMemBar = ~(dest==5); //TODO: rename
+   assign triggerQ = ~(~clk & loadQ);
+
+   assign assertRom = (source==0);
+   // TODO: (source==1) -- drive zero on bus
+   assign assertBarA = ~(source==2);
+   //assign assertBarB = ~(source==3); //TODO: connect to register
+   assign assertBarX = ~(source==4);
+   assign assertRam = (source==5);
+   assign assertBarE = ~(source==6);
+   assign assertBarS = ~(source==7);
+
    wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
    wire unconditionalJump = ~bit3 && ~bit7;
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
+
    assign doSubtract = bit3;
-
-   wire doJump;
-   assign doJump = loadPC && jumpControl;
-   assign doJumpBar = ~doJump;
-
-   assign triggerA = ~(~clk & loadA);
-   assign triggerB = ~(~clk & loadB);
-   assign triggerX = ~(~clk & loadX);
-   assign triggerQ = ~(~clk & loadQ);
+   assign doJumpBar = ~(loadPC && jumpControl);
 
 endmodule
