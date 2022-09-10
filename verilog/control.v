@@ -2,8 +2,10 @@
 `define Control [1:14]
 
 module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
+   //TODO: would be less error prone to pass control-bits indivually
    wire `Control controlBits =
-        {~loadIR,~storeMem,
+        {~loadIR,
+         ~storeMem, //TODO: rename
          triggerA,triggerB,triggerX,triggerQ,
          assertBarRom,assertBarRam,
          assertBarE,assertBarS,assertBarA,assertBarX,
@@ -13,19 +15,21 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
    wire [2:0] dest;
    assign {bit7,dest,bit3,source} = ir;
    wire assertBarRom = ~(source==0);
-   wire assertBarRam = ~(source==1);
+   // TODO: (source==1) -- drive zero on bus
    wire assertBarA = ~(source==2);
-   wire assertBarB = ~(source==3); //TODO
+   wire assertBarB = ~(source==3); //TODO: connect to register
    wire assertBarX = ~(source==4);
-   wire assertBarE = ~(source==5);
-   wire assertBarS = ~(source==6);
+   wire assertBarRam = ~(source==5);
+   wire assertBarE = ~(source==6);
+   wire assertBarS = ~(source==7);
    wire loadIR = (dest==0);
-   wire storeMem = (dest==1);
+   wire loadPC = (dest==1);
    wire loadA = (dest==2);
    wire loadB = (dest==3);
    wire loadX = (dest==4);
-   wire loadPC = (dest==5);
+   wire storeMem = (dest==5);
    wire loadQ = (dest==6);
+   //wire loadQhi = (dest==7); //TODO
    wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
    wire unconditionalJump = ~bit3 && ~bit7;

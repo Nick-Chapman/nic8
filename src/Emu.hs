@@ -56,12 +56,12 @@ op2cat = \case
   LXX -> Cat o o FromDataRam ToX
   SXA -> Cat o o FromA ToDataRam
   SXI -> Cat o o FromProgRom ToDataRam
-  JXU -> Cat o o FromX ToP
-  JXZ -> Cat o x FromX ToP
-  JXC -> Cat x o FromX ToP
-  JIU -> Cat o o FromProgRom ToP
-  JIZ -> Cat o x FromProgRom ToP
-  JIC -> Cat x o FromProgRom ToP
+  JXU -> Cat o o FromX ToPC
+  JXZ -> Cat o x FromX ToPC
+  JXC -> Cat x o FromX ToPC
+  JIU -> Cat o o FromProgRom ToPC
+  JIZ -> Cat o x FromProgRom ToPC
+  JIC -> Cat x o FromProgRom ToPC
   ADD -> Cat o o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
@@ -108,58 +108,57 @@ decodeCat b = do
   Cat {xbit7,xbit3,source,dest}
 
 
-data Source = FromProgRom | FromDataRam | FromA | FromB | FromX | FromAlu | FromShiftedA | FromNowhere
+data Source = FromProgRom | FromZero | FromA | FromB | FromX | FromDataRam | FromAlu | FromShiftedA
   deriving (Eq,Show)
 
 encodeSource :: Source -> Byte
 encodeSource = \case
   FromProgRom -> 0
-  FromDataRam -> 1
+  FromZero -> 1 -- drive zero onto bus
   FromA -> 2
   FromB -> 3
   FromX -> 4
-  FromAlu -> 5
-  FromShiftedA -> 6
-  FromNowhere -> 7
+  FromDataRam -> 5
+  FromAlu -> 6
+  FromShiftedA -> 7
 
 decodeSource :: Byte -> Source
 decodeSource = \case
   0 -> FromProgRom
-  1 -> FromDataRam
+  1 -> FromZero
   2 -> FromA
   3 -> FromB
   4 -> FromX
-  5 -> FromAlu
-  6 -> FromShiftedA
-  7 -> FromNowhere
+  5 -> FromDataRam
+  6 -> FromAlu
+  7 -> FromShiftedA
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToP | ToOut | ToNowhere
+data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToPC | ToOut | ToOutHi
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
 encodeDest =  \case
   ToInstructionRegister -> 0
-  ToDataRam -> 1
+  ToPC -> 1
   ToA -> 2
   ToB -> 3
   ToX -> 4
-  ToP -> 5
+  ToDataRam -> 5
   ToOut -> 6
-  ToNowhere -> 7
-  -- destination 7 available for future expansions! - OutHi ?
+  ToOutHi -> 7
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
   0 -> ToInstructionRegister
-  1 -> ToDataRam
+  1 -> ToPC
   2 -> ToA
   3 -> ToB
   4 -> ToX
-  5 -> ToP
+  5 -> ToDataRam
   6 -> ToOut
-  7 -> ToNowhere
+  7 -> ToOutHi
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------
@@ -197,7 +196,7 @@ cat2control = \case
     let provideA = (source == FromA)
     let provideX = (source == FromX)
     let loadIR = (dest == ToInstructionRegister)
-    let loadPC = (dest == ToP)
+    let loadPC = (dest == ToPC)
     let loadA = (dest == ToA)
     let loadB = (dest == ToB)
     let loadX = (dest == ToX)

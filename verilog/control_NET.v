@@ -21,11 +21,11 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .G2B(1'b0),
       .G1(1'b1),
       .Y0(loadBarIR),
-      .Y1(storeMemBar),
+      .Y1(loadBarPC),
       .Y2(loadBarA),
       .Y3(loadBarB),
       .Y4(loadBarX),
-      .Y5(loadBarPC),
+      .Y5(storeMemBar),
       .Y6(loadBarQ),
       .Y7());
 
@@ -39,13 +39,13 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .G2B(1'b0),
       .G1(1'b1),
       .Y0(assertBarRom),
-      .Y1(assertBarRam),
+      .Y1(), // TODO: assert zero
       .Y2(assertBarA),
       .Y3(assertBarB),
       .Y4(assertBarX),
-      .Y5(assertBarE),
-      .Y6(assertBarS),
-      .Y7());
+      .Y5(assertBarRam),
+      .Y6(assertBarE),
+      .Y7(assertBarS));
 
    wire jumpIfZero = bit3;
    wire jumpIfCarry = bit7;
