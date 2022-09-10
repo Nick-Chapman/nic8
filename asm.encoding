@@ -11,6 +11,7 @@
 2f : ASR
 30 : LIB
 32 : TAB
+34 : TXB
 35 : LXB
 36 : ADDB
 37 : LSRB
@@ -18,6 +19,7 @@
 3f : ASRB
 40 : LIX
 42 : TAX
+43 : TBX
 45 : LXX
 46 : ADDX
 4e : SUBX

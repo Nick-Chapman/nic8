@@ -82,7 +82,9 @@ op2cat = \case
   OUTM -> Cat o o FromDataRam ToOut
   TAB -> Cat o o FromA ToB
   TAX -> Cat o o FromA ToX
+  TBX -> Cat o o FromB ToX
   TXA -> Cat o o FromX ToA
+  TXB -> Cat o o FromX ToB
   IMM b -> Lit b
   where
     o = False
@@ -170,6 +172,7 @@ data Control = Control
   , provideAlu :: Bool
   , provideShiftedA :: Bool
   , provideA :: Bool
+  , provideB :: Bool
   , provideX :: Bool
   , loadIR :: Bool
   , loadPC :: Bool
@@ -194,6 +197,7 @@ cat2control = \case
     let provideAlu = (source == FromAlu)
     let provideShiftedA = (source == FromShiftedA)
     let provideA = (source == FromA)
+    let provideB = (source == FromB)
     let provideX = (source == FromX)
     let loadIR = (dest == ToInstructionRegister)
     let loadPC = (dest == ToPC)
@@ -209,7 +213,7 @@ cat2control = \case
     let unconditionalJump = not xbit3 && not xbit7
 
     Control {provideRom,provideRam,provideAlu,provideShiftedA
-            ,provideA,provideX
+            ,provideA,provideB,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,doSubtract,doShiftIn
             ,jumpIfZero,jumpIfCarry,unconditionalJump}
@@ -258,7 +262,7 @@ step :: State -> Control -> (State,Maybe Output)
 step state control = do
   let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry,flagShift} = state
   let Control{provideRom,provideRam,provideAlu,provideShiftedA
-             ,provideA,provideX
+             ,provideA,provideB,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,doSubtract,doShiftIn
              ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
@@ -276,16 +280,17 @@ step state control = do
   let dbus =
         case (provideRom,provideRam
              ,provideAlu
-             ,provideA,provideX
+             ,provideA,provideB,provideX
              ,provideShiftedA
              ) of
-          (True,False,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
-          (False,True,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
-          (False,False,True,False,False,False) -> alu
-          (False,False,False,True,False,False) -> rA
-          (False,False,False,False,True,False) -> rX
-          (False,False,False,False,False,True) -> aShifted
-          (False,False,False,False,False,False) -> error "no drivers for data bus"
+          (True,False,False,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
+          (False,True,False,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
+          (False,False,True,False,False,False,False) -> alu
+          (False,False,False,True,False,False,False) -> rA
+          (False,False,False,False,True,False,False) -> rB
+          (False,False,False,False,False,True,False) -> rX
+          (False,False,False,False,False,False,True) -> aShifted
+          (False,False,False,False,False,False,False) -> error "no drivers for data bus"
           p -> error (show ("multiple drivers for data bus",p))
 
   let s' = State

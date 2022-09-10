@@ -44,7 +44,9 @@ data Op
   -- Register transfers
   | TAB -- B := A
   | TAX -- X := A
+  | TBX -- X := B
   | TXA -- A := X
+  | TXB -- B := X
   -- Output
   | OUT -- Out := A
   | OUTX -- Out := X
@@ -84,7 +86,9 @@ allOps =
   , LSRB
   , TAB
   , TAX
+  , TBX
   , TXA
+  , TXB
   , OUT
   , OUTX
   , OUTI

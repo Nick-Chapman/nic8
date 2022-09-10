@@ -1,7 +1,11 @@
 
 module Primes (primes,primesNoInit) where
 
-import Asm
+import Asm hiding (jz)
+import qualified Asm
+
+jz :: Byte -> Asm ()
+jz loc = do Asm.jz loc --; lx 99
 
 primes :: Bool -> [Op]
 primes spining = assemble $ mdo
@@ -32,6 +36,14 @@ primes spining = assemble $ mdo
   loadA candidate
   loop_subtract <- Here
   sub
+
+  -- explore moving between B and X... hmm, something seems wrong
+{-
+  tbx
+  --lb 99
+  txb -- This should have no effect following a tbx, but it does
+-}
+
   jz divides
   jc loop_subtract
   -- noDiv: move to next prime
