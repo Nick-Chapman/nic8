@@ -70,6 +70,12 @@ op2cat = \case
   SUB -> Cat o x FromAlu ToA
   SUBB -> Cat o x FromAlu ToB
   SUBX -> Cat o x FromAlu ToX
+
+  LSR -> Cat o o FromShiftedA ToA
+  ASR -> Cat o x FromShiftedA ToA
+  LSRB -> Cat o o FromShiftedA ToB
+  ASRB -> Cat o x FromShiftedA ToB
+
   OUT -> Cat o o FromA ToOut
   OUTX -> Cat o o FromX ToOut
   OUTI -> Cat o o FromProgRom ToOut
@@ -102,7 +108,7 @@ decodeCat b = do
   Cat {xbit7,xbit3,source,dest}
 
 
-data Source = FromProgRom | FromDataRam | FromA | FromB | FromX | FromAlu | FromNowhere
+data Source = FromProgRom | FromDataRam | FromA | FromB | FromX | FromAlu | FromShiftedA | FromNowhere
   deriving (Eq,Show)
 
 encodeSource :: Source -> Byte
@@ -113,7 +119,8 @@ encodeSource = \case
   FromB -> 3
   FromX -> 4
   FromAlu -> 5
-  FromNowhere -> 6
+  FromShiftedA -> 6
+  FromNowhere -> 7
 
 decodeSource :: Byte -> Source
 decodeSource = \case
@@ -123,7 +130,7 @@ decodeSource = \case
   3 -> FromB
   4 -> FromX
   5 -> FromAlu
-  6 -> FromNowhere
+  6 -> FromShiftedA
   7 -> FromNowhere
   x -> error (show ("decodeSource",x))
 
@@ -162,6 +169,7 @@ data Control = Control
   { provideRom :: Bool
   , provideRam :: Bool
   , provideAlu :: Bool
+  , provideShiftedA :: Bool
   , provideA :: Bool
   , provideX :: Bool
   , loadIR :: Bool
@@ -172,6 +180,7 @@ data Control = Control
   , storeMem :: Bool
   , doOut :: Bool
   , doSubtract :: Bool
+  , doShiftIn :: Bool
   , jumpIfZero :: Bool
   , jumpIfCarry :: Bool
   , unconditionalJump :: Bool
@@ -184,6 +193,7 @@ cat2control = \case
     let provideRom = (source == FromProgRom)
     let provideRam = (source == FromDataRam)
     let provideAlu = (source == FromAlu)
+    let provideShiftedA = (source == FromShiftedA)
     let provideA = (source == FromA)
     let provideX = (source == FromX)
     let loadIR = (dest == ToInstructionRegister)
@@ -194,13 +204,15 @@ cat2control = \case
     let storeMem = (dest == ToDataRam)
     let doOut = (dest == ToOut)
     let doSubtract = xbit3
+    let doShiftIn = xbit3
     let jumpIfZero = xbit3
     let jumpIfCarry = xbit7
     let unconditionalJump = not xbit3 && not xbit7
 
-    Control {provideRom,provideRam,provideAlu,provideA,provideX
+    Control {provideRom,provideRam,provideAlu,provideShiftedA
+            ,provideA,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
-            ,doOut,doSubtract
+            ,doOut,doSubtract,doShiftIn
             ,jumpIfZero,jumpIfCarry,unconditionalJump}
 
 ----------------------------------------------------------------------
@@ -215,11 +227,12 @@ data State = State
   , rB :: Byte
   , rX :: Byte
   , flagCarry :: Bool
+  , flagShift :: Bool
   } deriving Eq
 
 instance Show State where
-  show State{rIR,rPC,rA,rB,rX,flagCarry} =
-    printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, CARRY=%s" rPC rIR rA rB rX (show flagCarry)
+  show State{rIR,rPC,rA,rB,rX,flagCarry,flagShift} =
+    printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, CARRY=%s, SHIFTED=%s" rPC rIR rA rB rX (show flagCarry) (show flagShift)
 
 initState :: [Op] -> State
 initState prog = State
@@ -231,6 +244,7 @@ initState prog = State
   , rB = 0
   , rX = 0
   , flagCarry = False
+  , flagShift = False
   }
 
 initMem :: [Op] -> Map Byte Byte
@@ -243,10 +257,11 @@ data Output = Output Byte
 
 step :: State -> Control -> (State,Maybe Output)
 step state control = do
-  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry} = state
-  let Control{provideRom,provideRam,provideAlu,provideA,provideX
+  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry,flagShift} = state
+  let Control{provideRom,provideRam,provideAlu,provideShiftedA
+             ,provideA,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
-             ,doOut,doSubtract
+             ,doOut,doSubtract,doShiftIn
              ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
   let aIsZero = (rA == 0)
   let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
@@ -256,14 +271,22 @@ step state control = do
         then not (rB > rA)
         else fromIntegral rA + fromIntegral rB >= (256::Int)
 
+  let aShifted =
+        (if doShiftIn && flagShift then 128 else 0) + rA `div` 2
+  let shiftedOut = rA `mod` 2 == 1
   let dbus =
-        case (provideRom,provideRam,provideAlu,provideA,provideX) of
-          (True,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
-          (False,True,False,False,False) -> maybe 0 id (Map.lookup rX rom)
-          (False,False,True,False,False) -> alu
-          (False,False,False,True,False) -> rA
-          (False,False,False,False,True) -> rX
-          (False,False,False,False,False) -> error "no drivers for data bus"
+        case (provideRom,provideRam
+             ,provideAlu
+             ,provideA,provideX
+             ,provideShiftedA
+             ) of
+          (True,False,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
+          (False,True,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
+          (False,False,True,False,False,False) -> alu
+          (False,False,False,True,False,False) -> rA
+          (False,False,False,False,True,False) -> rX
+          (False,False,False,False,False,True) -> aShifted
+          (False,False,False,False,False,False) -> error "no drivers for data bus"
           p -> error (show ("multiple drivers for data bus",p))
 
   let s' = State
@@ -275,6 +298,7 @@ step state control = do
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
         , flagCarry = if provideAlu then carry else flagCarry
+        , flagShift = if provideShiftedA then shiftedOut else flagShift
         }
   (s',
    if doOut then Just (Output dbus) else Nothing

@@ -5,11 +5,11 @@ module whole_cpu (input clk, reset);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire `Control controlBits;
-   wire aIsZero,flagCarry;
+   wire aIsZero,flagCarry,flagShift;
 
    wire loadBarIR,storeMemBar;
    wire assertBarRom,assertBarRam;
-   wire assertBarM,assertBarE,assertBarA,assertBarX;
+   wire assertBarM,assertBarE,assertBarS,assertBarA,assertBarX;
    wire immediate,doSubtract,doJump;
 
    wire clkBar = ~clk;
@@ -19,7 +19,7 @@ module whole_cpu (input clk, reset);
    assign {loadBarIR,storeMemBar,
            _,_,_,_,
            assertBarRom,assertBarRam,
-           assertBarE,_,_,
+           assertBarE,assertBarS,_,_,
            doSubtract,doJump
            } = controlBits;
 
@@ -36,6 +36,6 @@ module whole_cpu (input clk, reset);
      (clkBar,resetBar,controlBits,dbus,areg,breg,xreg,qreg);
 
    alu`suff a
-     (clk,reset,doSubtract,assertBarE,areg,breg,dbus,aIsZero,flagCarry);
+     (clk,reset,doSubtract,assertBarE,assertBarS,areg,breg,dbus,aIsZero,flagCarry,flagShift);
 
 endmodule

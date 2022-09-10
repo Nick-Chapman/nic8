@@ -29,6 +29,7 @@ table =
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
   , ("collatz",collatz)
+  , ("shifty",shifty)
   ]
 
 variousInstructions :: [Op]
@@ -368,3 +369,14 @@ countdownForeverC = assemble $ do
   sub
   jc loop
   jump start
+
+-- new example to try the planned shifter unit
+-- we can only shift right; storing the shifted-out bit as a flag
+-- we can shift-in (asr) or not (lsr) the previous shifted-out bit
+shifty :: [Op]
+shifty = assemble $ do
+  la 32
+  loop <- Here
+  out
+  asr
+  jump' loop

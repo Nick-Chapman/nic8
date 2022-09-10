@@ -35,6 +35,11 @@ data Op
   | SUB -- A := A-B
   | SUBB -- B := A-B
   | SUBX -- X := A-B
+  -- shifting
+  | LSR -- A := A>>1; shifFlag=A[0]
+  | ASR -- A := (shifFlag?128:0) | A>>1; shiftFlag=A[0]
+  | LSRB -- B := A>>1; shifFlag=A[0]
+  | ASRB -- B := (shifFlag?128:0) | A>>1; shiftFlag=A[0]
   -- more SUBS possible too
   -- Register transfers
   | TAB -- B := A
@@ -73,6 +78,10 @@ allOps =
   , SUB
   , SUBB
   , SUBX
+  , ASR
+  , LSR
+  , ASRB
+  , LSRB
   , TAB
   , TAX
   , TXA

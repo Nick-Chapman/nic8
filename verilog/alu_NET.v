@@ -1,12 +1,12 @@
 
-module alu_NET(input clk, reset, doSubtract, assertBarE,
+module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
-               output reg [0:0] flagCarry);
+               output reg [0:0] flagCarry,flagShift);
 
    wire coutLO,coutHI;
-   wire [7:0] other,aluOut;
+   wire [7:0] other,aluOut,shifted;
 
    assign aIsZero = (areg == 0); // TODO: 8-wide nor
 
@@ -14,9 +14,15 @@ module alu_NET(input clk, reset, doSubtract, assertBarE,
    always #1 if (reset) flagCarry = 0;
    always @(posedge(clk || assertBarE)) flagCarry = coutHI;
 
-   LS245 u0 (.ENB(assertBarE), .DIR(1'b1), .A(aluOut), .B(dbus));
+   always #1 if (reset) flagShift = 0;
+   always @(posedge(clk || assertBarS)) flagShift = areg[0];
 
-   LS86 u1
+   assign shifted = {flagShift, areg[7:1]};
+
+   LS245 u0 (.ENB(assertBarE), .DIR(1'b1), .A(aluOut), .B(dbus));
+   LS245 u1 (.ENB(assertBarS), .DIR(1'b1), .A(shifted), .B(dbus));
+
+   LS86 u2
      (.A1(doSubtract),
       .A2(doSubtract),
       .A3(doSubtract),
@@ -30,7 +36,7 @@ module alu_NET(input clk, reset, doSubtract, assertBarE,
       .Y3(other[2]),
       .Y4(other[3]));
 
-   LS86 u2
+   LS86 u3
      (.A1(doSubtract),
       .A2(doSubtract),
       .A3(doSubtract),

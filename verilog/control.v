@@ -1,12 +1,12 @@
 
-`define Control [1:13]
+`define Control [1:14]
 
 module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
    wire `Control controlBits =
         {~loadIR,~storeMem,
          triggerA,triggerB,triggerX,triggerQ,
          assertBarRom,assertBarRam,
-         assertBarE,assertBarA,assertBarX,
+         assertBarE,assertBarS,assertBarA,assertBarX,
          doSubtract,doJump};
    wire bit7, bit3;
    wire [2:0] source;
@@ -18,6 +18,7 @@ module control (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control c
    wire assertBarB = ~(source==3); //TODO
    wire assertBarX = ~(source==4);
    wire assertBarE = ~(source==5);
+   wire assertBarS = ~(source==6);
    wire loadIR = (dest==0);
    wire storeMem = (dest==1);
    wire loadA = (dest==2);

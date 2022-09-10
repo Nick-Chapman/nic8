@@ -8,6 +8,7 @@ module Asm
   , variable
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
   , increment
+  , lsr, asr, lsrb, asrb
   ) where
 
 import Control.Monad (ap,liftM)
@@ -22,6 +23,7 @@ la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
 jxu :: Asm () -- jumps
 jump,jump',jz,jz',jc,jc' :: Byte -> Asm () -- jumps
+lsr,asr,lsrb,asrb :: Asm ()
 
 variable :: Byte -> Asm Byte -- allocate space for a variable
 loadA,loadB,loadX :: Byte -> Asm () -- load vars into regs
@@ -36,6 +38,11 @@ addb = Emit [ADDB]
 addx = Emit [ADDX]
 addout = Emit [ADDOUT]
 sub = Emit [SUB]
+
+lsr = Emit [LSR]
+asr = Emit [ASR]
+lsrb = Emit [LSR]
+asrb = Emit [ASR]
 
 tab = Emit [TAB]
 tax = Emit [TAX]

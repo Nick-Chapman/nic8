@@ -4,7 +4,7 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
         {loadBarIR,storeMemBar,
          triggerA,triggerB,triggerX,triggerQ,
          assertBarRom,assertBarRam,
-         assertBarE,assertBarA,assertBarX,
+         assertBarE,assertBarS,assertBarA,assertBarX,
          doSubtract,doJump};
    wire bit7, bit3;
    wire [2:0] source;
@@ -29,7 +29,7 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y6(loadBarQ),
       .Y7());
 
-   wire assertBarRom, assertBarRam, assertBarA, assertBarB, assertBarX, assertBarE;
+   wire assertBarRom, assertBarRam, assertBarA, assertBarB, assertBarX, assertBarE, assertBarS;
 
    LS138 s
      (.A(source[0]),
@@ -44,7 +44,7 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y3(assertBarB),
       .Y4(assertBarX),
       .Y5(assertBarE),
-      .Y6(),
+      .Y6(assertBarS),
       .Y7());
 
    wire jumpIfZero = bit3;

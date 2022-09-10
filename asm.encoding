@@ -6,12 +6,16 @@
 21 : LXA
 24 : TXA
 25 : ADD
+26 : LSR
 2d : SUB
+2e : ASR
 30 : LIB
 31 : LXB
 32 : TAB
 35 : ADDB
+36 : LSRB
 3d : SUBB
+3e : ASRB
 40 : LIX
 41 : LXX
 42 : TAX
