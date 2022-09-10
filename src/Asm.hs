@@ -3,7 +3,7 @@ module Asm
   ( Byte, Op(..), Asm(..), assemble
   , add, addb, addx, addout, sub, tab, tax, txa, out, outx, nop, outi
   , spin
-  , la, lb, lx, jump, jump', jz, jz', jc, jc', jxu
+  , la, lb, lx, jump, jz, jc, jxu
   , lxa, lxb, lxx
   , variable
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
@@ -22,7 +22,7 @@ outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
 jxu :: Asm () -- jumps
-jump,jump',jz,jz',jc,jc' :: Byte -> Asm () -- jumps
+jump,jz,jc :: Byte -> Asm () -- jumps
 lsr,asr,lsrb,asrb :: Asm ()
 
 variable :: Byte -> Asm Byte -- allocate space for a variable
@@ -66,12 +66,9 @@ lxb = Emit [LXB]
 lxx = Emit [LXX]
 
 jxu = Emit [JXU]
-jump b = Emit [LIX, IMM b, JXU]
-jump' b = Emit [JIU, IMM b] -- better implementation; avoid trashing X
-jz b = Emit [LIX, IMM b, JXZ]
-jz' b = Emit [JIZ, IMM b]
-jc b = Emit [LIX, IMM b, JXC]
-jc' b = Emit [JIC, IMM b]
+jump b = Emit [JIU, IMM b]
+jz b = Emit [JIZ, IMM b]
+jc b = Emit [JIC, IMM b]
 
 variable val = do
   loc <- Here

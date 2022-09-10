@@ -27,16 +27,16 @@ primes spining = assemble $ mdo
   -- Test if candidate is divible by next prime
   loop_testPrimes <- Here
   tax; lxx; txa
-  jz' noMorePrimes
+  jz noMorePrimes
   tab
   loadA candidate
   loop_subtract <- Here
   sub
-  jz' divides
-  jc' loop_subtract
+  jz divides
+  jc loop_subtract
   -- noDiv: move to next prime
   increment primePtr 1
-  jump' loop_testPrimes
+  jump loop_testPrimes
 
   -- candidate does not divide by any previous prime... so it is must be prime
   noMorePrimes <- Here
@@ -48,12 +48,12 @@ primes spining = assemble $ mdo
   -- candidate is a multiple, so try next candidate
   divides <- Here
   increment candidate 2 -- simple optimization; step by 2
-  jc' done -- restart if candidate exceeds 255
-  jump' loop_testCandidate -- otherwise test next candidate
+  jc done -- restart if candidate exceeds 255
+  jump loop_testCandidate -- otherwise test next candidate
 
   done <- Here
   if spining then spin else pure ()
-  jump' start
+  jump start
 
   pure ()
 

@@ -68,15 +68,15 @@ run = Testing.run $ do
       la 44
       out
       spin
-  test (makeCode 33) 9 [33]
-  test (makeCode 0) 11 [44]
+  test (makeCode 33) 7 [33]
+  test (makeCode 0) 9 [44]
 
   test X.variousInstructions 61 [75,74,111,111,222,77]
   test X.countdown5to0 63 [5,4,3,2,1,0]
-  test X.multiply5by7 179 [35]
-  test X.fibA 469 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibB 339 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibC 209 [1,1,2,3,5,8,13,21,34,55,89,144,233]
+  test X.multiply5by7 155 [35]
+  test X.fibA 425 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibB 295 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibC 159 [1,1,2,3,5,8,13,21,34,55,89,144,233]
 
   let
     -- example which outputs memory sequentially
@@ -132,12 +132,12 @@ run = Testing.run $ do
       yes <- Here
       outi 1; spin
 
-  test (divides 8 1) 83 [1]
-  test (divides 8 2) 43 [1]
-  test (divides 8 3) 37 [0]
-  test (divides 8 4) 23 [1]
-  test (divides 8 5) 27 [0]
-  test (divides 8 11) 17 [0]
+  test (divides 8 1) 53 [1]
+  test (divides 8 2) 29 [1]
+  test (divides 8 3) 25 [0]
+  test (divides 8 4) 17 [1]
+  test (divides 8 5) 19 [0]
+  test (divides 8 11) 13 [0]
 
   -- test prime generation program
   let spining = True

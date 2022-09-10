@@ -270,7 +270,7 @@ varProg0init = assemble $ mdo
   add
   --storeA v1
   sxa
-  jump loop -- or use jump' !
+  jump loop -- or use jump !
   --v1 <- variable 0x42
   pure ()
 
@@ -366,4 +366,4 @@ shifty = assemble $ do
   loop <- Here
   out
   asr
-  jump' loop
+  jump loop
