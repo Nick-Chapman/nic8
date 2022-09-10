@@ -1,17 +1,19 @@
 
-module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Control controlBits);
-   wire `Control controlBits =
-        {loadBarIR,storeMemBar,
-         triggerA,triggerB,triggerX,triggerQ,
-         assertBarRom,assertBarRam,
-         assertBarE,assertBarS,assertBarA,assertBarX,
-         doSubtract,doJump};
+module control_NET
+  (input [7:0] ir, input clk, aIsZero, flagCarry,
+   output loadBarIR,storeMemBar,
+   output triggerA,triggerB,triggerX,triggerQ,
+   output assertBarRom,assertBarRam,
+   output assertBarE,assertBarS,assertBarA,assertBarX,
+   output doSubtract,doJump
+   );
+
    wire bit7, bit3;
    wire [2:0] source;
    wire [2:0] dest;
    assign {bit7,dest,bit3,source} = ir;
 
-   wire loadBarIR, loadBarPC, loadBarA, loadBarB, loadBarX, storeMemBar, loadBarQ;
+   wire loadBarPC, loadBarA, loadBarB, loadBarX, loadBarQ;
 
    LS138 d
      (.A(dest[0]),
@@ -29,8 +31,6 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y6(loadBarQ),
       .Y7());
 
-   wire assertBarRom, assertBarRam, assertBarA, assertBarB, assertBarX, assertBarE, assertBarS;
-
    LS138 s
      (.A(source[0]),
       .B(source[1]),
@@ -41,7 +41,7 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
       .Y0(assertBarRom),
       .Y1(), // TODO: assert zero
       .Y2(assertBarA),
-      .Y3(assertBarB),
+      .Y3(), //assertBarB), //TODO
       .Y4(assertBarX),
       .Y5(assertBarRam),
       .Y6(assertBarE),
@@ -51,10 +51,8 @@ module control_NET (input [7:0] ir, input clk, aIsZero, flagCarry, output `Contr
    wire jumpIfCarry = bit7;
    wire unconditionalJump = ~bit3 && ~bit7;
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
-   wire doSubtract = bit3;
-   wire doJump = ~loadBarPC && jumpControl;
-
-   wire triggerA, triggerB, triggerX, triggerQ;
+   assign doSubtract = bit3;
+   assign doJump = ~loadBarPC && jumpControl;
 
    LS32 u1
      (.A1(clk),

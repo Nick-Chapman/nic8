@@ -4,27 +4,14 @@
 module whole_cpu (input clk, reset);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
-   wire `Control controlBits;
    wire aIsZero,flagCarry,flagShift;
-
-   wire loadBarIR,storeMemBar;
-   wire assertBarRom,assertBarRam;
-   wire assertBarM,assertBarE,assertBarS,assertBarA,assertBarX;
-   wire doSubtract,doJump;
+   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ, assertBarRom,assertBarRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJump;
 
    wire clkBar = ~clk;
    wire resetBar = ~reset;
    wire assertRom = ~assertBarRom;
    wire assertRam = ~assertBarRam;
    wire doJumpBar = ~doJump;
-
-   wire _;
-   assign {loadBarIR,storeMemBar,
-           _,_,_,_,
-           assertBarRom,assertBarRam,
-           assertBarE,assertBarS,_,_,
-           doSubtract,doJump
-           } = controlBits;
 
    rom prog (    assertRom,            pc,  dbus);
    ram data (clk,assertRam,storeMemBar,xreg,dbus);
@@ -33,12 +20,24 @@ module whole_cpu (input clk, reset);
 
    fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
 
-   control`suff c (ir,clk,aIsZero,flagCarry,controlBits);
+   control`suff c
+     (ir,clk,aIsZero,flagCarry,
+      loadBarIR,storeMemBar,
+      triggerA,triggerB,triggerX,triggerQ,
+      assertBarRom,assertBarRam,
+      assertBarE,assertBarS,assertBarA,assertBarX,
+      doSubtract,doJump
+      );
 
    registers`suff registers
-     (clkBar,resetBar,controlBits,dbus,areg,breg,xreg,qreg);
+     (clkBar,resetBar,
+      triggerA,triggerB,triggerX,triggerQ,assertBarA,assertBarX
+      ,dbus,areg,breg,xreg,qreg
+      );
 
    alu`suff a
-     (clk,reset,doSubtract,assertBarE,assertBarS,areg,breg,dbus,aIsZero,flagCarry,flagShift);
+     (clk,reset,doSubtract,assertBarE,assertBarS,areg,breg,
+      dbus,aIsZero,flagCarry,flagShift
+      );
 
 endmodule

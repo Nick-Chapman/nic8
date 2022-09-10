@@ -1,17 +1,10 @@
 
 module registers
-  (input clkBar, resetBar, input `Control controlBits, inout [7:0] dbus,
-   output [7:0] areg, breg, xreg, qreg);
-
-   wire _;
-   wire triggerA, triggerB, triggerX, triggerQ;
-   wire assertBarA,assertBarX;
-
-   assign {_,_,_,
-           triggerA,triggerB,triggerX,triggerQ,
-           _,_,
-           _,_,assertBarA,assertBarX,
-           _,_} = controlBits;
+  (input clkBar, resetBar,
+   input triggerA,triggerB,triggerX,triggerQ,assertBarA,assertBarX,
+   inout [7:0] dbus,
+   output [7:0] areg, breg, xreg, qreg
+   );
 
    wire clk = ~clkBar;
 
