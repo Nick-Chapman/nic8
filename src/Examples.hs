@@ -362,7 +362,7 @@ countdownForeverC = assemble $ do
 -- we can shift-in (asr) or not (lsr) the previous shifted-out bit
 shifty :: [Op]
 shifty = assemble $ do
-  la 32
+  la 64
   loop <- Here
   out
   asr
