@@ -14,6 +14,9 @@ module whole_cpu (input clk, reset);
 
    wire clkBar = ~clk;
    wire resetBar = ~reset;
+   wire assertRom = ~assertBarRom;
+   wire assertRam = ~assertBarRam;
+   wire doJumpBar = ~doJump;
 
    wire _;
    assign {loadBarIR,storeMemBar,
@@ -23,10 +26,10 @@ module whole_cpu (input clk, reset);
            doSubtract,doJump
            } = controlBits;
 
-   rom prog (    ~assertBarRom,            pc,  dbus);
-   ram data (clk,~assertBarRam,storeMemBar,xreg,dbus);
+   rom prog (    assertRom,            pc,  dbus);
+   ram data (clk,assertRam,storeMemBar,xreg,dbus);
 
-   programCounter`suff p (resetBar,clk,~doJump,~assertBarRom,dbus,pc);
+   programCounter`suff p (resetBar,clk,doJumpBar,assertRom,dbus,pc);
 
    fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
 
