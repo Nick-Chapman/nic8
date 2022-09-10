@@ -10,7 +10,7 @@ module Examples
   , varProg1, varProg0
   , collatz
   , openCountLoop, tightCountLoop
-  , countdownForeverZ, countdownForeverC
+  , countdownForeverC
   , module Primes
 
   , table
@@ -24,12 +24,11 @@ table =
   [ ("open-count-loop", openCountLoop)
   , ("tight-count-loop", tightCountLoop)
   , ("fibs-forever",fibForever)
-  , ("countdownForeverZ",countdownForeverZ)
-  , ("countdownForeverC",countdownForeverC)
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
   , ("collatz",collatz)
   , ("shifty",shifty)
+  , ("countdownForeverC",countdownForeverC)
   ]
 
 variousInstructions :: [Op]
@@ -345,19 +344,7 @@ tightCountLoop = assemble $ mdo
   loop <- Here
   add
   out
-  --jump loop
   jxu
-
-countdownForeverZ :: [Op]
-countdownForeverZ = assemble $ do
-  lb 1
-  start <- Here
-  la 5
-  loop <- Here
-  out
-  jz start
-  sub
-  jump' loop -- using new JIU instruction
 
 countdownForeverC :: [Op]
 countdownForeverC = assemble $ do
