@@ -15,7 +15,7 @@ module control_NET
 
    wire loadBarPC, loadBarA, loadBarB, loadBarX, loadBarQ;
 
-   LS138 d
+   LS138 demuxDest
      (.A(dest[0]),
       .B(dest[1]),
       .C(dest[2]),
@@ -34,7 +34,7 @@ module control_NET
    wire assertBarRom;
    wire assertBarRam;
 
-   LS138 s
+   LS138 demuxSource
      (.A(source[0]),
       .B(source[1]),
       .C(source[2]),
@@ -50,7 +50,7 @@ module control_NET
       .Y6(assertBarE),
       .Y7(assertBarS));
 
-   LS32 u1
+   LS32 clockGateTriggers
      (.A1(clk),
       .A2(clk),
       .A3(clk),
@@ -66,14 +66,33 @@ module control_NET
 
    assign doSubtract = bit3;
 
+   // These 6 inverters can go on a single chip
    assign assertRom = ~assertBarRom;
    assign assertRam = ~assertBarRam;
+   wire dontRequireZ = ~bit3;
+   wire dontRequireC = ~bit7;
+   wire suppressJumpForZ = ~takeJumpForZ;
+   wire suppressJumpForC = ~takeJumpForC;
 
-   wire jumpIfZero = bit3;
-   wire jumpIfCarry = bit7;
-   wire unconditionalJump = ~bit3 && ~bit7;
-   wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
-   wire doJump = ~loadBarPC && jumpControl;
-   assign doJumpBar = ~doJump;
+   wire takeJumpForZ,takeJumpForC,suppressJump;
+
+   LS32 u2
+     (.A1(dontRequireZ),
+      .B1(aIsZero),
+      .Y1(takeJumpForZ),
+
+      .A2(dontRequireC),
+      .B2(flagCarry),
+      .Y2(takeJumpForC),
+
+      .A3(suppressJumpForZ),
+      .B3(suppressJumpForC),
+      .Y3(suppressJump),
+
+      .A4(loadBarPC),
+      .B4(suppressJump),
+      .Y4(doJumpBar)
+      );
+
 
 endmodule
