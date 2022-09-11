@@ -1,12 +1,10 @@
 
 module registers
-  (input clkBar, resetBar,
+  (input resetBar,
    input triggerA,triggerB,triggerX,triggerQ,assertBarA,assertBarX,
    inout [7:0] dbus,
    output [7:0] areg, breg, xreg, qreg
    );
-
-   wire clk = ~clkBar;
 
    GPR A(~resetBar,triggerA,dbus,areg);
    GPR B(~resetBar,triggerB,dbus,breg);

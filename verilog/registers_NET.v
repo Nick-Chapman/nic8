@@ -1,6 +1,6 @@
 
 module registers_NET
-  (input clkBar, resetBar,
+  (input resetBar,
    input triggerA,triggerB,triggerX,triggerQ,assertBarA,assertBarX,
    inout [7:0] dbus,
    output [7:0] areg, breg, xreg, qreg

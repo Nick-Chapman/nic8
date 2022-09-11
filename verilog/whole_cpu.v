@@ -7,7 +7,6 @@ module whole_cpu (input clk, reset);
    wire aIsZero,flagCarry,flagShift;
    wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
 
-   wire clkBar = ~clk;
    wire resetBar = ~reset;
 
    rom prog (    assertRom,            pc,  dbus);
@@ -40,7 +39,7 @@ module whole_cpu (input clk, reset);
       .doJumpBar(doJumpBar));
 
    registers`suff registers
-     (clkBar,resetBar,
+     (resetBar,
       triggerA,triggerB,triggerX,triggerQ,assertBarA,assertBarX
       ,dbus,areg,breg,xreg,qreg
       );
