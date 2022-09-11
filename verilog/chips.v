@@ -113,3 +113,18 @@ module LS74
      else {Q2,QB2} <= {D2,~D2};
 
 endmodule
+
+
+module LS04 (A1,Y1,A2,Y2,A3,Y3,Y4,A4,Y5,A5,Y6,A6);
+
+   input A1,A2,A3,A4,A5,A6;
+   output Y1,Y2,Y3,Y4,Y5,Y6;
+
+   assign Y1 = ~A1;
+   assign Y2 = ~A2;
+   assign Y3 = ~A3;
+   assign Y4 = ~A4;
+   assign Y5 = ~A5;
+   assign Y6 = ~A6;
+
+endmodule

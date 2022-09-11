@@ -80,14 +80,7 @@ module control_NET
 
    assign doSubtract = bit3;
 
-   // These 6 inverters can go on a single chip
-   assign assertRom = ~assertBarRom;
-   assign assertRam = ~assertBarRam;
-   wire dontRequireZ = ~bit3;
-   wire dontRequireC = ~bit7;
-   wire suppressJumpForZ = ~takeJumpForZ;
-   wire suppressJumpForC = ~takeJumpForC;
-
+   wire dontRequireZ, dontRequireC, suppressJumpForZ, suppressJumpForC;
    wire takeJumpForZ,takeJumpForC,suppressJump;
 
    LS32 u2
@@ -108,5 +101,12 @@ module control_NET
       .Y4(doJumpBar)
       );
 
+   LS04 u3
+     (.Y1(assertRom), .A1(assertBarRom),
+      .Y2(assertRam), .A2(assertBarRam),
+      .Y3(dontRequireZ), .A3(bit3),
+      .Y4(dontRequireC), .A4(bit7),
+      .Y5(suppressJumpForZ), .A5(takeJumpForZ),
+      .Y6(suppressJumpForC), .A6(takeJumpForC));
 
 endmodule
