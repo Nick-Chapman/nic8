@@ -2,7 +2,7 @@
 module control_NET
   (input [7:0] ir, input clk, aIsZero, flagCarry,
    output loadBarIR,storeMemBar,
-   output triggerA,triggerB,triggerX,triggerQ,
+   output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,
    output assertBarE,assertBarS,assertBarA,assertBarX,
    output doSubtract,doJumpBar
@@ -50,7 +50,7 @@ module control_NET
       .Y6(assertBarE),
       .Y7(assertBarS));
 
-   LS32 clockGateTriggers
+   LS32 clockGateTriggers1
      (.A1(clk),
       .A2(clk),
       .A3(clk),
@@ -63,6 +63,20 @@ module control_NET
       .Y2(triggerB),
       .Y3(triggerX),
       .Y4(triggerQ));
+
+   LS32 clockGateTriggers2
+     (.A1(clk),
+      .A2(clk),
+      .A3(1'bz),
+      .A4(1'bz),
+      .B1(assertBarE),
+      .B2(assertBarS),
+      .B3(1'bz),
+      .B4(1'bz),
+      .Y1(triggerC),
+      .Y2(triggerS),
+      .Y3(),
+      .Y4());
 
    assign doSubtract = bit3;
 

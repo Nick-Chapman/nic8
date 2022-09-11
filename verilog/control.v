@@ -2,7 +2,7 @@
 module control
   (input [7:0] ir, input clk, aIsZero, flagCarry,
    output loadBarIR,storeMemBar,
-   output triggerA,triggerB,triggerX,triggerQ,
+   output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,
    output assertBarE,assertBarS,assertBarA,assertBarX,
    output doSubtract,doJumpBar
@@ -13,19 +13,21 @@ module control
    wire [2:0] dest;
    assign {bit7,dest,bit3,source} = ir;
 
+   assign loadBarIR = ~(dest==0);
    wire loadPC = (dest==1);
    wire loadA = (dest==2);
    wire loadB = (dest==3);
    wire loadX = (dest==4);
+   assign storeMemBar = ~(dest==5); //TODO: rename
    wire loadQ = (dest==6);
    //wire loadQhi = (dest==7); //TODO
 
-   assign loadBarIR = ~(dest==0);
-   assign triggerA = ~(~clk & loadA);
-   assign triggerB = ~(~clk & loadB);
-   assign triggerX = ~(~clk & loadX);
-   assign storeMemBar = ~(dest==5); //TODO: rename
-   assign triggerQ = ~(~clk & loadQ);
+   assign triggerA = clk | ~loadA;
+   assign triggerB = clk | ~loadB;
+   assign triggerX = clk | ~loadX;
+   assign triggerQ = clk | ~loadQ;
+   assign triggerC = clk | assertBarE;
+   assign triggerS = clk | assertBarS;
 
    assign assertRom = (source==0);
    // TODO: (source==1) -- drive zero on bus

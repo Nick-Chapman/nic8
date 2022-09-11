@@ -1,5 +1,5 @@
 
-module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS,
+module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC,triggerS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
@@ -9,9 +9,6 @@ module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS,
    wire [7:0] other,aluOut,shifted;
 
    assign aIsZero = (areg == 0); // TODO: 8-wide nor
-
-   wire triggerC = clk | assertBarE;
-   wire triggerS = clk | assertBarS;
 
    LS74 flags
      (

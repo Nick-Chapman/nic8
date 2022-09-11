@@ -1,5 +1,5 @@
 
-module alu(input clk, reset, doSubtract, assertBarE, assertBarS,
+module alu(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC, triggerS,
            input [7:0]      areg, breg,
            output [7:0]     dbus,
            output           aIsZero,
@@ -21,7 +21,7 @@ module alu(input clk, reset, doSubtract, assertBarE, assertBarS,
       flagShift = 0;
    end
 
-   always @(posedge clk) if (~assertBarE) flagCarry <= carry;
-   always @(posedge clk) if (~assertBarS) flagShift <= areg[0];
+   always @(posedge triggerC) flagCarry <= carry;
+   always @(posedge triggerS) flagShift <= areg[0];
 
 endmodule

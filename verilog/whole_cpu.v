@@ -5,7 +5,7 @@ module whole_cpu (input clk, reset);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire aIsZero,flagCarry,flagShift;
-   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ, assertRom,assertRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
+   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
 
    wire clkBar = ~clk;
    wire resetBar = ~reset;
@@ -28,6 +28,8 @@ module whole_cpu (input clk, reset);
       .triggerB(triggerB),
       .triggerX(triggerX),
       .triggerQ(triggerQ),
+      .triggerC(triggerC),
+      .triggerS(triggerS),
       .assertRom(assertRom),
       .assertRam(assertRam),
       .assertBarE(assertBarE),
@@ -44,7 +46,7 @@ module whole_cpu (input clk, reset);
       );
 
    alu`suff a
-     (clk,reset,doSubtract,assertBarE,assertBarS,areg,breg,
+     (clk,reset,doSubtract,assertBarE,assertBarS,triggerC,triggerS,areg,breg,
       dbus,aIsZero,flagCarry,flagShift
       );
 
