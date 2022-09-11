@@ -1,13 +1,11 @@
 
 `define suff _NET
 
-module whole_cpu (input clk, reset);
+module whole_cpu (input clk, resetBar);
 
    wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
    wire aIsZero,flagCarry,flagShift;
    wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
-
-   wire resetBar = ~reset;
 
    rom prog (    assertRom,            pc,  dbus);
    ram data (clk,assertRam,storeMemBar,xreg,dbus);
@@ -45,7 +43,7 @@ module whole_cpu (input clk, reset);
       );
 
    alu`suff a
-     (clk,reset,doSubtract,assertBarE,assertBarS,triggerC,triggerS,areg,breg,
+     (clk,resetBar,doSubtract,assertBarE,assertBarS,triggerC,triggerS,areg,breg,
       dbus,aIsZero,flagCarry,flagShift
       );
 

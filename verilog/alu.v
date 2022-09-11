@@ -1,8 +1,8 @@
 
-module alu(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC, triggerS,
-           input [7:0]      areg, breg,
-           output [7:0]     dbus,
-           output           aIsZero,
+module alu(input clk, resetBar, doSubtract, assertBarE, assertBarS, triggerC, triggerS,
+           input [7:0] areg, breg,
+           output [7:0] dbus,
+           output aIsZero,
            output reg [0:0] flagCarry, flagShift);
 
 
@@ -16,7 +16,7 @@ module alu(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC, trigg
 
    wire carry = doSubtract ? ~(breg > areg) : (areg + breg >= 256);
 
-   always #1 if (reset) begin
+   always #1 if (!resetBar) begin
       flagCarry = 0;
       flagShift = 0;
    end

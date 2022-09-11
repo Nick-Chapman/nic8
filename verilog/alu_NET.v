@@ -1,5 +1,5 @@
 
-module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC,triggerS,
+module alu_NET(input clk, resetBar, doSubtract, assertBarE, assertBarS, triggerC,triggerS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
@@ -77,14 +77,14 @@ module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC,tr
 
    LS74 u6 // flags
      (
-      .CLRB1(!reset),
+      .CLRB1(resetBar),
       .D1(coutHI),
       .CLK1(triggerC),
       .PRB1(1'b1),
       .Q1(flagCarry),
       .QB1(),
 
-      .CLRB2(!reset),
+      .CLRB2(resetBar),
       .D2(areg[0]),
       .CLK2(triggerS),
       .PRB2(1'b1),
