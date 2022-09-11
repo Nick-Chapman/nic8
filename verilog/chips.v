@@ -168,3 +168,14 @@ module CAT28c16 (input WEB, OEB, CEB,
    assign IO = ~OEB & ~CEB ? mem[A[7:0]] : 'z;
 
 endmodule
+
+// 2048 byte RAM chip (16k bit)
+module MB8416A (input WB, GB, EB,
+                input [10:0] A,
+                inout [7:0] DQ);
+
+   reg [7:0] mem [0:2047];
+   assign DQ = ~EB & ~GB & WB ? mem[A] : 'z;
+   always @(WB,EB) if (~EB & ~WB) mem[A] <= DQ;
+
+endmodule

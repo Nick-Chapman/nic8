@@ -8,7 +8,7 @@ module whole_cpu (input clk, resetBar);
    wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam,assertRomBar, assertBarE,assertBarS,assertBarA,assertBarX, doSubtract,doJumpBar;
 
    rom`suff prog (    assertRomBar,         pc,  dbus);
-   ram      data (clk,assertRam,storeMemBar,xreg,dbus);
+   ram`suff data (clk,assertRam,storeMemBar,xreg,dbus);
 
    programCounter`suff p (resetBar,clk,doJumpBar,assertRom,dbus,pc);
 
