@@ -3,19 +3,31 @@ module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
-               output reg [0:0] flagCarry,flagShift);
+               output flagCarry,flagShift);
 
    wire coutLO,coutHI;
    wire [7:0] other,aluOut,shifted;
 
    assign aIsZero = (areg == 0); // TODO: 8-wide nor
 
-   // TODO: replace with latch chip:
-   always #1 if (reset) flagCarry = 0;
-   always @(posedge(clk || assertBarE)) flagCarry = coutHI;
+   wire triggerC = clk | assertBarE;
+   wire triggerS = clk | assertBarS;
 
-   always #1 if (reset) flagShift = 0;
-   always @(posedge(clk || assertBarS)) flagShift = areg[0];
+   LS74 flags
+     (
+      .CLRB1(!reset),
+      .D1(coutHI),
+      .CLK1(triggerC),
+      .PRB1(1'b1),
+      .Q1(flagCarry),
+      .QB1(),
+
+      .CLRB2(!reset),
+      .D2(areg[0]),
+      .CLK2(triggerS),
+      .PRB2(1'b1),
+      .Q2(flagShift),
+      .QB2());
 
    assign shifted = {flagShift, areg[7:1]};
 

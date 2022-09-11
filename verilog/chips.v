@@ -93,3 +93,23 @@ module LS138 (input A,B,C,G2A,G2B,G1,
    assign Y7 = ~(enable & (select == 7));
 
 endmodule
+
+
+module LS74
+  (input CLRB1, D1, CLK1, PRB1, output reg [0:0] Q1, QB1,
+   input CLRB2, D2, CLK2, PRB2, output reg [0:0] Q2, QB2
+   );
+
+   always @(posedge CLK1, negedge CLRB1, negedge PRB1)
+     if (!PRB1 & CLRB1) {Q1,QB1} <= 2'b10;
+     else if (PRB1 & !CLRB1) {Q1,QB1} <= 2'b01;
+     else if (!PRB1 & !CLRB1) {Q1,QB1} <= 2'b11;
+     else {Q1,QB1} <= {D1,~D1};
+
+   always @(posedge CLK2, negedge CLRB2, negedge PRB2)
+     if (!PRB2 & CLRB2) {Q2,QB2} <= 2'b10;
+     else if (PRB2 & !CLRB2) {Q2,QB2} <= 2'b01;
+     else if (!PRB2 & !CLRB2) {Q2,QB2} <= 2'b11;
+     else {Q2,QB2} <= {D2,~D2};
+
+endmodule
