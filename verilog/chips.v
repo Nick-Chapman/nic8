@@ -27,6 +27,19 @@ module LS04 (A1,Y1,A2,Y2,A3,Y3,Y4,A4,Y5,A5,Y6,A6);
 
 endmodule
 
+// 4x AND
+module LS08 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
+
+   input A1,A2,A3,A4, B1,B2,B3,B4;
+   output Y1,Y2,Y3,Y4;
+
+   assign Y1 = A1 & B1;
+   assign Y2 = A2 & B2;
+   assign Y3 = A3 & B3;
+   assign Y4 = A4 & B4;
+
+endmodule
+
 // 4x OR
 module LS32 (A1,B1,Y1,A2,B2,Y2,Y3,A3,B3,Y4,A4,B4);
 
@@ -127,4 +140,11 @@ module LS283 (E2,B2,A2,E1,A1,B1,CIN,COUT,E4,B4,A4,E3,A3,B3);
 
    assign {COUT,E4,E3,E2,E1} = {A4,A3,A2,A1} + {B4,B3,B2,B1} + CIN;
 
+endmodule
+
+// dual 4-input nor with strobe
+module SN7425 (input A1,B1,G1,C1,D1, output Y1,
+               input A2,B2,G2,C2,D2, output Y2);
+   assign Y1 = (~A1 & ~B1 & ~C1 & ~D1) | ~G1;
+   assign Y2 = (~A2 & ~B2 & ~C2 & ~D2) | ~G2;
 endmodule

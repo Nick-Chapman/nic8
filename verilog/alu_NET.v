@@ -91,10 +91,44 @@ module alu_NET(input clk, reset, doSubtract, assertBarE, assertBarS, triggerC,tr
       .Q2(flagShift),
       .QB2());
 
-   assign aIsZero = (areg == 0); // TODO: 8-wide nor (2x quin nor + 1 and gate)
-   // TODO: u7 -- 2x quin nor
-   // TODO: u8 -- 4x and, use 2: (a) for 8-wide-nor; (b) for LSR/ASR select
-   // TODO: u9 -- 4x xor, use 1: enable/disable carry/borrow in
+   wire aLoZero,aHiZero;
+
+   SN7425 u7 // A-reg (Hi/Lo nibbles) are zero?
+     (.A1(areg[0]),
+      .B1(areg[1]),
+      .C1(areg[2]),
+      .D1(areg[3]),
+      .G1(1'b1),
+      .Y1(aLoZero),
+
+      .A2(areg[4]),
+      .B2(areg[5]),
+      .C2(areg[6]),
+      .D2(areg[7]),
+      .G2(1'b1),
+      .Y2(aHiZero));
+
+   LS08 u8
+     (
+      // A-reg is zero
+      .A1(aLoZero),
+      .B1(aHiZero),
+      .Y1(aIsZero),
+
+      // TODO: use 2nd and-gate for LSR/ASR select
+      .A2(1'bz),
+      .B2(1'bz),
+      .Y2(),
+
+      .A3(1'bz),
+      .B3(1'bz),
+      .Y3(),
+
+      .A4(1'bz),
+      .B4(1'bz),
+      .Y4());
+
+   // TODO: u9 -- 4x xor, use 1: enable/disable carry/borrow-in
 
    LS245 u10
      (.ENB(assertBarS), .DIR(1'b1), .A(shifted), .B(dbus));
