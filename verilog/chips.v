@@ -148,3 +148,23 @@ module SN7425 (input A1,B1,G1,C1,D1, output Y1,
    assign Y1 = (~A1 & ~B1 & ~C1 & ~D1) | ~G1;
    assign Y2 = (~A2 & ~B2 & ~C2 & ~D2) | ~G2;
 endmodule
+
+// 2048 byte ROM chip (16k bit)
+module CAT28c16 (input WEB, OEB, CEB,
+                 input [10:0] A,
+                 inout [7:0] IO);
+
+   reg [7:0] mem [0:255]; // only use 256 bytes
+
+   string prog;
+   initial begin
+      if (! $value$plusargs("prog=%s", prog)) begin
+         $display("ERROR: please specify +prog=<value>.");
+         $finish;
+      end
+      $readmemh(prog, mem);
+   end
+
+   assign IO = ~OEB & ~CEB ? mem[A[7:0]] : 'z;
+
+endmodule

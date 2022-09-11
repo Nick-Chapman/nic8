@@ -3,7 +3,7 @@ module control_NET
   (input [7:0] ir, input clk, aIsZero, flagCarry,
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRom,assertRam,
+   output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarX,
    output doSubtract,doJumpBar
    );
@@ -31,7 +31,6 @@ module control_NET
       .Y6(loadBarQ),
       .Y7());
 
-   wire assertBarRom;
    wire assertBarRam;
 
    LS138 demuxSource
@@ -41,7 +40,7 @@ module control_NET
       .G2A(1'b0),
       .G2B(1'b0),
       .G1(1'b1),
-      .Y0(assertBarRom),
+      .Y0(assertRomBar),
       .Y1(), // TODO: assert zero
       .Y2(assertBarA),
       .Y3(), //assertBarB), //TODO
@@ -102,7 +101,7 @@ module control_NET
       );
 
    LS04 u3
-     (.Y1(assertRom), .A1(assertBarRom),
+     (.Y1(assertRom), .A1(assertRomBar),
       .Y2(assertRam), .A2(assertBarRam),
       .Y3(dontRequireZ), .A3(bit3),
       .Y4(dontRequireC), .A4(bit7),

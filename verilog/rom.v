@@ -1,5 +1,5 @@
 
-module rom (input outputEnable,
+module rom (input outputEnableBar,
             input [7:0] addr,
             output [7:0] data);
 
@@ -14,6 +14,6 @@ module rom (input outputEnable,
       $readmemh(prog, mem);
    end
 
-   assign data = outputEnable ? mem[addr] : 'z;
+   assign data = ~outputEnableBar ? mem[addr] : 'z;
 
 endmodule

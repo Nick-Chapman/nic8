@@ -3,7 +3,7 @@ module control
   (input [7:0] ir, input clk, aIsZero, flagCarry,
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRom,assertRam,
+   output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarX,
    output doSubtract,doJumpBar
    );
@@ -30,6 +30,7 @@ module control
    assign triggerS = clk | assertBarS;
 
    assign assertRom = (source==0);
+   assign assertRomBar = ~assertRom;
    // TODO: (source==1) -- drive zero on bus
    assign assertBarA = ~(source==2);
    //assign assertBarB = ~(source==3); //TODO: connect to register
