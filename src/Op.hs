@@ -49,6 +49,7 @@ data Op
   | TXB -- B := X
   -- Output
   | OUT -- Out := A
+  | OUTB -- Out := B
   | OUTX -- Out := X
   | OUTI -- Out := M[pc]
   | OUTM -- Out := M[X]
@@ -90,6 +91,7 @@ allOps =
   , TXA
   , TXB
   , OUT
+  , OUTB
   , OUTX
   , OUTI
   , OUTM

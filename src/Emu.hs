@@ -77,6 +77,7 @@ op2cat = \case
   ASRB -> Cat o x FromShiftedA ToB
 
   OUT -> Cat o o FromA ToOut
+  OUTB -> Cat o o FromB ToOut
   OUTX -> Cat o o FromX ToOut
   OUTI -> Cat o o FromProgRom ToOut
   OUTM -> Cat o o FromDataRam ToOut

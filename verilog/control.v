@@ -4,7 +4,7 @@ module control
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
-   output assertBarE,assertBarS,assertBarA,assertBarX,
+   output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
    output doSubtract,doJumpBar
    );
 
@@ -33,7 +33,7 @@ module control
    assign assertRomBar = ~assertRom;
    // TODO: (source==1) -- drive zero on bus
    assign assertBarA = ~(source==2);
-   //assign assertBarB = ~(source==3); //TODO: connect to register
+   assign assertBarB = ~(source==3);
    assign assertBarX = ~(source==4);
    assign assertRam = (source==5);
    assign assertBarE = ~(source==6);

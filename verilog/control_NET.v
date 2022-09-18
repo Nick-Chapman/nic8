@@ -4,7 +4,7 @@ module control_NET
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
-   output assertBarE,assertBarS,assertBarA,assertBarX,
+   output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
    output doSubtract,doJumpBar
    );
 
@@ -43,7 +43,7 @@ module control_NET
       .Y0(assertRomBar),
       .Y1(), // TODO: assert zero
       .Y2(assertBarA),
-      .Y3(), //assertBarB), //TODO
+      .Y3(assertBarB),
       .Y4(assertBarX),
       .Y5(assertBarRam),
       .Y6(assertBarE),

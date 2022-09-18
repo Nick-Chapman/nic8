@@ -23,7 +23,7 @@ table :: [(String,[Op])]
 table =
   [ ("open-count-loop", openCountLoop)
   , ("tight-count-loop", tightCountLoop)
-  , ("fibs-forever",fibForever)
+  , ("fibs",fibsNew)
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
   , ("collatz",collatz)
@@ -366,4 +366,22 @@ shifty = assemble $ do
   loop <- Here
   out
   asr
+  jump loop
+
+
+-- fibs example which detects 8-bit overflow and restarts
+
+fibsNew :: [Op]
+fibsNew = assemble $ do
+  start <- Here
+  la 1
+  out
+  lb 1
+  loop <- Here
+  add
+  jc start
+  out
+  addb
+  jc start
+  outb
   jump loop

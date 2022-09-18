@@ -1,7 +1,7 @@
 
 module Asm
   ( Byte, Op(..), Asm(..), assemble
-  , add, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outx, nop, outi
+  , add, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
   , spin
   , la, lb, lx, jump, jz, jc, jxu
   , lxa, lxb, lxx
@@ -17,7 +17,7 @@ import Op (Byte,Op(..))
 
 add,addb,addx,addout,sub :: Asm () -- arithmetic
 tab,tax,tbx,txa,txb :: Asm () -- register transfers
-out,outx,nop,spin :: Asm ()
+out,outb,outx,nop,spin :: Asm ()
 outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
@@ -50,6 +50,7 @@ tbx = Emit [TBX]
 txa = Emit [TXA]
 txb = Emit [TXB]
 out = Emit [OUT]
+outb = Emit [OUTB]
 outx = Emit [OUTX]
 outi b = Emit [OUTI, IMM b]
 nop = Emit [NOP]
