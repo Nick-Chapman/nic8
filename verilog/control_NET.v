@@ -1,6 +1,6 @@
 
 module control_NET
-  (input [7:0] ir, input clk, aIsZero, flagCarry,
+  (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
@@ -83,6 +83,7 @@ module control_NET
    wire dontRequireZ, dontRequireC, suppressJumpForZ, suppressJumpForC;
    wire takeJumpForZ,takeJumpForC,suppressJump;
 
+/*
    LS32 u2
      (.A1(dontRequireZ),
       .B1(aIsZero),
@@ -108,5 +109,22 @@ module control_NET
       .Y4(dontRequireC), .A4(bit7),
       .Y5(suppressJumpForZ), .A5(takeJumpForZ),
       .Y6(suppressJumpForC), .A6(takeJumpForC));
+*/
+
+   // TODO: gates! (use 74153)
+   wire jumpUncond  = ~bit3 & ~bit7;
+   wire jumpIfZero  =  bit3 & ~bit7;
+   wire jumpIfCarry = ~bit3 &  bit7;
+   wire jumpIfShift =  bit3 &  bit7;
+   wire jumpControl
+        = (jumpIfZero & aIsZero)
+        | (jumpIfCarry & flagCarry)
+        | (jumpIfShift & flagShift)
+        | jumpUncond;
+
+   assign doJumpBar = ~(~loadBarPC & jumpControl);
+
+   assign assertRom = ~assertRomBar;
+   assign assertRam = ~assertBarRam;
 
 endmodule

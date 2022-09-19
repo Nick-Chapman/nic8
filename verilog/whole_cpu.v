@@ -19,6 +19,7 @@ module whole_cpu (input clk, resetBar);
       .clk(clk),
       .aIsZero(aIsZero),
       .flagCarry(flagCarry),
+      .flagShift(flagShift),
       .loadBarIR(loadBarIR),
       .storeMemBar(storeMemBar),
       .triggerA(triggerA),

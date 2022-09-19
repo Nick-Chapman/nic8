@@ -32,6 +32,8 @@
 64 : OUTX
 65 : OUTM
 66 : ADDOUT
+76 : TADD
+77 : TLSR
 94 : JXC
 a6 : ADC
 ae : SBC

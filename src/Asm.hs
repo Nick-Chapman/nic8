@@ -1,29 +1,29 @@
 
 module Asm
   ( Byte, Op(..), Asm(..), assemble
-  , add, adc, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
+  , add, tadd, adc, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
   , spin
-  , la, lb, lx, jump, jz, jc, jxu
+  , la, lb, lx, jump, jz, jc, js, jxu
   , lxa, lxb, lxx
   , variable
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
   , increment
-  , lsr, asr, lsrb, asrb
+  , lsr, tlsr, asr, lsrb, asrb
   ) where
 
 import Control.Monad (ap,liftM)
 import Control.Monad.Fix (MonadFix,mfix)
 import Op (Byte,Op(..))
 
-add,adc,addb,addx,addout,sub :: Asm () -- arithmetic
+add,tadd,adc,addb,addx,addout,sub :: Asm () -- arithmetic
 tab,tax,tbx,txa,txb :: Asm () -- register transfers
 out,outb,outx,nop,spin :: Asm ()
 outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
 jxu :: Asm () -- jumps
-jump,jz,jc :: Byte -> Asm () -- jumps
-lsr,asr,lsrb,asrb :: Asm ()
+jump,jz,jc,js :: Byte -> Asm () -- jumps
+lsr,tlsr,asr,lsrb,asrb :: Asm ()
 
 variable :: Byte -> Asm Byte -- allocate space for a variable
 loadA,loadB,loadX :: Byte -> Asm () -- load vars into regs
@@ -34,6 +34,7 @@ sxa :: Asm () -- store A into *X
 sxi :: Asm () -- store immediate into *X
 
 add = Emit [ADD]
+tadd = Emit [TADD]
 adc = Emit [ADC]
 addb = Emit [ADDB]
 addx = Emit [ADDX]
@@ -41,6 +42,7 @@ addout = Emit [ADDOUT]
 sub = Emit [SUB]
 
 lsr = Emit [LSR]
+tlsr = Emit [TLSR]
 asr = Emit [ASR]
 lsrb = Emit [LSR]
 asrb = Emit [ASR]
@@ -73,6 +75,7 @@ jxu = Emit [JXU]
 jump b = Emit [JIU, IMM b]
 jz b = Emit [JIZ, IMM b]
 jc b = Emit [JIC, IMM b]
+js b = Emit [JIS, IMM b]
 
 variable val = do
   loc <- Here

@@ -59,10 +59,13 @@ op2cat = \case
   JXU -> Cat o o FromX ToPC
   JXZ -> Cat o x FromX ToPC
   JXC -> Cat x o FromX ToPC
+  JXS -> Cat x x FromX ToPC
   JIU -> Cat o o FromProgRom ToPC
   JIZ -> Cat o x FromProgRom ToPC
   JIC -> Cat x o FromProgRom ToPC
+  JIS -> Cat x x FromProgRom ToPC
   ADD -> Cat o o FromAlu ToA
+  TADD -> Cat o o FromAlu ToNowhere
   ADC -> Cat x o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
@@ -74,6 +77,7 @@ op2cat = \case
   SUBX -> Cat o x FromAlu ToX
 
   LSR -> Cat o o FromShiftedA ToA
+  TLSR -> Cat o o FromShiftedA ToNowhere
   ASR -> Cat o x FromShiftedA ToA
   LSRB -> Cat o o FromShiftedA ToB
   ASRB -> Cat o x FromShiftedA ToB
@@ -140,7 +144,7 @@ decodeSource = \case
   x -> error (show ("decodeSource",x))
 
 
-data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToPC | ToOut | ToOutHi
+data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToPC | ToOut | ToNowhere
   deriving (Eq,Show)
 
 encodeDest :: Dest -> Byte
@@ -152,7 +156,7 @@ encodeDest =  \case
   ToX -> 4
   ToDataRam -> 5
   ToOut -> 6
-  ToOutHi -> 7
+  ToNowhere -> 7
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
@@ -163,7 +167,7 @@ decodeDest = \case
   4 -> ToX
   5 -> ToDataRam
   6 -> ToOut
-  7 -> ToOutHi
+  7 -> ToNowhere
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------
@@ -189,6 +193,7 @@ data Control = Control
   , doShiftIn :: Bool
   , jumpIfZero :: Bool
   , jumpIfCarry :: Bool
+  , jumpIfShift :: Bool
   , unconditionalJump :: Bool
   } deriving Show
 
@@ -213,15 +218,16 @@ cat2control = \case
     let doSubtract = xbit3
     let doCarryIn = xbit7
     let doShiftIn = xbit3
-    let jumpIfZero = xbit3
-    let jumpIfCarry = xbit7
+    let jumpIfZero = xbit3 && not xbit7
+    let jumpIfCarry = not xbit3 && xbit7
+    let jumpIfShift = xbit3 && xbit7
     let unconditionalJump = not xbit3 && not xbit7
 
     Control {provideRom,provideRam,provideAlu,provideShiftedA
             ,provideA,provideB,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,doSubtract,doCarryIn,doShiftIn
-            ,jumpIfZero,jumpIfCarry,unconditionalJump}
+            ,jumpIfZero,jumpIfCarry,jumpIfShift,unconditionalJump}
 
 ----------------------------------------------------------------------
 -- State
@@ -270,9 +276,13 @@ step state control = do
              ,provideA,provideB,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,doSubtract,doCarryIn,doShiftIn
-             ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
+             ,jumpIfZero,jumpIfCarry,jumpIfShift,unconditionalJump} = control
   let aIsZero = (rA == 0)
-  let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
+  let jumpControl
+        = (jumpIfZero && aIsZero)
+        || (jumpIfCarry && flagCarry)
+        || (jumpIfShift && flagShift)
+        || unconditionalJump
   let alu = if doSubtract then (rA - rB) else (rA + rB + cin)
         where cin = if doCarryIn && flagCarry then 1 else 0
   let carry =

@@ -23,12 +23,15 @@ data Op
   | JXU -- pc := X
   | JXZ -- pc := zero(A) ? X : pc+1
   | JXC -- pc := carryFlag ? X : pc+1
+  | JXS -- pc := shiftFlag ? X : pc+1
   | JIU -- pc := M[pc]
-  | JIZ
-  | JIC
+  | JIZ -- pc := zero(A) ? M[pc] : pc+1
+  | JIC -- pc := carryFlag ? M[pc] : pc+1
+  | JIS -- pc := shiftFlag ? M[pc] : pc+1
   -- Arithmetic (also sets overflow flag)
-  | ADD -- A := A+B
-  | ADC -- A := A+B+cin
+  | ADD -- {carryFlag,A} := A+B
+  | TADD -- carryFlag := A+B>=256
+  | ADC -- {carryFlag,A} := A+B+cin
   | ADDB -- B := A+B
   | ADDX -- X := A+B
   | ADDM -- M[X] := A+B
@@ -39,6 +42,7 @@ data Op
   | SUBX -- X := A-B
   -- shifting
   | LSR -- A := A>>1; shifFlag=A[0]
+  | TLSR -- shifFlag=A[0]
   | ASR -- A := (shifFlag?128:0) | A>>1; shiftFlag=A[0]
   | LSRB -- B := A>>1; shifFlag=A[0]
   | ASRB -- B := (shifFlag?128:0) | A>>1; shiftFlag=A[0]
@@ -76,6 +80,7 @@ allOps =
   , JXC
   , JIU
   , ADD
+  , TADD
   , ADC
   , ADDB
   , ADDX
@@ -87,6 +92,7 @@ allOps =
   , SUBX
   , ASR
   , LSR
+  , TLSR
   , ASRB
   , LSRB
   , TAB

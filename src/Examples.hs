@@ -30,6 +30,7 @@ table =
   , ("countdownForeverC",countdownForeverC)
   , ("shiftyR",shiftyR)
   , ("shiftyL",shiftyL)
+  , ("knightRider",knightRider)
   ]
 
 variousInstructions :: [Op]
@@ -395,3 +396,25 @@ shiftyL = assemble $ do
   tab
   adc
   jump loop
+
+
+knightRider :: [Op]
+knightRider = assemble $ mdo
+
+  la 3
+  out
+
+  goLeft <- Here
+  tab
+  tadd
+  jc goRight
+  add
+  out
+  jump goLeft
+
+  goRight <- Here
+  tlsr
+  js goLeft
+  lsr
+  out
+  jump goRight

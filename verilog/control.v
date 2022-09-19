@@ -1,6 +1,6 @@
 
 module control
-  (input [7:0] ir, input clk, aIsZero, flagCarry,
+  (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
    output loadBarIR,storeMemBar,
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
@@ -39,10 +39,15 @@ module control
    assign assertBarE = ~(source==6);
    assign assertBarS = ~(source==7);
 
-   wire jumpIfZero = bit3;
-   wire jumpIfCarry = bit7;
-   wire unconditionalJump = ~bit3 && ~bit7;
-   wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
+   wire jumpUncond  = ~bit3 & ~bit7;
+   wire jumpIfZero  =  bit3 & ~bit7;
+   wire jumpIfCarry = ~bit3 &  bit7;
+   wire jumpIfShift =  bit3 &  bit7;
+   wire jumpControl
+        = (jumpIfZero & aIsZero)
+        | (jumpIfCarry & flagCarry)
+        | (jumpIfShift & flagShift)
+        | jumpUncond;
 
    assign doSubtract = bit3;
    assign doCarryIn = bit7;
