@@ -55,12 +55,12 @@ assembleExamples :: [(String,[Op])] -> IO () -- for verilog sim
 assembleExamples examples = do
   forM_ (zip [0::Int ..] examples) $ \(i,(name,ops)) -> do
     let filename = "prog/" ++ name ++ ".hex"
-    printf "writing: (%d) %s\n" i filename
+    printf "writing: %s\n" filename
     writeFile filename (commentedVerilogHexDump i name ops)
 
 commentedVerilogHexDump :: Int -> String -> [Op] -> String
-commentedVerilogHexDump i name ops = do
-  let banner = printf "// (%d) %s" i name
+commentedVerilogHexDump _i name ops = do
+  let banner = printf "// %s" name
   let hex = [ intercalate " " [ printf "%02x" (Emu.encodeOp op) | op <- ops ]
             | ops <- chunksOf 16 (Rom2k.pad Op.NOP 256 ops)
             ]
