@@ -7,10 +7,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
 
    wire coutLO,coutHI;
    wire [7:0] other,aluOut,shifted;
-
-   assign shifted = {flagShift & doShiftIn, areg[7:1]}; // TODO: gates!
-
-   wire cin = doSubtract ^ (flagCarry & doCarryIn); // TODO: gates!
+   wire cin,carryOrBorrowIn,shiftIn;
 
    LS283 u1 // LO nibble add
      (.A1(areg[0]),
@@ -25,7 +22,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .E2(aluOut[1]),
       .E3(aluOut[2]),
       .E4(aluOut[3]),
-      .CIN(cin),
+      .CIN(carryOrBorrowIn),
       .COUT(coutLO));
 
    LS283 u2 // HI nibble add
@@ -117,20 +114,34 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .B1(aHiZero),
       .Y1(aIsZero),
 
-      // TODO: use 2nd and-gate for LSR/ASR select
-      .A2(1'bz),
-      .B2(1'bz),
-      .Y2(),
+      .A2(flagShift),
+      .B2(doShiftIn),
+      .Y2(shiftIn),
 
-      .A3(1'bz),
-      .B3(1'bz),
-      .Y3(),
+      .A3(flagCarry),
+      .B3(doCarryIn),
+      .Y3(cin),
 
       .A4(1'bz),
       .B4(1'bz),
       .Y4());
 
-   // TODO: u9 -- 4x xor, use 1: enable/disable carry/borrow-in
+   LS86 u9
+     (.A1(doSubtract),
+      .B1(cin),
+      .Y1(carryOrBorrowIn),
+
+      .A2(1'bz),
+      .B2(1'bz),
+      .Y2(),
+      .A3(1'bz),
+      .B3(1'bz),
+      .Y3(),
+      .A4(1'bz),
+      .B4(1'bz),
+      .Y4());
+
+   assign shifted = {shiftIn, areg[7:1]};
 
    LS245 u10
      (.ENB(assertBarS), .DIR(1'b1), .A(shifted), .B(dbus));
