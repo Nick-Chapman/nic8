@@ -1,7 +1,7 @@
 
 module Asm
   ( Byte, Op(..), Asm(..), assemble
-  , add, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
+  , add, adc, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
   , spin
   , la, lb, lx, jump, jz, jc, jxu
   , lxa, lxb, lxx
@@ -15,7 +15,7 @@ import Control.Monad (ap,liftM)
 import Control.Monad.Fix (MonadFix,mfix)
 import Op (Byte,Op(..))
 
-add,addb,addx,addout,sub :: Asm () -- arithmetic
+add,adc,addb,addx,addout,sub :: Asm () -- arithmetic
 tab,tax,tbx,txa,txb :: Asm () -- register transfers
 out,outb,outx,nop,spin :: Asm ()
 outi :: Byte -> Asm () -- output immediate
@@ -34,6 +34,7 @@ sxa :: Asm () -- store A into *X
 sxi :: Asm () -- store immediate into *X
 
 add = Emit [ADD]
+adc = Emit [ADC]
 addb = Emit [ADDB]
 addx = Emit [ADDX]
 addout = Emit [ADDOUT]

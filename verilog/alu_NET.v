@@ -1,5 +1,5 @@
 
-module alu_NET(input clk, resetBar, doSubtract, assertBarE, assertBarS, triggerC,triggerS,
+module alu_NET(input clk, resetBar, doSubtract, doCarryIn, assertBarE, assertBarS, triggerC,triggerS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
@@ -9,6 +9,8 @@ module alu_NET(input clk, resetBar, doSubtract, assertBarE, assertBarS, triggerC
    wire [7:0] other,aluOut,shifted;
 
    assign shifted = {flagShift, areg[7:1]};
+
+   wire cin = doSubtract ^ (flagCarry & doCarryIn); // TODO: gates!
 
    LS283 u1 // LO nibble add
      (.A1(areg[0]),
@@ -23,7 +25,7 @@ module alu_NET(input clk, resetBar, doSubtract, assertBarE, assertBarS, triggerC
       .E2(aluOut[1]),
       .E3(aluOut[2]),
       .E4(aluOut[3]),
-      .CIN(doSubtract),
+      .CIN(cin),
       .COUT(coutLO));
 
    LS283 u2 // HI nibble add

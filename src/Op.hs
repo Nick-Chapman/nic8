@@ -28,11 +28,13 @@ data Op
   | JIC
   -- Arithmetic (also sets overflow flag)
   | ADD -- A := A+B
+  | ADC -- A := A+B+cin
   | ADDB -- B := A+B
   | ADDX -- X := A+B
   | ADDM -- M[X] := A+B
   | ADDOUT -- OUT := A+B
   | SUB -- A := A-B
+  | SBC -- A := A-B-cin
   | SUBB -- B := A-B
   | SUBX -- X := A-B
   -- shifting
@@ -74,11 +76,13 @@ allOps =
   , JXC
   , JIU
   , ADD
+  , ADC
   , ADDB
   , ADDX
   , ADDM
   , ADDOUT
   , SUB
+  , SBC
   , SUBB
   , SUBX
   , ASR

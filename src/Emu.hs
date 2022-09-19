@@ -63,11 +63,13 @@ op2cat = \case
   JIZ -> Cat o x FromProgRom ToPC
   JIC -> Cat x o FromProgRom ToPC
   ADD -> Cat o o FromAlu ToA
+  ADC -> Cat x o FromAlu ToA
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
   ADDM -> Cat o o FromAlu ToDataRam
   ADDOUT -> Cat o o FromAlu ToOut
   SUB -> Cat o x FromAlu ToA
+  SBC -> Cat x x FromAlu ToA
   SUBB -> Cat o x FromAlu ToB
   SUBX -> Cat o x FromAlu ToX
 
@@ -183,6 +185,7 @@ data Control = Control
   , storeMem :: Bool
   , doOut :: Bool
   , doSubtract :: Bool
+  , doCarryIn :: Bool
   , doShiftIn :: Bool
   , jumpIfZero :: Bool
   , jumpIfCarry :: Bool
@@ -208,6 +211,7 @@ cat2control = \case
     let storeMem = (dest == ToDataRam)
     let doOut = (dest == ToOut)
     let doSubtract = xbit3
+    let doCarryIn = xbit7
     let doShiftIn = xbit3
     let jumpIfZero = xbit3
     let jumpIfCarry = xbit7
@@ -216,7 +220,7 @@ cat2control = \case
     Control {provideRom,provideRam,provideAlu,provideShiftedA
             ,provideA,provideB,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
-            ,doOut,doSubtract,doShiftIn
+            ,doOut,doSubtract,doCarryIn,doShiftIn
             ,jumpIfZero,jumpIfCarry,unconditionalJump}
 
 ----------------------------------------------------------------------
@@ -265,11 +269,12 @@ step state control = do
   let Control{provideRom,provideRam,provideAlu,provideShiftedA
              ,provideA,provideB,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
-             ,doOut,doSubtract,doShiftIn
+             ,doOut,doSubtract,doCarryIn,doShiftIn
              ,jumpIfZero,jumpIfCarry,unconditionalJump} = control
   let aIsZero = (rA == 0)
   let jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump
-  let alu = if doSubtract then (rA - rB) else (rA + rB)
+  let alu = if doSubtract then (rA - rB) else (rA + rB + cin)
+        where cin = if doCarryIn && flagCarry then 1 else 0
   let carry =
         if doSubtract
         then not (rB > rA)

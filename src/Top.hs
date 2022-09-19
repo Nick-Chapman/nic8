@@ -23,7 +23,7 @@ main = do
   Test.run -- regression tests
   generateAsmCrib
   assembleExamples Examples.table
-  -- printAndRunExamples [ last Examples.table ]
+  printAndRunExamples [ last Examples.table ]
   pure ()
 
 printAndRunExamples :: [(String,[Op])] -> IO ()

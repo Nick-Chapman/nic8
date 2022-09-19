@@ -5,7 +5,7 @@ module control_NET
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doJumpBar
+   output doSubtract,doCarryIn,doJumpBar
    );
 
    wire bit7, bit3;
@@ -78,6 +78,7 @@ module control_NET
       .Y4());
 
    assign doSubtract = bit3;
+   assign doCarryIn = bit7;
 
    wire dontRequireZ, dontRequireC, suppressJumpForZ, suppressJumpForC;
    wire takeJumpForZ,takeJumpForC,suppressJump;

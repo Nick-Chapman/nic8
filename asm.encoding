@@ -33,3 +33,5 @@
 65 : OUTM
 66 : ADDOUT
 94 : JXC
+a6 : ADC
+ae : SBC

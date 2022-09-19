@@ -29,7 +29,7 @@ table =
   , ("collatz",collatz)
   , ("countdownForeverC",countdownForeverC)
   , ("shiftyR",shiftyR)
---  , ("shiftyL",shiftyL)
+  , ("shiftyL",shiftyL)
   ]
 
 variousInstructions :: [Op]
@@ -387,11 +387,11 @@ fibsNew = assemble $ do
   outb
   jump loop
 
-_shiftyL :: [Op]
-_shiftyL = assemble $ do
-  la 7
+shiftyL :: [Op]
+shiftyL = assemble $ do
+  la 1
   loop <- Here
-  tab
-  add
   out
+  tab
+  adc
   jump loop

@@ -5,7 +5,7 @@ module control
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doJumpBar
+   output doSubtract,doCarryIn,doJumpBar
    );
 
    wire bit7, bit3;
@@ -45,6 +45,7 @@ module control
    wire jumpControl = (jumpIfZero && aIsZero) || (jumpIfCarry && flagCarry) || unconditionalJump;
 
    assign doSubtract = bit3;
+   assign doCarryIn = bit7;
    assign doJumpBar = ~(loadPC && jumpControl);
 
 endmodule
