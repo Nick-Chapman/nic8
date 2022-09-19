@@ -1,5 +1,5 @@
 
-module alu(input clk, resetBar, doSubtract, doCarryIn, assertBarE, assertBarS, triggerC, triggerS,
+module alu(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE, assertBarS, triggerC, triggerS,
            input [7:0] areg, breg,
            output [7:0] dbus,
            output aIsZero,
@@ -9,7 +9,7 @@ module alu(input clk, resetBar, doSubtract, doCarryIn, assertBarE, assertBarS, t
    wire [7:0] aluOut = doSubtract ? areg - breg : areg + breg + cin;
    assign dbus = ~assertBarE ? aluOut : 'z;
 
-   wire [7:0] shifted = {flagShift, areg[7:1]};
+   wire [7:0] shifted = {flagShift & doShiftIn, areg[7:1]};
    assign dbus = ~assertBarS ? shifted : 'z;
 
    assign aIsZero = (areg == 0);

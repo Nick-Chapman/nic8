@@ -5,7 +5,7 @@ module control
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doCarryIn,doJumpBar
+   output doSubtract,doCarryIn,doShiftIn,doJumpBar
    );
 
    wire bit7, bit3;
@@ -18,9 +18,8 @@ module control
    wire loadA = (dest==2);
    wire loadB = (dest==3);
    wire loadX = (dest==4);
-   assign storeMemBar = ~(dest==5); //TODO: rename
+   assign storeMemBar = ~(dest==5);
    wire loadQ = (dest==6);
-   //wire loadQhi = (dest==7); //TODO
 
    assign triggerA = clk | ~loadA;
    assign triggerB = clk | ~loadB;
@@ -51,6 +50,7 @@ module control
 
    assign doSubtract = bit3;
    assign doCarryIn = bit7;
+   assign doShiftIn = bit3;
    assign doJumpBar = ~(loadPC && jumpControl);
 
 endmodule

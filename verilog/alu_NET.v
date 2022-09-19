@@ -1,5 +1,5 @@
 
-module alu_NET(input clk, resetBar, doSubtract, doCarryIn, assertBarE, assertBarS, triggerC,triggerS,
+module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE, assertBarS, triggerC,triggerS,
                input [7:0] areg, breg,
                output [7:0] dbus,
                output aIsZero,
@@ -8,7 +8,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, assertBarE, assertBar
    wire coutLO,coutHI;
    wire [7:0] other,aluOut,shifted;
 
-   assign shifted = {flagShift, areg[7:1]};
+   assign shifted = {flagShift & doShiftIn, areg[7:1]}; // TODO: gates!
 
    wire cin = doSubtract ^ (flagCarry & doCarryIn); // TODO: gates!
 

@@ -31,6 +31,7 @@ table =
   , ("shiftyR",shiftyR)
   , ("shiftyL",shiftyL)
   , ("knightRider",knightRider)
+  , ("triangleShift",triangleShift)
   ]
 
 variousInstructions :: [Op]
@@ -368,6 +369,14 @@ shiftyR = assemble $ do
   loop <- Here
   out
   asr
+  jump loop
+
+triangleShift :: [Op]
+triangleShift = assemble $ do
+  la 0xff
+  loop <- Here
+  out
+  lsr
   jump loop
 
 
