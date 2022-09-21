@@ -103,6 +103,18 @@ module LS138 (input A,B,C,G2A,G2B,G1,
 
 endmodule
 
+
+// Dual 1-of-4 line data selectors
+module LS153
+  (input A,B, // shared select
+   input iG, iC3,iC2,iC1,iC0, output iY, //1(i)
+   input jG, jC3,jC2,jC1,jC0, output jY  //2(j)
+   );
+   assign iY = ~iG & (B?(A?iC3:iC2):(A?iC1:iC0));
+   assign jY = ~jG & (B?(B?jC3:jC2):(B?jC1:jC0));
+endmodule
+
+
 // 4 bit counter
 module LS161(input CLRB,CLK,A,B,C,D,ENP,LOADB,ENT,
              output reg [0:0] QD,QC,QB,QA, output CO);

@@ -81,51 +81,49 @@ module control_NET
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
 
-   wire dontRequireZ, dontRequireC, suppressJumpForZ, suppressJumpForC;
-   wire takeJumpForZ,takeJumpForC,suppressJump;
+   wire jumpControl;
 
-/*
-   LS32 u2
-     (.A1(dontRequireZ),
-      .B1(aIsZero),
-      .Y1(takeJumpForZ),
+   LS153 u2
+     (.A(bit3),
+      .B(bit7),
 
-      .A2(dontRequireC),
-      .B2(flagCarry),
-      .Y2(takeJumpForC),
+      .iG(1'b0),
+      .iC3(flagShift),
+      .iC2(flagCarry),
+      .iC1(aIsZero),
+      .iC0(1'b1),
+      .iY(jumpControl),
 
-      .A3(suppressJumpForZ),
-      .B3(suppressJumpForC),
-      .Y3(suppressJump),
+      .jG(1'bz),
+      .jC3(1'bz),
+      .jC2(1'bz),
+      .jC1(1'bz),
+      .jC0(1'bz),
+      .jY());
 
-      .A4(loadBarPC),
-      .B4(suppressJump),
-      .Y4(doJumpBar)
-      );
+   // 4 nands... ?
+   //assign assertRom = ~assertRomBar;
+   //assign assertRam = ~assertBarRam;
+   //assign doJumpBar = ~(~loadBarPC & jumpControl);
 
-   LS04 u3
-     (.Y1(assertRom), .A1(assertRomBar),
-      .Y2(assertRam), .A2(assertBarRam),
-      .Y3(dontRequireZ), .A3(bit3),
-      .Y4(dontRequireC), .A4(bit7),
-      .Y5(suppressJumpForZ), .A5(takeJumpForZ),
-      .Y6(suppressJumpForC), .A6(takeJumpForC));
-*/
+   wire loadPC;
 
-   // TODO: gates! (use 74153)
-   wire jumpUncond  = ~bit3 & ~bit7;
-   wire jumpIfZero  =  bit3 & ~bit7;
-   wire jumpIfCarry = ~bit3 &  bit7;
-   wire jumpIfShift =  bit3 &  bit7;
-   wire jumpControl
-        = (jumpIfZero & aIsZero)
-        | (jumpIfCarry & flagCarry)
-        | (jumpIfShift & flagShift)
-        | jumpUncond;
+   LS00 u3
+     (
+      .A1(assertRomBar),
+      .B1(assertRomBar),
+      .Y1(assertRom),
 
-   assign doJumpBar = ~(~loadBarPC & jumpControl);
+      .A2(assertBarRam),
+      .B2(assertBarRam),
+      .Y2(assertRam),
 
-   assign assertRom = ~assertRomBar;
-   assign assertRam = ~assertBarRam;
+      .A3(loadBarPC),
+      .B3(loadBarPC),
+      .Y3(loadPC),
+
+      .A4(loadPC),
+      .B4(jumpControl),
+      .Y4(doJumpBar));
 
 endmodule
