@@ -81,18 +81,18 @@ module control_NET
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
 
-   wire jumpControl;
+   wire doJump;
 
-   LS153 u2
+   LS153 jumpControlMux
      (.A(bit3),
       .B(bit7),
 
-      .iG(1'b0),
+      .iG(loadBarPC),
       .iC3(flagShift),
       .iC2(flagCarry),
       .iC1(aIsZero),
       .iC0(1'b1),
-      .iY(jumpControl),
+      .iY(doJump),
 
       .jG(1'bz),
       .jC3(1'bz),
@@ -101,29 +101,18 @@ module control_NET
       .jC0(1'bz),
       .jY());
 
-   // 4 nands... ?
-   //assign assertRom = ~assertRomBar;
-   //assign assertRam = ~assertBarRam;
-   //assign doJumpBar = ~(~loadBarPC & jumpControl);
-
-   wire loadPC;
-
-   LS00 u3
-     (
-      .A1(assertRomBar),
-      .B1(assertRomBar),
+   LS04 inverters
+     (.A1(assertRomBar),
       .Y1(assertRom),
-
       .A2(assertBarRam),
-      .B2(assertBarRam),
       .Y2(assertRam),
-
-      .A3(loadBarPC),
-      .B3(loadBarPC),
-      .Y3(loadPC),
-
-      .A4(loadPC),
-      .B4(jumpControl),
-      .Y4(doJumpBar));
+      .A3(doJump),
+      .Y3(doJumpBar),
+      .A4(1'bz),
+      .Y4(),
+      .A5(1'bz),
+      .Y5(),
+      .A6(1'bz),
+      .Y6());
 
 endmodule
