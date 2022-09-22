@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import System.Environment (getArgs)
 import Text.Printf (printf)
 import qualified Dis76489 as Dis (main)
-import qualified Emu (runCollectOutput,encodeOp)
+import qualified Emu (runCollectOutput,encodeOp,sim)
 import qualified Examples (table)
 import qualified Op (Op(NOP),allOps)
 import qualified Rom2k (generateAll,pad)
@@ -32,6 +32,7 @@ data Action
   | AssembleExampleTable
   | PrintAndRunAllExamples
   | PrintAndRun String
+  | Simulate String
 
 parseCommandLine :: [String] -> Config
 parseCommandLine = loop []
@@ -47,6 +48,7 @@ parseCommandLine = loop []
       "assemble-examples":xs -> loop (AssembleExampleTable : acc) xs
       "runall":xs -> loop (PrintAndRunAllExamples : acc) xs
       "run":sel:xs -> loop (PrintAndRun sel : acc) xs
+      "sim":sel:xs -> loop (Simulate sel : acc) xs
       x:_ -> error (show ("parseCommandLine",x))
 
 run :: Config -> IO ()
@@ -73,6 +75,16 @@ enact = \case
     printAndRunExamples Examples.table
   PrintAndRun sel -> do
     printAndRunExamples [ ex | ex@(name,_) <- Examples.table, name == sel ]
+  Simulate sel -> do
+    mapM_ simExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
+
+
+simExample :: (String,[Op]) -> IO ()
+simExample (name,prog) = do
+  printf "%s:\n" name
+  --printProg name prog
+  Emu.sim 10 prog
+
 
 printAndRunExamples :: [(String,[Op])] -> IO ()
 printAndRunExamples examples = do

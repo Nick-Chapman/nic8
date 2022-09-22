@@ -2,7 +2,8 @@
 module Emu
   ( runCollectOutput
   , encodeOp
-  , Cycles(..), OutOfGas(..),
+  , Cycles(..), OutOfGas(..)
+  , sim
   ) where
 
 import Data.Bits (testBit,shiftL,shiftR,(.&.))
@@ -22,7 +23,7 @@ runCollectOutput max prog = do
       let State{rIR} = s0
       let cat = decodeCat rIR
       let con = cat2control cat
-      let (s1,oMaybe) = step s0 con
+      let (s1,oMaybe) = stepWithControl s0 con
       let acc' = case oMaybe of
             Nothing -> acc
             Just (Output byte) -> byte:acc
@@ -32,6 +33,93 @@ runCollectOutput max prog = do
 
 data OutOfGas = OutOfGas deriving Show
 newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
+
+----------------------------------------------------------------------
+-- simulation (see state updates; as in verilog)
+
+sim :: Int -> [Op] -> IO ()
+sim n prog = do
+  banner
+  mapM_ pr $ zip [1::Int ..] (take n $ Emu.simulate prog)
+    where
+      pr (i,u)= printf "%5d(pos)  %s\n" i (show u)
+
+banner :: IO ()
+banner = do
+  bar
+  putStrLn "ticks (^)   PC AR BR XR IR  {OUT}"
+  bar
+    where
+      bar = putStrLn "---------------------------------"
+
+simulate :: [Op] -> [Update]
+simulate prog = updates
+  where
+
+    updates :: [Update]
+    updates = case loop (initState prog) of
+      [] -> []
+      [s1] -> [state2update s1]
+      _:states@(s1:states') ->
+        state2update s1 : [makeUpdate s s' | (s,s') <- zip states states' ]
+
+    loop :: State -> [State]
+    loop s = s : loop (step s)
+
+    step :: State -> State
+    step s0 = do
+      let State{rIR} = s0
+      let cat = decodeCat rIR
+      let con = cat2control cat
+      let (s1,_oMaybe) = stepWithControl s0 con
+      s1
+
+----------------------------------------------------------------------
+-- Updates
+
+data Update = Update
+  { uPC :: Maybe Byte
+  , uA :: Maybe Byte
+  , uB :: Maybe Byte
+  , uX :: Maybe Byte
+  , uIR :: Maybe Byte
+--  , uflagCarry :: Maybe Bool
+--  , uflagShift :: Maybe Bool
+  } deriving Eq
+
+state2update :: State -> Update
+state2update State{rPC,rA,rB,rX,rIR} =
+  Update { uPC = Just rPC
+         , uA = Just rA
+         , uB = Just rB
+         , uX = Just rX
+         , uIR = Just rIR
+         }
+
+makeUpdate :: State -> State -> Update
+makeUpdate
+  State{rIR=ir1,rPC=pc1,rA=a1,rB=b1,rX=x1}
+  State{rIR=ir2,rPC=pc2,rA=a2,rB=b2,rX=x2}
+  =
+  Update { uPC = mkUp pc1 pc2
+         , uA = mkUp a1 a2
+         , uB = mkUp b1 b2
+         , uX = mkUp x1 x2
+         , uIR = mkUp ir1 ir2
+         }
+  where
+    mkUp :: Eq a => a -> a -> Maybe a
+    mkUp x y = if (x==y) then Nothing else Just y
+
+
+instance Show Update where
+  show Update{uPC,uA,uB,uX,uIR} =
+    printf "%s %s %s %s %s" (see uPC) (see uA) (see uB) (see uX) (see uIR)
+    where
+      see :: Maybe Byte -> String
+      see = \case
+        Nothing -> "~~"
+        Just b -> printf "%02X" b
 
 ----------------------------------------------------------------------
 -- Cat
@@ -248,6 +336,7 @@ instance Show State where
   show State{rIR,rPC,rA,rB,rX,flagCarry,flagShift} =
     printf "PC=%02X IR=%02X A=%02X B=%02X X=%02X, CARRY=%s, SHIFTED=%s" rPC rIR rA rB rX (show flagCarry) (show flagShift)
 
+
 initState :: [Op] -> State
 initState prog = State
   { rom = initMem prog
@@ -269,8 +358,8 @@ encodeOp = encodeCat . op2cat
 
 data Output = Output Byte
 
-step :: State -> Control -> (State,Maybe Output)
-step state control = do
+stepWithControl :: State -> Control -> (State,Maybe Output)
+stepWithControl state control = do
   let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry,flagShift} = state
   let Control{provideRom,provideRam,provideAlu,provideShiftedA
              ,provideA,provideB,provideX
