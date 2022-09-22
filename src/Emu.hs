@@ -37,20 +37,15 @@ newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 ----------------------------------------------------------------------
 -- simulation (see state updates; as in verilog)
 
-sim :: Int -> [Op] -> IO ()
-sim n prog = do
-  banner
-  mapM_ pr $ zip [1::Int ..] (take n $ Emu.simulate prog)
+sim :: Int -> [Op] -> [String]
+sim n prog =
+  banner ++ (map pr $ zip [1::Int ..] (take n $ Emu.simulate prog))
     where
-      pr (i,u)= printf "%5d(pos)  %s\n" i (show u)
+      pr (i,u)= printf "%5d(pos)  %s" i (show u)
 
-banner :: IO ()
-banner = do
-  bar
-  putStrLn "ticks (^)   PC AR BR XR IR  {OUT}"
-  bar
-    where
-      bar = putStrLn "---------------------------------"
+banner :: [String]
+banner = ["*nic8 simulation*",bar,"ticks (^)   PC AR BR XR IR  {OUT}",bar]
+  where bar = "---------------------------------"
 
 simulate :: [Op] -> [Update]
 simulate prog = updates

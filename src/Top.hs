@@ -33,6 +33,7 @@ data Action
   | PrintAndRunAllExamples
   | PrintAndRun String
   | Simulate String
+  | SimulateExampleTable
 
 parseCommandLine :: [String] -> Config
 parseCommandLine = loop []
@@ -49,6 +50,7 @@ parseCommandLine = loop []
       "runall":xs -> loop (PrintAndRunAllExamples : acc) xs
       "run":sel:xs -> loop (PrintAndRun sel : acc) xs
       "sim":sel:xs -> loop (Simulate sel : acc) xs
+      "simall":xs -> loop (SimulateExampleTable : acc) xs
       x:_ -> error (show ("parseCommandLine",x))
 
 run :: Config -> IO ()
@@ -77,13 +79,21 @@ enact = \case
     printAndRunExamples [ ex | ex@(name,_) <- Examples.table, name == sel ]
   Simulate sel -> do
     mapM_ simExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
+  SimulateExampleTable -> do
+    simulateExamples Examples.table
+
+simulateExamples :: [(String,[Op])] -> IO () -- save to files
+simulateExamples examples = do
+  forM_ examples $ \(name,prog) -> do
+    let filename = "_gen/" ++ name ++ ".trace"
+    printf "writing: %s\n" filename
+    writeFile filename (unlines (Emu.sim 150 prog))
 
 
 simExample :: (String,[Op]) -> IO ()
 simExample (name,prog) = do
   printf "%s:\n" name
-  --printProg name prog
-  Emu.sim 150 prog
+  mapM_ putStrLn $ Emu.sim 15 prog
 
 
 printAndRunExamples :: [(String,[Op])] -> IO ()
