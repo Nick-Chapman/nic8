@@ -21,6 +21,6 @@ vs = $(wildcard verilog/*.v)
 simulation.exe: $(vs)
 	iverilog $^ -Wall -g2005-sv -s top -o $@ 2>&1 | diff /dev/null - || rm $@
 
-.regen-progs: src/*.hs
-	stack run
+.regen-progs: src/*.hs Makefile
+	stack run assemble-examples crib
 	touch .regen-progs
