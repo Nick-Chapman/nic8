@@ -83,29 +83,32 @@ data Update = Update
   , uB :: Maybe Byte
   , uX :: Maybe Byte
   , uIR :: Maybe Byte
+  , uQ :: Byte -- the verilog does not make no-change explicit for Q
 --  , uflagCarry :: Maybe Bool
 --  , uflagShift :: Maybe Bool
   } deriving Eq
 
 state2update :: State -> Update
-state2update State{rPC,rA,rB,rX,rIR} =
+state2update State{rPC,rA,rB,rX,rIR,rQ} =
   Update { uPC = Just rPC
          , uA = Just rA
          , uB = Just rB
          , uX = Just rX
          , uIR = Just rIR
+         , uQ = rQ
          }
 
 makeUpdate :: State -> State -> Update
 makeUpdate
   State{rIR=ir1,rPC=pc1,rA=a1,rB=b1,rX=x1}
-  State{rIR=ir2,rPC=pc2,rA=a2,rB=b2,rX=x2}
+  State{rIR=ir2,rPC=pc2,rA=a2,rB=b2,rX=x2,rQ=q2}
   =
   Update { uPC = mkUp pc1 pc2
          , uA = mkUp a1 a2
          , uB = mkUp b1 b2
          , uX = mkUp x1 x2
          , uIR = mkUp ir1 ir2
+         , uQ = q2
          }
   where
     mkUp :: Eq a => a -> a -> Maybe a
@@ -113,13 +116,14 @@ makeUpdate
 
 
 instance Show Update where
-  show Update{uPC,uA,uB,uX,uIR} =
-    printf "%s %s %s %s %s" (see uPC) (see uA) (see uB) (see uX) (see uIR)
+  show Update{uPC,uA,uB,uX,uIR,uQ} = do
+    printf "%s %s %s %s %s  {%03d}"
+      (see uPC) (see uA) (see uB) (see uX) (see uIR) uQ
     where
       see :: Maybe Byte -> String
       see = \case
         Nothing -> "~~"
-        Just b -> printf "%02X" b
+        Just b -> printf "%02x" b
 
 ----------------------------------------------------------------------
 -- Cat
@@ -328,6 +332,7 @@ data State = State
   , rA :: Byte
   , rB :: Byte
   , rX :: Byte
+  , rQ :: Byte
   , flagCarry :: Bool
   , flagShift :: Bool
   } deriving Eq
@@ -346,6 +351,7 @@ initState prog = State
   , rA = 0
   , rB = 0
   , rX = 0
+  , rQ = 0
   , flagCarry = False
   , flagShift = False
   }
@@ -360,7 +366,7 @@ data Output = Output Byte
 
 stepWithControl :: State -> Control -> (State,Maybe Output)
 stepWithControl state control = do
-  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,flagCarry,flagShift} = state
+  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,rQ,flagCarry,flagShift} = state
   let Control{provideRom,provideRam,provideAlu,provideShiftedA
              ,provideA,provideB,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
@@ -406,6 +412,7 @@ stepWithControl state control = do
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
+        , rQ = if doOut then dbus else rQ
         , flagCarry = if provideAlu then carry else flagCarry
         , flagShift = if provideShiftedA then shiftedOut else flagShift
         }

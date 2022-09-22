@@ -83,7 +83,7 @@ simExample :: (String,[Op]) -> IO ()
 simExample (name,prog) = do
   printf "%s:\n" name
   --printProg name prog
-  Emu.sim 10 prog
+  Emu.sim 150 prog
 
 
 printAndRunExamples :: [(String,[Op])] -> IO ()
