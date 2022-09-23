@@ -1,7 +1,6 @@
 00 : NOP
-10 : JIU
-14 : JXU
-1c : JXZ
+16 : TADD
+17 : TLSR
 20 : LIA
 24 : TXA
 25 : LXA
@@ -32,8 +31,9 @@
 64 : OUTX
 65 : OUTM
 66 : ADDOUT
-76 : TADD
-77 : TLSR
-94 : JXC
+70 : JIU
+74 : JXU
+7c : JXZ
 a6 : ADC
 ae : SBC
+f4 : JXC

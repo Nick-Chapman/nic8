@@ -247,24 +247,24 @@ data Dest = ToInstructionRegister | ToDataRam | ToA | ToB | ToX | ToPC | ToOut |
 encodeDest :: Dest -> Byte
 encodeDest =  \case
   ToInstructionRegister -> 0
-  ToPC -> 1
+  ToNowhere -> 1
   ToA -> 2
   ToB -> 3
   ToX -> 4
   ToDataRam -> 5
   ToOut -> 6
-  ToNowhere -> 7
+  ToPC -> 7
 
 decodeDest :: Byte -> Dest
 decodeDest = \case
   0 -> ToInstructionRegister
-  1 -> ToPC
+  1 -> ToNowhere
   2 -> ToA
   3 -> ToB
   4 -> ToX
   5 -> ToDataRam
   6 -> ToOut
-  7 -> ToNowhere
+  7 -> ToPC
   x -> error (show ("decodeDest",x))
 
 ----------------------------------------------------------------------

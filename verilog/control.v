@@ -14,7 +14,7 @@ module control
    assign {bit7,dest,bit3,source} = ir;
 
    assign loadBarIR = ~(dest==0);
-   wire loadPC = (dest==1);
+   wire loadPC = (dest==7);
    wire loadA = (dest==2);
    wire loadB = (dest==3);
    wire loadX = (dest==4);

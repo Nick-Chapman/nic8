@@ -23,13 +23,13 @@ module control_NET
       .G2B(1'b0),
       .G1(1'b1),
       .Y0(loadBarIR),
-      .Y1(loadBarPC),
+      .Y1(),
       .Y2(loadBarA),
       .Y3(loadBarB),
       .Y4(loadBarX),
       .Y5(storeMemBar),
       .Y6(loadBarQ),
-      .Y7());
+      .Y7(loadBarPC));
 
    wire assertBarRam;
 
