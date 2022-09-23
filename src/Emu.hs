@@ -3,7 +3,7 @@ module Emu
   ( runCollectOutput
   , encodeOp
   , Cycles(..), OutOfGas(..)
-  , sim
+  , sim, run
   ) where
 
 import Data.Bits (testBit,shiftL,shiftR,(.&.))
@@ -38,26 +38,36 @@ newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 -- simulation (see state updates; as in verilog)
 
 sim :: Int -> [Op] -> [String]
-sim n prog =
-  banner ++ (map pr $ zip [1::Int ..] (take n $ Emu.simulate prog))
-    where
-      pr (i,u)= printf "%5d(pos)  %s" i (show u)
+sim n prog = do
+  let ups = take n $ makeUpdates $ Emu.simulate prog
+  banner ++
+    [ printf "%5d(pos)  %s" i (show u) | (i,u) <- zip [1::Int ..] ups]
 
 banner :: [String]
 banner = ["*nic8 simulation*",bar,"ticks (^)   PC AR BR XR IR  {OUT}",bar]
   where bar = "---------------------------------"
 
-simulate :: [Op] -> [Update]
-simulate prog = updates
+makeUpdates :: [State] -> [Update]
+makeUpdates = \case
+  [] -> []
+  [s1] -> [state2update s1]
+  _:states@(s1:states') ->
+    state2update s1 : [makeUpdate s s' | (s,s') <- zip states states' ]
+
+
+run :: Int -> [Op] -> [Byte]
+run n prog = _changes [ rQ | State{rQ} <- take n $ drop 1 $ Emu.simulate prog ]
   where
-
-    updates :: [Update]
-    updates = case loop (initState prog) of
+    _changes :: Eq a => [a] -> [a]
+    _changes = \case
       [] -> []
-      [s1] -> [state2update s1]
-      _:states@(s1:states') ->
-        state2update s1 : [makeUpdate s s' | (s,s') <- zip states states' ]
+      [x] -> [x]
+      x:xs@(x2:_) -> if x==x2 then _changes xs else x : _changes xs
 
+
+simulate :: [Op] -> [State]
+simulate prog = loop (initState prog)
+  where
     loop :: State -> [State]
     loop s = s : loop (step s)
 

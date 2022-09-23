@@ -9,7 +9,7 @@ import Data.Ord (comparing)
 import System.Environment (getArgs)
 import Text.Printf (printf)
 import qualified Dis76489 as Dis (main)
-import qualified Emu (runCollectOutput,encodeOp,sim)
+import qualified Emu (runCollectOutput,encodeOp,sim,run)
 import qualified Examples (table)
 import qualified Op (Op(NOP),allOps)
 import qualified Rom2k (generateAll,pad)
@@ -30,10 +30,12 @@ data Action
   | RegressionTests
   | GenerateAsmCrib
   | AssembleExampleTable
-  | PrintAndRunAllExamples
-  | PrintAndRun String
+  | OldPrintAndRunAllExamples
+  | OldPrintAndRun String
   | Simulate String
   | SimulateExampleTable
+  | Run String
+  | RunExampleTable
 
 parseCommandLine :: [String] -> Config
 parseCommandLine = loop []
@@ -47,10 +49,12 @@ parseCommandLine = loop []
       "tests":xs -> loop (RegressionTests : acc) xs
       "crib":xs -> loop (GenerateAsmCrib : acc) xs
       "assemble-examples":xs -> loop (AssembleExampleTable : acc) xs
-      "runall":xs -> loop (PrintAndRunAllExamples : acc) xs
-      "run":sel:xs -> loop (PrintAndRun sel : acc) xs
+      "oldrunall":xs -> loop (OldPrintAndRunAllExamples : acc) xs
+      "oldrun":sel:xs -> loop (OldPrintAndRun sel : acc) xs
       "sim":sel:xs -> loop (Simulate sel : acc) xs
       "simall":xs -> loop (SimulateExampleTable : acc) xs
+      "run":sel:xs -> loop (Run sel : acc) xs
+      "runall":xs -> loop (RunExampleTable : acc) xs
       x:_ -> error (show ("parseCommandLine",x))
 
 run :: Config -> IO ()
@@ -73,22 +77,25 @@ enact = \case
     generateAsmCrib
   AssembleExampleTable -> do
     assembleExamples Examples.table
-  PrintAndRunAllExamples -> do
-    printAndRunExamples Examples.table
-  PrintAndRun sel -> do
-    printAndRunExamples [ ex | ex@(name,_) <- Examples.table, name == sel ]
+  OldPrintAndRunAllExamples -> do
+    oldPrintAndRunExamples Examples.table
+  OldPrintAndRun sel -> do
+    oldPrintAndRunExamples [ ex | ex@(name,_) <- Examples.table, name == sel ]
   Simulate sel -> do
     mapM_ simExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
   SimulateExampleTable -> do
     simulateExamples Examples.table
+  Run sel -> do
+    mapM_ runExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
+  RunExampleTable -> do
+    runExamples Examples.table
 
-simulateExamples :: [(String,[Op])] -> IO () -- save to files
+simulateExamples :: [(String,[Op])] -> IO () -- and save to files
 simulateExamples examples = do
   forM_ examples $ \(name,prog) -> do
     let filename = "_gen/" ++ name ++ ".trace"
     printf "writing: %s\n" filename
     writeFile filename (unlines (Emu.sim 150 prog))
-
 
 simExample :: (String,[Op]) -> IO ()
 simExample (name,prog) = do
@@ -96,8 +103,21 @@ simExample (name,prog) = do
   mapM_ putStrLn $ Emu.sim 15 prog
 
 
-printAndRunExamples :: [(String,[Op])] -> IO ()
-printAndRunExamples examples = do
+runExamples :: [(String,[Op])] -> IO () -- and save to files
+runExamples examples = do
+  forM_ examples $ \(name,prog) -> do
+    let filename = "_gen/" ++ name ++ ".out"
+    printf "writing: %s\n" filename
+    writeFile filename (unlines $ map (printf "%03d") $ Emu.run 1500 prog)
+
+runExample :: (String,[Op]) -> IO ()
+runExample (name,prog) = do
+  printf "%s:\n" name
+  mapM_ (printf "%03d\n") $ Emu.run 150 prog
+
+
+oldPrintAndRunExamples :: [(String,[Op])] -> IO ()
+oldPrintAndRunExamples examples = do
   forM_ examples $ \(name,prog) -> do
     printProg name prog
     print $ Emu.runCollectOutput 500 prog
