@@ -28,15 +28,15 @@ module control
    assign triggerC = clk | assertBarE;
    assign triggerS = clk | assertBarS;
 
-   assign assertRom = (source==0);
-   assign assertRomBar = ~assertRom;
-   // TODO: (source==1) -- drive zero on bus
+   assign assertRom = (source==0) | (source==1);
    assign assertBarA = ~(source==2);
    assign assertBarB = ~(source==3);
    assign assertBarX = ~(source==4);
    assign assertRam = (source==5);
    assign assertBarE = ~(source==6);
    assign assertBarS = ~(source==7);
+
+   assign assertRomBar = ~assertRom;
 
    wire jumpUncond  = ~bit3 & ~bit7;
    wire jumpIfZero  =  bit3 & ~bit7;

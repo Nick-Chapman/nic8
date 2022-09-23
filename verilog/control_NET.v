@@ -32,6 +32,9 @@ module control_NET
       .Y7(loadBarPC));
 
    wire assertBarRam;
+   wire assertRomBar1,assertRomBar2;
+
+   assign assertRomBar = assertRomBar1 & assertRomBar2; //TODO: gate!
 
    LS138 demuxSource
      (.A(source[0]),
@@ -40,8 +43,8 @@ module control_NET
       .G2A(1'b0),
       .G2B(1'b0),
       .G1(1'b1),
-      .Y0(assertRomBar),
-      .Y1(), // TODO: assert zero
+      .Y0(assertRomBar1),
+      .Y1(assertRomBar2),
       .Y2(assertBarA),
       .Y3(assertBarB),
       .Y4(assertBarX),

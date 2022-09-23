@@ -144,7 +144,7 @@ data Cat = Cat -- Control atributes
 
 op2cat :: Op -> Cat
 op2cat = \case
-  NOP -> Cat o o FromProgRom ToInstructionRegister
+  NOP -> Cat o o FromZero ToInstructionRegister
   LIA -> Cat o o FromProgRom ToA
   LIB -> Cat o o FromProgRom ToB
   LIX -> Cat o o FromProgRom ToX
@@ -214,13 +214,13 @@ decodeCat b = do
   Cat {xbit7,xbit3,source,dest}
 
 
-data Source = FromProgRom | FromZero | FromA | FromB | FromX | FromDataRam | FromAlu | FromShiftedA
+data Source = FromZero | FromProgRom | FromA | FromB | FromX | FromDataRam | FromAlu | FromShiftedA
   deriving (Eq,Show)
 
 encodeSource :: Source -> Byte
 encodeSource = \case
-  FromProgRom -> 0
-  FromZero -> 1 -- drive zero onto bus
+  FromZero -> 0 -- drive zero onto bus
+  FromProgRom -> 1
   FromA -> 2
   FromB -> 3
   FromX -> 4
@@ -230,8 +230,8 @@ encodeSource = \case
 
 decodeSource :: Byte -> Source
 decodeSource = \case
-  0 -> FromProgRom
-  1 -> FromZero
+  0 -> FromProgRom -- FromZero
+  1 -> FromProgRom
   2 -> FromA
   3 -> FromB
   4 -> FromX
@@ -271,7 +271,8 @@ decodeDest = \case
 -- Control
 
 data Control = Control
-  { provideRom :: Bool
+  { provideZero :: Bool
+  , provideRom :: Bool
   , provideRam :: Bool
   , provideAlu :: Bool
   , provideShiftedA :: Bool
@@ -298,6 +299,7 @@ cat2control :: Cat -> Control
 cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
   Cat{xbit7,xbit3,dest,source} -> do
+    let provideZero = (source == FromZero)
     let provideRom = (source == FromProgRom)
     let provideRam = (source == FromDataRam)
     let provideAlu = (source == FromAlu)
@@ -320,7 +322,7 @@ cat2control = \case
     let jumpIfShift = xbit3 && xbit7
     let unconditionalJump = not xbit3 && not xbit7
 
-    Control {provideRom,provideRam,provideAlu,provideShiftedA
+    Control {provideZero,provideRom,provideRam,provideAlu,provideShiftedA
             ,provideA,provideB,provideX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,doSubtract,doCarryIn,doShiftIn
@@ -372,7 +374,7 @@ data Output = Output Byte
 stepWithControl :: State -> Control -> (State,Maybe Output)
 stepWithControl state control = do
   let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,rQ,flagCarry,flagShift} = state
-  let Control{provideRom,provideRam,provideAlu,provideShiftedA
+  let Control{provideZero,provideRom,provideRam,provideAlu,provideShiftedA
              ,provideA,provideB,provideX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,doSubtract,doCarryIn,doShiftIn
@@ -393,20 +395,20 @@ stepWithControl state control = do
   let aShifted =
         (if doShiftIn && flagShift then 128 else 0) + rA `div` 2
   let shiftedOut = rA `mod` 2 == 1
+  let romOut = maybe 0 id (Map.lookup rPC rom)
   let dbus =
-        case (provideRom,provideRam
-             ,provideAlu
-             ,provideA,provideB,provideX
-             ,provideShiftedA
+        case (provideZero,provideRom,provideRam,provideAlu
+             ,provideA,provideB,provideX,provideShiftedA
              ) of
-          (True,False,False,False,False,False,False) -> maybe 0 id (Map.lookup rPC rom)
-          (False,True,False,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
-          (False,False,True,False,False,False,False) -> alu
-          (False,False,False,True,False,False,False) -> rA
-          (False,False,False,False,True,False,False) -> rB
-          (False,False,False,False,False,True,False) -> rX
-          (False,False,False,False,False,False,True) -> aShifted
-          (False,False,False,False,False,False,False) -> error "no drivers for data bus"
+          (True,False,False,False,False,False,False,False) -> 0
+          (False,True,False,False,False,False,False,False) -> romOut
+          (False,False,True,False,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
+          (False,False,False,True,False,False,False,False) -> alu
+          (False,False,False,False,True,False,False,False) -> rA
+          (False,False,False,False,False,True,False,False) -> rB
+          (False,False,False,False,False,False,True,False) -> rX
+          (False,False,False,False,False,False,False,True) -> aShifted
+          (False,False,False,False,False,False,False,False) -> error "no drivers for data bus"
           p -> error (show ("multiple drivers for data bus",p))
 
   let s' = State
