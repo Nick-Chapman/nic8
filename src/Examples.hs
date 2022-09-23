@@ -388,7 +388,7 @@ fibsNew = assemble $ mdo
   start <- Here
   la 1
   out
-  lb 1
+  tab
   loop <- Here
   add
   jxc
