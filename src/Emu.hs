@@ -271,14 +271,14 @@ decodeDest = \case
 -- Control
 
 data Control = Control
-  { provideZero :: Bool
-  , provideRom :: Bool
-  , provideRam :: Bool
-  , provideAlu :: Bool
-  , provideShiftedA :: Bool
-  , provideA :: Bool
-  , provideB :: Bool
-  , provideX :: Bool
+  { assertZero :: Bool
+  , assertRom :: Bool
+  , assertRam :: Bool
+  , assertAlu :: Bool
+  , assertShiftedA :: Bool
+  , assertA :: Bool
+  , assertB :: Bool
+  , assertX :: Bool
   , loadIR :: Bool
   , loadPC :: Bool
   , loadA :: Bool
@@ -299,14 +299,14 @@ cat2control :: Cat -> Control
 cat2control = \case
   Lit{} -> error "unexpected Cat/Lit"
   Cat{xbit7,xbit3,dest,source} -> do
-    let provideZero = (source == FromZero)
-    let provideRom = (source == FromProgRom)
-    let provideRam = (source == FromDataRam)
-    let provideAlu = (source == FromAlu)
-    let provideShiftedA = (source == FromShiftedA)
-    let provideA = (source == FromA)
-    let provideB = (source == FromB)
-    let provideX = (source == FromX)
+    let assertZero = (source == FromZero)
+    let assertRom = (source == FromProgRom)
+    let assertRam = (source == FromDataRam)
+    let assertAlu = (source == FromAlu)
+    let assertShiftedA = (source == FromShiftedA)
+    let assertA = (source == FromA)
+    let assertB = (source == FromB)
+    let assertX = (source == FromX)
     let loadIR = (dest == ToInstructionRegister)
     let loadPC = (dest == ToPC)
     let loadA = (dest == ToA)
@@ -322,8 +322,8 @@ cat2control = \case
     let jumpIfShift = xbit3 && xbit7
     let unconditionalJump = not xbit3 && not xbit7
 
-    Control {provideZero,provideRom,provideRam,provideAlu,provideShiftedA
-            ,provideA,provideB,provideX
+    Control {assertZero,assertRom,assertRam,assertAlu,assertShiftedA
+            ,assertA,assertB,assertX
             ,loadIR,loadPC,loadA,loadB,loadX,storeMem
             ,doOut,doSubtract,doCarryIn,doShiftIn
             ,jumpIfZero,jumpIfCarry,jumpIfShift,unconditionalJump}
@@ -374,8 +374,8 @@ data Output = Output Byte
 stepWithControl :: State -> Control -> (State,Maybe Output)
 stepWithControl state control = do
   let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,rQ,flagCarry,flagShift} = state
-  let Control{provideZero,provideRom,provideRam,provideAlu,provideShiftedA
-             ,provideA,provideB,provideX
+  let Control{assertZero,assertRom,assertRam,assertAlu,assertShiftedA
+             ,assertA,assertB,assertX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
              ,doOut,doSubtract,doCarryIn,doShiftIn
              ,jumpIfZero,jumpIfCarry,jumpIfShift,unconditionalJump} = control
@@ -397,8 +397,8 @@ stepWithControl state control = do
   let shiftedOut = rA `mod` 2 == 1
   let romOut = maybe 0 id (Map.lookup rPC rom)
   let dbus =
-        case (provideZero,provideRom,provideRam,provideAlu
-             ,provideA,provideB,provideX,provideShiftedA
+        case (assertZero,assertRom,assertRam,assertAlu
+             ,assertA,assertB,assertX,assertShiftedA
              ) of
           (True,False,False,False,False,False,False,False) -> 0
           (False,True,False,False,False,False,False,False) -> romOut
@@ -413,7 +413,7 @@ stepWithControl state control = do
 
   let doJump = loadPC && jumpControl
   let _ = loadIR
-  let denyFetch = provideRom || doJump
+  let denyFetch = assertRom || doJump
 
   let s' = State
         { rom = if storeMem then Map.insert rX dbus rom else rom
@@ -424,8 +424,8 @@ stepWithControl state control = do
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX
         , rQ = if doOut then dbus else rQ
-        , flagCarry = if provideAlu then carry else flagCarry
-        , flagShift = if provideShiftedA then shiftedOut else flagShift
+        , flagCarry = if assertAlu then carry else flagCarry
+        , flagShift = if assertShiftedA then shiftedOut else flagShift
         }
   (s',
    if doOut then Just (Output dbus) else Nothing
