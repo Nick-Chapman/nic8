@@ -1,12 +1,12 @@
 
-module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
+module monitor (input clk, input resetBar, input [7:0] pc, ir, areg, breg, xreg, qreg);
 
    reg verbose;
    initial verbose = $test$plusargs("verbose");
 
-   initial if (verbose) $display("*nic8 simulation*");
    initial if (verbose) printBar;
 
+   initial @(posedge resetBar) if (verbose) printStatus;
    always @(posedge clk) if (verbose) #1 printStatus;
    always @(qreg) if (!verbose) #1 $display("%03d",qreg);
 
@@ -18,22 +18,23 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
    always #1 if (steps>0) if ($time > (10*steps)) $finish();
 
    task printBar;
-      $display("---------------------------------");
-      $display("ticks (^)   PC AR BR XR IR  {OUT}");
-      $display("---------------------------------");
+      $display("------------------------------");
+      $display(" IR | AR BR XR | PC | QR [dec]");
+      $display("------------------------------");
    endtask
 
    wire [1:8] same = " ";
    wire [1:8] star = " ";
 
    task printStatus;
-      $display("%5d(%s)  %s %s %s %s %s  {%03d}",
-               ticks,(clk?"pos":"neg"),
-               show(pc,pc1),
+      $display(" %s | %s %s %s | %s | %s [%03d]",
+               //ticks,(clk?"pos":"neg"),
+               show(ir,ir1),
                show(areg,areg1),
                show(breg,breg1),
                show(xreg,xreg1),
-               show(ir,ir1),
+               show(pc,pc1),
+               show(qreg,qreg1),
                qreg);
       snap;
    endtask
@@ -66,13 +67,14 @@ module monitor (input clk, input [7:0] pc, ir, areg, breg, xreg, qreg);
       endcase
    endfunction
 
-   reg [7:0] ir1, pc1, areg1, breg1, xreg1;
+   reg [7:0] ir1, pc1, areg1, breg1, xreg1, qreg1;
    task snap;
       ir1 = ir;
       pc1 = pc;
       areg1 = areg;
       breg1 = breg;
       xreg1 = xreg;
+      qreg1 = qreg;
    endtask
 
 endmodule

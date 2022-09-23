@@ -39,30 +39,29 @@ newtype Cycles = Cycles Int deriving (Eq,Ord,Num,Show)
 
 sim :: Int -> [Op] -> [String]
 sim n prog = do
-  let ups = take n $ makeUpdates $ Emu.simulate prog
-  banner ++
-    [ printf "%5d(pos)  %s" i (show u) | (i,u) <- zip [1::Int ..] ups]
+  let ups = take (n+1) $ makeUpdates $ Emu.simulate prog
+  banner ++ map show ups
 
 banner :: [String]
-banner = ["*nic8 simulation*",bar,"ticks (^)   PC AR BR XR IR  {OUT}",bar]
-  where bar = "---------------------------------"
+banner = [bar," IR | AR BR XR | PC | QR [dec]",bar]
+  where bar = "------------------------------"
 
 makeUpdates :: [State] -> [Update]
 makeUpdates = \case
   [] -> []
   [s1] -> [state2update s1]
-  _:states@(s1:states') ->
-    state2update s1 : [makeUpdate s s' | (s,s') <- zip states states' ]
+  states@(s1:states') ->
+    state2update s1 : [ makeUpdate s s' | (s,s') <- zip states states' ]
 
 
 run :: Int -> [Op] -> [Byte]
-run n prog = _changes [ rQ | State{rQ} <- take n $ drop 1 $ Emu.simulate prog ]
+run n prog = changes [ rQ | State{rQ} <- take n $ drop 1 $ Emu.simulate prog ]
   where
-    _changes :: Eq a => [a] -> [a]
-    _changes = \case
+    changes :: Eq a => [a] -> [a]
+    changes = \case
       [] -> []
       [x] -> [x]
-      x:xs@(x2:_) -> if x==x2 then _changes xs else x : _changes xs
+      x:xs@(x2:_) -> if x==x2 then changes xs else x : changes xs
 
 
 simulate :: [Op] -> [State]
@@ -88,9 +87,8 @@ data Update = Update
   , uB :: Maybe Byte
   , uX :: Maybe Byte
   , uIR :: Maybe Byte
-  , uQ :: Byte -- the verilog does not make no-change explicit for Q
---  , uflagCarry :: Maybe Bool
---  , uflagShift :: Maybe Bool
+  , uQ :: Maybe Byte -- the verilog does not make no-change explicit for Q
+  , rQ :: Byte
   } deriving Eq
 
 state2update :: State -> Update
@@ -100,12 +98,13 @@ state2update State{rPC,rA,rB,rX,rIR,rQ} =
          , uB = Just rB
          , uX = Just rX
          , uIR = Just rIR
-         , uQ = rQ
+         , uQ = Just rQ
+         , rQ = rQ
          }
 
 makeUpdate :: State -> State -> Update
 makeUpdate
-  State{rIR=ir1,rPC=pc1,rA=a1,rB=b1,rX=x1}
+  State{rIR=ir1,rPC=pc1,rA=a1,rB=b1,rX=x1,rQ=q1}
   State{rIR=ir2,rPC=pc2,rA=a2,rB=b2,rX=x2,rQ=q2}
   =
   Update { uPC = mkUp pc1 pc2
@@ -113,7 +112,8 @@ makeUpdate
          , uB = mkUp b1 b2
          , uX = mkUp x1 x2
          , uIR = mkUp ir1 ir2
-         , uQ = q2
+         , uQ = mkUp q1 q2
+         , rQ = q2
          }
   where
     mkUp :: Eq a => a -> a -> Maybe a
@@ -121,9 +121,9 @@ makeUpdate
 
 
 instance Show Update where
-  show Update{uPC,uA,uB,uX,uIR,uQ} = do
-    printf "%s %s %s %s %s  {%03d}"
-      (see uPC) (see uA) (see uB) (see uX) (see uIR) uQ
+  show Update{uPC,uA,uB,uX,uIR,uQ,rQ} = do
+    printf  " %s | %s %s %s | %s | %s [%03d]"
+      (see uIR) (see uA) (see uB) (see uX) (see uPC) (see uQ) rQ
     where
       see :: Maybe Byte -> String
       see = \case

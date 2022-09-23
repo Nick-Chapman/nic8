@@ -10,6 +10,7 @@ module top;
    whole_cpu cpu (clk,resetBar);
 
    monitor m (clk,
+              resetBar,
               cpu.pc,
               cpu.ir,
               cpu.registers.A.contents,
