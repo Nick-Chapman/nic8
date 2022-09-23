@@ -1,11 +1,9 @@
 
 module control
   (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
-   output loadBarIR,storeMemBar,
-   output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRom,assertRam,assertRomBar,
-   output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doCarryIn,doShiftIn,doJumpBar,doJump
+   output storeMemBar,triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
+   output assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
+   output doSubtract,doCarryIn,doShiftIn,doJumpBar,denyFetch
    );
 
    wire bit7, bit3;
@@ -13,7 +11,6 @@ module control
    wire [2:0] dest;
    assign {bit7,dest,bit3,source} = ir;
 
-   assign loadBarIR = ~(dest==0);
    wire loadPC = (dest==7);
    wire loadA = (dest==2);
    wire loadB = (dest==3);
@@ -29,15 +26,13 @@ module control
    assign triggerS = clk | assertBarS;
 
    //assign assertZero = (source==0);
-   assign assertRom = (source==1);
+   assign assertRomBar = ~(source==1);
    assign assertBarA = ~(source==2);
    assign assertBarB = ~(source==3);
    assign assertBarX = ~(source==4);
    assign assertRam = (source==5);
    assign assertBarE = ~(source==6);
    assign assertBarS = ~(source==7);
-
-   assign assertRomBar = ~assertRom;
 
    wire jumpUncond  = ~bit3 & ~bit7;
    wire jumpIfZero  =  bit3 & ~bit7;
@@ -52,7 +47,7 @@ module control
    assign doSubtract = bit3;
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
-   assign doJumpBar = ~(loadPC && jumpControl);
-   assign doJump = ~doJumpBar;
+   assign doJumpBar = ~(loadPC & jumpControl);
+   assign denyFetch = ~(assertRomBar & doJumpBar);
 
 endmodule

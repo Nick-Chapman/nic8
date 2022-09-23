@@ -1,11 +1,9 @@
 
 module control_NET
   (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
-   output loadBarIR,storeMemBar,
-   output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRom,assertRam,assertRomBar,
-   output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doCarryIn,doShiftIn,doJumpBar,doJump
+   output storeMemBar,triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
+   output assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
+   output doSubtract,doCarryIn,doShiftIn,doJumpBar,denyFetch
    );
 
    wire bit7, bit3;
@@ -22,7 +20,7 @@ module control_NET
       .G2A(1'b0),
       .G2B(1'b0),
       .G1(1'b1),
-      .Y0(loadBarIR),
+      .Y0(),
       .Y1(),
       .Y2(loadBarA),
       .Y3(loadBarB),
@@ -81,6 +79,8 @@ module control_NET
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
 
+   wire doJump;
+
    LS153 jumpControlMux
      (.A(bit3),
       .B(bit7),
@@ -99,18 +99,21 @@ module control_NET
       .jC0(1'bz),
       .jY());
 
-   LS04 inverters
-     (.A1(assertRomBar),
-      .Y1(assertRom),
-      .A2(assertBarRam),
-      .Y2(assertRam),
-      .A3(doJump),
-      .Y3(doJumpBar),
+   LS00 nands
+     (.A1(assertBarRam),
+      .B1(assertBarRam),
+      .Y1(assertRam),
+
+      .A2(doJump),
+      .B2(doJump),
+      .Y2(doJumpBar),
+
+      .A3(assertRomBar),
+      .B3(doJumpBar),
+      .Y3(denyFetch),
+
       .A4(1'bz),
-      .Y4(),
-      .A5(1'bz),
-      .Y5(),
-      .A6(1'bz),
-      .Y6());
+      .B4(1'b1),
+      .Y4());
 
 endmodule
