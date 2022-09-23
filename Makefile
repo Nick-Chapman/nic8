@@ -1,6 +1,10 @@
 
 top: regen-outs diff
 
+h:
+	stack run assemble-examples crib simall runall
+
+
 progs = $(patsubst prog/%.hex, %, $(wildcard prog/*.hex))
 traces = $(patsubst %, _gen/%.trace, $(progs))
 outputs = $(patsubst %, _gen/%.out, $(progs))

@@ -383,17 +383,18 @@ triangleShift = assemble $ do
 -- fibs example which detects 8-bit overflow and restarts
 
 fibsNew :: [Op]
-fibsNew = assemble $ do
+fibsNew = assemble $ mdo
+  lx start
   start <- Here
   la 1
   out
   lb 1
   loop <- Here
   add
-  jc start
+  jxc
   out
   addb
-  jc start
+  jxc
   outb
   jump loop
 

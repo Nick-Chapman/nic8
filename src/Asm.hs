@@ -3,7 +3,7 @@ module Asm
   ( Byte, Op(..), Asm(..), assemble
   , add, tadd, adc, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
   , spin
-  , la, lb, lx, jump, jz, jc, js, jxu
+  , la, lb, lx, jump, jz, jc, js, jxu, jxc
   , lxa, lxb, lxx
   , variable
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
@@ -21,7 +21,7 @@ out,outb,outx,nop,spin :: Asm ()
 outi :: Byte -> Asm () -- output immediate
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
-jxu :: Asm () -- jumps
+jxu,jxc :: Asm () -- jumps
 jump,jz,jc,js :: Byte -> Asm () -- jumps
 lsr,tlsr,asr,lsrb,asrb :: Asm ()
 
@@ -72,6 +72,7 @@ lxb = Emit [LXB]
 lxx = Emit [LXX]
 
 jxu = Emit [JXU]
+jxc = Emit [JXC]
 jump b = Emit [JIU, IMM b]
 jz b = Emit [JIZ, IMM b]
 jc b = Emit [JIC, IMM b]
