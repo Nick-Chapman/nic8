@@ -230,7 +230,7 @@ encodeSource = \case
 
 decodeSource :: Byte -> Source
 decodeSource = \case
-  0 -> FromProgRom -- FromZero
+  0 -> FromZero
   1 -> FromProgRom
   2 -> FromA
   3 -> FromB
@@ -411,11 +411,15 @@ stepWithControl state control = do
           (False,False,False,False,False,False,False,False) -> error "no drivers for data bus"
           p -> error (show ("multiple drivers for data bus",p))
 
+  let doJump = loadPC && jumpControl
+  let _ = loadIR
+  let denyFetch = provideRom || doJump
+
   let s' = State
         { rom = if storeMem then Map.insert rX dbus rom else rom
         -- , ram = if storeMem then Map.insert rX dbus ram else ram
-        , rIR = if loadIR then dbus else 0
-        , rPC = if loadPC && jumpControl then dbus else if provideRom then rPC + 1 else rPC
+        , rIR = if denyFetch then 0 else romOut
+        , rPC = if doJump then dbus else rPC + 1
         , rA = if loadA then dbus else rA
         , rB = if loadB then dbus else rB
         , rX = if loadX then dbus else rX

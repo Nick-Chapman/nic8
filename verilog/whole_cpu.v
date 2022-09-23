@@ -3,16 +3,22 @@
 
 module whole_cpu (input clk, resetBar);
 
-   wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus;
+   wire [7:0] pc,ir,areg,breg,xreg,qreg,dbus,ibus;
    wire aIsZero,flagCarry,flagShift;
-   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam,assertRomBar, assertBarE,assertBarS,assertBarA,assertBarB,assertBarX, doSubtract,doCarryIn,doShiftIn,doJumpBar;
+   wire loadBarIR,storeMemBar, triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS, assertRom,assertRam,assertRomBar, assertBarE,assertBarS,assertBarA,assertBarB,assertBarX, doSubtract,doCarryIn,doShiftIn,doJumpBar,doJump;
 
-   rom`suff prog (    assertRomBar,         pc,  dbus);
+   rom`suff prog (    assertRomBar,         pc,  dbus, ibus);
    ram`suff data (clk,assertRam,storeMemBar,xreg,dbus);
 
-   programCounter`suff p (resetBar,clk,doJumpBar,assertRom,dbus,pc);
+   wire doInc;
+   assign doInc = 1'b1;
 
-   fetch`suff f (clk,resetBar,loadBarIR,dbus,ir);
+   programCounter`suff p (resetBar,clk,doJumpBar,doInc,dbus,pc);
+
+   wire fetchDenied;
+   assign fetchDenied = assertRom | doJump; //TODO: gate!
+
+   fetch`suff f (clk,resetBar,fetchDenied,ibus,ir);
 
    control`suff c
      (.ir(ir),
@@ -39,7 +45,8 @@ module whole_cpu (input clk, resetBar);
       .doSubtract(doSubtract),
       .doCarryIn(doCarryIn),
       .doShiftIn(doShiftIn),
-      .doJumpBar(doJumpBar));
+      .doJumpBar(doJumpBar),
+      .doJump(doJump));
 
    registers`suff registers
      (resetBar,

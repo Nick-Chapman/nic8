@@ -5,7 +5,7 @@ module control
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doCarryIn,doShiftIn,doJumpBar
+   output doSubtract,doCarryIn,doShiftIn,doJumpBar,doJump
    );
 
    wire bit7, bit3;
@@ -28,7 +28,8 @@ module control
    assign triggerC = clk | assertBarE;
    assign triggerS = clk | assertBarS;
 
-   assign assertRom = (source==0) | (source==1);
+   //assign assertZero = (source==0);
+   assign assertRom = (source==1);
    assign assertBarA = ~(source==2);
    assign assertBarB = ~(source==3);
    assign assertBarX = ~(source==4);
@@ -52,5 +53,6 @@ module control
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
    assign doJumpBar = ~(loadPC && jumpControl);
+   assign doJump = ~doJumpBar;
 
 endmodule

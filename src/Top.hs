@@ -100,7 +100,7 @@ simulateExamples examples = do
 simExample :: (String,[Op]) -> IO ()
 simExample (name,prog) = do
   printf "%s:\n" name
-  mapM_ putStrLn $ Emu.sim 15 prog
+  mapM_ putStrLn $ Emu.sim 25 prog
 
 
 runExamples :: [(String,[Op])] -> IO () -- and save to files

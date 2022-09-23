@@ -1,7 +1,7 @@
 
 module rom (input outputEnableBar,
             input [7:0] addr,
-            output [7:0] data);
+            output [7:0] dbus, ibus);
 
    reg [7:0] mem [0:255];
 
@@ -14,6 +14,7 @@ module rom (input outputEnableBar,
       $readmemh(prog, mem);
    end
 
-   assign data = ~outputEnableBar ? mem[addr] : 'z;
+   assign ibus = mem[addr];
+   assign dbus = ~outputEnableBar ? ibus : 'z;
 
 endmodule

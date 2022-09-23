@@ -5,7 +5,7 @@ module control_NET
    output triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
    output assertRom,assertRam,assertRomBar,
    output assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
-   output doSubtract,doCarryIn,doShiftIn,doJumpBar
+   output doSubtract,doCarryIn,doShiftIn,doJumpBar,doJump
    );
 
    wire bit7, bit3;
@@ -32,9 +32,6 @@ module control_NET
       .Y7(loadBarPC));
 
    wire assertBarRam;
-   wire assertRomBar1,assertRomBar2;
-
-   assign assertRomBar = assertRomBar1 & assertRomBar2; //TODO: gate!
 
    LS138 demuxSource
      (.A(source[0]),
@@ -43,8 +40,8 @@ module control_NET
       .G2A(1'b0),
       .G2B(1'b0),
       .G1(1'b1),
-      .Y0(assertRomBar1),
-      .Y1(assertRomBar2),
+      .Y0(),
+      .Y1(assertRomBar),
       .Y2(assertBarA),
       .Y3(assertBarB),
       .Y4(assertBarX),
@@ -83,8 +80,6 @@ module control_NET
    assign doSubtract = bit3;
    assign doCarryIn = bit7;
    assign doShiftIn = bit3;
-
-   wire doJump;
 
    LS153 jumpControlMux
      (.A(bit3),
