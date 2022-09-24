@@ -113,7 +113,7 @@ module control_NET
       .Y3(denyFetch),
 
       .A4(1'bz),
-      .B4(1'b1),
+      .B4(1'bz),
       .Y4());
 
 endmodule

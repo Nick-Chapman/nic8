@@ -70,7 +70,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .COUT(coutLO));
 
    LS245 u5 // ALU output line driver
-     (.ENB(assertBarE), .DIR(1'b1), .A(aluOut), .B(dbus));
+     (.ENB(assertBarE), .DIR(1'b0), .A(dbus), .B(aluOut));
 
    // Shifter...
 
@@ -144,6 +144,6 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
    assign shifted = {shiftIn, areg[7:1]};
 
    LS245 u10
-     (.ENB(assertBarS), .DIR(1'b1), .A(shifted), .B(dbus));
+     (.ENB(assertBarS), .DIR(1'b0), .A(dbus), .B(shifted));
 
 endmodule
