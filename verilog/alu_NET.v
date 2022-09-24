@@ -9,21 +9,19 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
    wire [7:0] other,aluOut,shifted;
    wire cin,carryOrBorrowIn,shiftIn;
 
-   LS283 u1 // LO nibble add
-     (.A1(areg[0]),
-      .A2(areg[1]),
-      .A3(areg[2]),
-      .A4(areg[3]),
-      .B1(other[0]),
-      .B2(other[1]),
-      .B3(other[2]),
-      .B4(other[3]),
-      .E1(aluOut[0]),
-      .E2(aluOut[1]),
-      .E3(aluOut[2]),
-      .E4(aluOut[3]),
-      .CIN(carryOrBorrowIn),
-      .COUT(coutLO));
+   LS86 u1 // HI nibble invert B for subtract
+     (.A1(doSubtract),
+      .A2(doSubtract),
+      .A3(doSubtract),
+      .A4(doSubtract),
+      .B1(breg[4]),
+      .B2(breg[5]),
+      .B3(breg[6]),
+      .B4(breg[7]),
+      .Y1(other[4]),
+      .Y2(other[5]),
+      .Y3(other[6]),
+      .Y4(other[7]));
 
    LS283 u2 // HI nibble add
      (.A1(areg[4]),
@@ -55,44 +53,30 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .Y3(other[2]),
       .Y4(other[3]));
 
-   LS86 u4 // HI nibble invert B for subtract
-     (.A1(doSubtract),
-      .A2(doSubtract),
-      .A3(doSubtract),
-      .A4(doSubtract),
-      .B1(breg[4]),
-      .B2(breg[5]),
-      .B3(breg[6]),
-      .B4(breg[7]),
-      .Y1(other[4]),
-      .Y2(other[5]),
-      .Y3(other[6]),
-      .Y4(other[7]));
+   LS283 u4 // LO nibble add
+     (.A1(areg[0]),
+      .A2(areg[1]),
+      .A3(areg[2]),
+      .A4(areg[3]),
+      .B1(other[0]),
+      .B2(other[1]),
+      .B3(other[2]),
+      .B4(other[3]),
+      .E1(aluOut[0]),
+      .E2(aluOut[1]),
+      .E3(aluOut[2]),
+      .E4(aluOut[3]),
+      .CIN(carryOrBorrowIn),
+      .COUT(coutLO));
 
    LS245 u5 // ALU output line driver
      (.ENB(assertBarE), .DIR(1'b1), .A(aluOut), .B(dbus));
 
    // Shifter...
 
-   LS74 u6 // flags
-     (
-      .CLRB1(resetBar),
-      .D1(coutHI),
-      .CLK1(triggerC),
-      .PRB1(1'b1),
-      .Q1(flagCarry),
-      .QB1(),
-
-      .CLRB2(resetBar),
-      .D2(areg[0]),
-      .CLK2(triggerS),
-      .PRB2(1'b1),
-      .Q2(flagShift),
-      .QB2());
-
    wire aLoZero,aHiZero;
 
-   SN7425 u7 // A-reg (Hi/Lo nibbles) are zero?
+   SN7425 u6 // A-reg (Hi/Lo nibbles) are zero?
      (.A1(areg[0]),
       .B1(areg[1]),
       .C1(areg[2]),
@@ -107,7 +91,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .G2(1'b1),
       .Y2(aHiZero));
 
-   LS08 u8
+   LS08 u7
      (
       // A-reg is zero
       .A1(aLoZero),
@@ -126,7 +110,7 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .B4(1'bz),
       .Y4());
 
-   LS86 u9
+   LS86 u8
      (.A1(doSubtract),
       .B1(cin),
       .Y1(carryOrBorrowIn),
@@ -140,6 +124,22 @@ module alu_NET(input clk, resetBar, doSubtract, doCarryIn, doShiftIn, assertBarE
       .A4(1'bz),
       .B4(1'bz),
       .Y4());
+
+   LS74 u9 // flags
+     (
+      .CLRB1(resetBar),
+      .D1(coutHI),
+      .CLK1(triggerC),
+      .PRB1(1'b1),
+      .Q1(flagCarry),
+      .QB1(),
+
+      .CLRB2(resetBar),
+      .D2(areg[0]),
+      .CLK2(triggerS),
+      .PRB2(1'b1),
+      .Q2(flagShift),
+      .QB2());
 
    assign shifted = {shiftIn, areg[7:1]};
 
