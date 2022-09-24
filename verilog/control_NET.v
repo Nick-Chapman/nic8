@@ -2,7 +2,7 @@
 module control_NET
   (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
    output storeMemBar,triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
+   output assertZeroBar,assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
    output doSubtract,doCarryIn,doShiftIn,doJumpBar,denyFetch
    );
 
@@ -38,7 +38,7 @@ module control_NET
       .G2A(1'b0),
       .G2B(1'b0),
       .G1(1'b1),
-      .Y0(),
+      .Y0(assertZeroBar),
       .Y1(assertRomBar),
       .Y2(assertBarA),
       .Y3(assertBarB),

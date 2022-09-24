@@ -294,7 +294,7 @@ collatz = assemble $ mdo
   storeA current
   lb 1; add; storeA next
 
-  la 0; storeA steps
+  lza; storeA steps
   sequence <- Here
   increment steps 1
   loadA current
@@ -303,7 +303,7 @@ collatz = assemble $ mdo
 
   -- try to divide by 2
   storeA tmp
-  la 0; storeA count
+  lza; storeA count
   div2 <- Here
   loadA tmp
   jz after_div2

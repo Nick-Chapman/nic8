@@ -8,6 +8,8 @@ type Byte = Word8
 data Op
   -- nop/fetch -- must be encoded as zero
   = NOP -- IR := M[pc], pc++
+  -- laod zero
+  | LZA -- A := 0
   -- load immediate
   | LIA -- A := M[pc], pc++
   | LIB -- B := M[pc], pc++
@@ -67,6 +69,7 @@ data Op
 allOps :: [Op]
 allOps =
   [ NOP
+  , LZA
   , LIA
   , LIB
   , LIX

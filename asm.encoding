@@ -1,6 +1,7 @@
 00 : NOP
 16 : TADD
 17 : TLSR
+20 : LZA
 21 : LIA
 24 : TXA
 25 : LXA

@@ -2,7 +2,7 @@
 module control
   (input [7:0] ir, input clk, aIsZero, flagCarry, flagShift,
    output storeMemBar,triggerA,triggerB,triggerX,triggerQ,triggerC,triggerS,
-   output assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
+   output assertZeroBar,assertRam,assertRomBar,assertBarE,assertBarS,assertBarA,assertBarB,assertBarX,
    output doSubtract,doCarryIn,doShiftIn,doJumpBar,denyFetch
    );
 
@@ -25,7 +25,7 @@ module control
    assign triggerC = clk | assertBarE;
    assign triggerS = clk | assertBarS;
 
-   //assign assertZero = (source==0);
+   assign assertZeroBar = ~(source==0);
    assign assertRomBar = ~(source==1);
    assign assertBarA = ~(source==2);
    assign assertBarB = ~(source==3);
