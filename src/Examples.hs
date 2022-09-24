@@ -279,8 +279,14 @@ varProg0init = assemble $ mdo
 
 collatz :: [Op]
 collatz = assemble $ mdo
-  --la 3
-  --storeA next
+
+  -- variable locations
+  let next = 0xff
+  let current = 0xfe
+  let steps = 0xfd
+  let count = 0xfc
+  let tmp = 0xfb
+
   storeI 3 next
 
   main <- Here
@@ -314,9 +320,6 @@ collatz = assemble $ mdo
   storeA current -- divide by 2
   jump sequence
 
-  count <- variable 0
-  tmp <- variable 0
-
   -- multiply by 3 and +1
   mult3plus1 <- Here
   loadA current
@@ -325,13 +328,9 @@ collatz = assemble $ mdo
   jump sequence
 
   reached1 <- Here
-  loadA steps; out
+  loadA steps
+  out
   jump main
-
-  next <- variable 3 -- TODO: initialize vars (as no longer in program text)
-  current <- variable 0
-  steps <- variable 0
-  pure ()
 
 
 openCountLoop :: [Op]
