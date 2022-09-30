@@ -1,7 +1,7 @@
 
 module Asm
   ( Byte, Op(..), Asm(..), assemble
-  , add, tadd, adc, addb, addx, addout, sub, tab, tax, tbx, txa, txb, out, outb, outx, nop, outi
+  , add, tadd, adc, addb, addx, addout, sub, tsub, tab, tax, tba, tbx, txa, txb, out, outb, outx, nop, outi
   , spin
   , lza, la, lb, lx, jump, jz, jc, js, jxu, jxc
   , lxa, lxb, lxx
@@ -15,8 +15,8 @@ import Control.Monad (ap,liftM)
 import Control.Monad.Fix (MonadFix,mfix)
 import Op (Byte,Op(..))
 
-add,tadd,adc,addb,addx,addout,sub :: Asm () -- arithmetic
-tab,tax,tbx,txa,txb :: Asm () -- register transfers
+add,tadd,adc,addb,addx,addout,sub,tsub :: Asm () -- arithmetic
+tab,tax,tba,tbx,txa,txb :: Asm () -- register transfers
 out,outb,outx,nop,spin :: Asm ()
 outi :: Byte -> Asm () -- output immediate
 lza :: Asm () -- zero registers
@@ -41,15 +41,17 @@ addb = Emit [ADDB]
 addx = Emit [ADDX]
 addout = Emit [ADDOUT]
 sub = Emit [SUB]
+tsub = Emit [TSUB]
 
 lsr = Emit [LSR]
 tlsr = Emit [TLSR]
 asr = Emit [ASR]
-lsrb = Emit [LSR]
+lsrb = Emit [LSRB]
 asrb = Emit [ASR]
 
 tab = Emit [TAB]
 tax = Emit [TAX]
+tba = Emit [TBA]
 tbx = Emit [TBX]
 txa = Emit [TXA]
 txb = Emit [TXB]

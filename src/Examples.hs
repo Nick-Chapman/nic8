@@ -32,6 +32,7 @@ table =
   , ("shiftyL",shiftyL)
   , ("knightRider",knightRider)
   , ("triangleShift",triangleShift)
+  , ("primesViaShift",primesViaShift)
   ]
 
 variousInstructions :: [Op]

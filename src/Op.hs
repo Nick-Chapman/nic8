@@ -39,6 +39,7 @@ data Op
   | ADDM -- M[X] := A+B
   | ADDOUT -- OUT := A+B
   | SUB -- A := A-B
+  | TSUB
   | SBC -- A := A-B-cin
   | SUBB -- B := A-B
   | SUBX -- X := A-B
@@ -52,6 +53,7 @@ data Op
   -- Register transfers
   | TAB -- B := A
   | TAX -- X := A
+  | TBA -- A := B
   | TBX -- X := B
   | TXA -- A := X
   | TXB -- B := X
@@ -90,6 +92,7 @@ allOps =
   , ADDM
   , ADDOUT
   , SUB
+  , TSUB
   , SBC
   , SUBB
   , SUBX
@@ -100,6 +103,7 @@ allOps =
   , LSRB
   , TAB
   , TAX
+  , TBA
   , TBX
   , TXA
   , TXB

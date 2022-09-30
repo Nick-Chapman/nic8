@@ -170,6 +170,7 @@ op2cat = \case
   ADDM -> Cat o o FromAlu ToDataRam
   ADDOUT -> Cat o o FromAlu ToOut
   SUB -> Cat o x FromAlu ToA
+  TSUB -> Cat o x FromAlu ToNowhere
   SBC -> Cat x x FromAlu ToA
   SUBB -> Cat o x FromAlu ToB
   SUBX -> Cat o x FromAlu ToX
@@ -187,6 +188,7 @@ op2cat = \case
   OUTM -> Cat o o FromDataRam ToOut
   TAB -> Cat o o FromA ToB
   TAX -> Cat o o FromA ToX
+  TBA -> Cat o o FromB ToA
   TBX -> Cat o o FromB ToX
   TXA -> Cat o o FromX ToA
   TXB -> Cat o o FromX ToB

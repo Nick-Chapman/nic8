@@ -1,5 +1,7 @@
 
-module Primes (primes,primesNoInit) where
+module Primes (primes,primesNoInit,primesViaShift) where
+
+import Data.Bits (shiftL)
 
 import Asm hiding (jz)
 import qualified Asm
@@ -120,3 +122,79 @@ primesNoInit = assemble $ mdo
   -- Primes saved here; zero byte terminates list
   allPrimes <- Here
   pure ()
+
+
+
+----------------------------------------------------------------------
+-- divisibility checking using shift...
+-- used for new imp of primes
+
+primesViaShift :: [Op]
+primesViaShift = assemble $ mdo
+
+  outi 2
+  outi 3
+  outi 5
+  outi 7
+  outi 11
+  outi 13
+
+  let i = 0xE1
+
+  la 3 -- start at 3
+  storeA i
+
+  again <- Here
+
+  let
+    divTest n yes no = mdo
+      lb n
+      loadA i
+      loop <- Here
+      tsub
+      jc fits
+      jump next
+      fits <- Here
+      sub
+      jz yes
+      next <- Here
+      tax
+      tba
+      lsrb
+      txa
+      js no
+      jump loop
+
+  divTest (3 `shiftL` 6) incThenAgain dontDivide3
+  dontDivide3 <- Here
+
+  divTest (5 `shiftL` 5) incThenAgain dontDivide5
+  dontDivide5 <- Here
+
+  divTest (7 `shiftL` 5) incThenAgain dontDivide7
+  dontDivide7 <- Here
+
+  divTest (11 `shiftL` 4) incThenAgain dontDivide11
+  dontDivide11 <- Here
+
+  divTest (13 `shiftL` 4) incThenAgain dontDivide13
+  dontDivide13 <- Here
+
+  --jump doPrint
+
+
+  --doPrint <- Here
+  loadA i
+  out
+  jump incThenAgain
+
+  incThenAgain <- Here
+  loadA i
+  lb 2 -- step by 2
+  add
+  storeA i
+  jc spin
+  jump again
+
+  spin <- Here
+  jump spin
