@@ -20,19 +20,27 @@ import Asm
 import Primes
 
 table :: [(String,[Op])]
-table =
-  [ ("open-count-loop", openCountLoop)
+table = -- only the first 8 go on to the rom
+  [
+    -- Shifter-unit only
+    ("shiftyR",shiftyR) -- ASR
+  , ("triangleShift",triangleShift) -- LSR
+
+    -- ALU only
+  , ("fibs",fibsNew) -- ADD
+  , ("open-count-loop", openCountLoop)
   , ("tight-count-loop", tightCountLoop)
-  , ("fibs",fibsNew)
+  , ("shiftyL",shiftyL) -- ADC
+  , ("countdownForeverC",countdownForeverC) -- SUB
+
+    -- ALU and Shifter
+  , ("knightRider",knightRider) -- (T)ADD, (T)LSR
+
+    -- also needs memory
   , ("varProg0init",varProg0init)
   , ("primes",primes False)
-  , ("collatz",collatz)
-  , ("countdownForeverC",countdownForeverC)
-  , ("shiftyR",shiftyR)
-  , ("shiftyL",shiftyL)
-  , ("knightRider",knightRider)
-  , ("triangleShift",triangleShift)
   , ("primesViaShift",primesViaShift)
+  , ("collatz",collatz)
   ]
 
 variousInstructions :: [Op]

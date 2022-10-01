@@ -157,7 +157,7 @@ the = \case
 -- program rom
 
 programs :: [Word8]
-programs = concat (pad erasedPage 8 [compile ops | (_,ops) <- Examples.table])
+programs = concat (pad erasedPage 8 [compile ops | (_,ops) <- take 8 Examples.table])
 
 compile :: [Op] -> [Word8]
 compile ops = pad 0x0 256 (map Emu.encodeOp ops)
