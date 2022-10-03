@@ -154,6 +154,7 @@ op2cat = \case
   LXX -> Cat o o FromDataRam ToX
   SXA -> Cat o o FromA ToDataRam
   SXI -> Cat o o FromProgRom ToDataRam
+  SXZ -> Cat o o FromZero ToDataRam
   JXU -> Cat o o FromX ToPC
   JXZ -> Cat o x FromX ToPC
   JXC -> Cat x o FromX ToPC
@@ -168,6 +169,7 @@ op2cat = \case
   ADDB -> Cat o o FromAlu ToB
   ADDX -> Cat o o FromAlu ToX
   ADDM -> Cat o o FromAlu ToDataRam
+  ADCM -> Cat x o FromAlu ToDataRam
   ADDOUT -> Cat o o FromAlu ToOut
   SUB -> Cat o x FromAlu ToA
   TSUB -> Cat o x FromAlu ToNowhere
@@ -176,6 +178,7 @@ op2cat = \case
   SUBX -> Cat o x FromAlu ToX
 
   LSR -> Cat o o FromShiftedA ToA
+  LSRM -> Cat o o FromShiftedA ToDataRam
   TLSR -> Cat o o FromShiftedA ToNowhere
   ASR -> Cat o x FromShiftedA ToA
   LSRB -> Cat o o FromShiftedA ToB
@@ -336,6 +339,11 @@ cat2control = \case
 
 data State = State
   { rom :: Map Byte Byte
+  -- TODO: enable ram/rom distinction. We *do* have a harvard arch.
+  -- currently examples can store to the mem & corrupt the program
+  -- which we dont want
+  -- and the verilog model aND the real h/w wont do
+
   -- , ram :: Map Byte Byte -- h/w will have harvard arch. but some tests here have only unified ram
   , rIR :: Byte
   , rPC :: Byte

@@ -21,6 +21,7 @@ data Op
   -- Store indexed
   | SXA -- M[X] := A
   | SXI -- M[X] := ROM[pc], pc++
+  | SXZ -- M[X] := 0
   -- Jumps
   | JXU -- pc := X
   | JXZ -- pc := zero(A) ? X : pc+1
@@ -37,6 +38,7 @@ data Op
   | ADDB -- B := A+B
   | ADDX -- X := A+B
   | ADDM -- M[X] := A+B
+  | ADCM -- M[X] := A+B+cin
   | ADDOUT -- OUT := A+B
   | SUB -- A := A-B
   | TSUB
@@ -45,6 +47,7 @@ data Op
   | SUBX -- X := A-B
   -- shifting
   | LSR -- A := A>>1; shifFlag=A[0]
+  | LSRM -- M := A>>1; shifFlag=A[0]
   | TLSR -- shifFlag=A[0]
   | ASR -- A := (shifFlag?128:0) | A>>1; shiftFlag=A[0]
   | LSRB -- B := A>>1; shifFlag=A[0]
@@ -80,6 +83,7 @@ allOps =
   , LXX
   , SXA
   , SXI
+  , SXZ
   , JXU
   , JXZ
   , JXC
@@ -90,6 +94,7 @@ allOps =
   , ADDB
   , ADDX
   , ADDM
+  , ADCM
   , ADDOUT
   , SUB
   , TSUB
@@ -98,6 +103,7 @@ allOps =
   , SUBX
   , ASR
   , LSR
+  , LSRM
   , TLSR
   , ASRB
   , LSRB

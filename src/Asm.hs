@@ -1,12 +1,12 @@
 
 module Asm
   ( Byte, Op(..), Asm(..), assemble
-  , add, tadd, adc, addb, addx, addout, sub, tsub, tab, tax, tba, tbx, txa, txb, out, outb, outx, nop, outi
+  , add, tadd, adc, addb, addx, addout, sub, tsub, tab, tax, tba, tbx, txa, txb, out, outb, outx, nop, outi, outm
   , spin
   , lza, la, lb, lx, jump, jz, jc, js, jxu, jxc
   , lxa, lxb, lxx
   , variable
-  , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi
+  , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi, sxz
   , increment
   , lsr, tlsr, asr, lsrb, asrb
   ) where
@@ -18,7 +18,7 @@ import Op (Byte,Op(..))
 add,tadd,adc,addb,addx,addout,sub,tsub :: Asm () -- arithmetic
 tab,tax,tba,tbx,txa,txb :: Asm () -- register transfers
 out,outb,outx,nop,spin :: Asm ()
-outi :: Byte -> Asm () -- output immediate
+outi,outm :: Byte -> Asm () -- output immediate
 lza :: Asm () -- zero registers
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
@@ -33,6 +33,7 @@ storeI :: Byte -> Byte -> Asm () -- store immediate into var
 storeAdd :: Byte -> Asm () -- store A+B into var
 sxa :: Asm () -- store A into *X
 sxi :: Asm () -- store immediate into *X
+sxz :: Asm () -- store zero into *X
 
 add = Emit [ADD]
 tadd = Emit [TADD]
@@ -59,6 +60,7 @@ out = Emit [OUT]
 outb = Emit [OUTB]
 outx = Emit [OUTX]
 outi b = Emit [OUTI, IMM b]
+outm loc = Emit [LIX, IMM loc, OUTM]
 nop = Emit [NOP]
 
 spin = mdo
@@ -104,6 +106,7 @@ increment var n = do
 
 sxa = Emit [SXA]
 sxi = Emit [SXI]
+sxz = Emit [SXZ]
 
 instance Functor Asm where fmap = liftM
 instance Applicative Asm where pure = return; (<*>) = ap

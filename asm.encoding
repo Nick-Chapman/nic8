@@ -25,9 +25,11 @@
 45 : LXX
 46 : ADDX
 4e : SUBX
+50 : SXZ
 51 : SXI
 52 : SXA
 56 : ADDM
+57 : LSRM
 61 : OUTI
 62 : OUT
 63 : OUTB
@@ -39,4 +41,5 @@
 7c : JXZ
 a6 : ADC
 ae : SBC
+d6 : ADCM
 f4 : JXC

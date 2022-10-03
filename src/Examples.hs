@@ -41,6 +41,9 @@ table = -- only the first 8 go on to the rom
   , ("primes",primes False)
   , ("primesViaShift",primesViaShift)
   , ("collatz",collatz)
+
+  , ("multiply16bit",multiply16bit)
+
   ]
 
 variousInstructions :: [Op]
@@ -436,3 +439,59 @@ knightRider = assemble $ mdo
   lsr
   out
   jump goRight
+
+
+-- 16 bit multiplication. needs memory.
+multiply16bit :: [Op]
+multiply16bit = assemble $ mdo
+  -- example: 201 * 103 = 20703
+  -- hex: c9 * 67 =  (dec:80,223) 50,df
+
+  let (acc0,acc1,lhs0,lhs1,right) = (0xf1,0xf2,0xf3,0xf4,0xf5)
+
+  storeI 201 lhs0
+  storeI 103 right
+
+  zerom acc0
+  zerom acc1
+  zerom lhs1
+  jump shiftRightRhs
+
+  check_continue <- Here
+  lx right; lxa
+  jz finished
+  --jump shiftLeftLhs
+
+  --shiftLeftLhs <- Here
+  lx lhs0; lxa; tab; add_store
+  lx lhs1; lxa; tab; adc_store
+
+  --jump shiftRightRhs
+  shiftRightRhs <- Here
+  lx right; lxa; lsr_store
+  js accumulate
+  jump check_continue
+
+  accumulate <- Here
+  lx lhs0; lxa; lx acc0; lxb; add_store
+  lx lhs1; lxa; lx acc1; lxb; adc_store
+  jump check_continue
+
+  finished <- Here
+  outm acc1
+  outm acc0
+  spin
+
+
+-- for Asm.hs...
+add_store :: Asm ()
+add_store = Emit [ADDM]
+
+adc_store :: Asm ()
+adc_store = Emit [ADCM]
+
+lsr_store :: Asm ()
+lsr_store = Emit [LSRM]
+
+zerom :: Byte -> Asm ()
+zerom loc = Emit [LIX, IMM loc, SXZ]
