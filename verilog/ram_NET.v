@@ -5,7 +5,11 @@ module ram_NET (input clk, outputEnable, writeEnableBar,
 
    //wire wb = writeEnableBar; //nope
    //wire wb = ~(~writeEnableBar); //yes! wat?
-   wire wb = ~(clk & ~writeEnableBar); //better?
+
+   //wire wb = ~(clk & ~writeEnableBar); //better?
+   //wire wb = ~clk | writeEnableBar;
+   wire wb = clk | writeEnableBar; // Also works
+
    MB8416A ram
      (.WB(wb),
       .GB(!outputEnable),
