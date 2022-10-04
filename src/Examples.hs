@@ -13,14 +13,15 @@ module Examples
   , countdownForeverC
   , module Primes
 
+  , rom1, rom2
   , table
   ) where
 
 import Asm
 import Primes
 
-table :: [(String,[Op])]
-table = -- only the first 8 go on to the rom
+rom1 :: [(String,[Op])] -- programs which don't need memory
+rom1 =
   [
     -- Shifter-unit only
     ("shiftyR",shiftyR) -- ASR
@@ -35,16 +36,23 @@ table = -- only the first 8 go on to the rom
 
     -- ALU and Shifter
   , ("knightRider",knightRider) -- (T)ADD, (T)LSR
+  ]
 
-    -- also needs memory
-  , ("varProg0init",varProg0init)
+
+rom2 :: [(String,[Op])] -- programs which *DO* need memory
+rom2 =
+  [
+    ("varProg0init",varProg0init)
   , ("primes",primes False)
   , ("primesViaShift",primesViaShift)
   , ("collatz",collatz)
-
   , ("multiply16bit",multiply16bit)
-
   ]
+
+
+table :: [(String,[Op])]
+table = rom1 ++ rom2
+
 
 variousInstructions :: [Op]
 variousInstructions = assemble $ do

@@ -1,9 +1,10 @@
-module Rom2k (generateAll,pad) where
+module Rom2k (generateAll,genRom2k,pad,erasedPage,compile) where
 
 import Data.Bits (shiftL)
 import Data.Word8 (Word8)
 import Op (Op)
 import Prelude hiding (take)
+import Text.Printf (printf)
 import qualified Data.ByteString as BS
 import qualified Emu (encodeOp)
 import qualified Examples (table)
@@ -36,8 +37,9 @@ genRom2k :: String -> [Word8] -> IO ()
 genRom2k name bytes = do
   let n = length bytes
   if n == 2048 then pure () else error (show ("genRom2k",name,"wrong-size",n))
-  --putStrLn $ "- " ++ name
-  BS.writeFile ("roms/" ++ name ++ ".rom") (BS.pack bytes)
+  let filename = "roms/" ++ name ++ ".rom"
+  printf "writing: %s\n" filename
+  BS.writeFile filename  (BS.pack bytes)
 
 ----------------------------------------------------------------------
 -- LED roms

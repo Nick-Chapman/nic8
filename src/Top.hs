@@ -6,13 +6,15 @@ import Control.Monad (forM_)
 import Data.List (intercalate,sortBy)
 import Data.List.Split (chunksOf)
 import Data.Ord (comparing)
+import Data.Word8 (Word8)
 import System.Environment (getArgs)
 import Text.Printf (printf)
 import qualified Dis76489 as Dis (main)
 import qualified Emu (runCollectOutput,encodeOp,sim,run)
-import qualified Examples (table)
+import qualified Examples (table,rom1,rom2)
 import qualified Op (Op(NOP),allOps)
-import qualified Rom2k (generateAll,pad)
+import qualified Rom2k (generateAll)
+import Rom2k (genRom2k,pad,erasedPage)
 import qualified Test (run)
 
 main :: IO ()
@@ -27,6 +29,8 @@ data Action
   = DisMain
   | GenerateSoundData
   | GenerateRoms
+  | GenerateProgRom1
+  | GenerateProgRom2
   | RegressionTests
   | GenerateAsmCrib
   | AssembleExampleTable
@@ -46,6 +50,8 @@ parseCommandLine = loop []
       "dis":xs -> loop (DisMain : acc) xs
       "sound":xs -> loop (GenerateSoundData : acc) xs
       "roms":xs -> loop (GenerateRoms : acc) xs
+      "rom1":xs -> loop (GenerateProgRom1 : acc) xs
+      "rom2":xs -> loop (GenerateProgRom2 : acc) xs
       "tests":xs -> loop (RegressionTests : acc) xs
       "crib":xs -> loop (GenerateAsmCrib : acc) xs
       "assemble-examples":xs -> loop (AssembleExampleTable : acc) xs
@@ -71,6 +77,10 @@ enact = \case
     Arc.generateSoundData
   GenerateRoms -> do
     Rom2k.generateAll
+  GenerateProgRom1 -> do
+    genProgRom "programs1" Examples.rom1
+  GenerateProgRom2 -> do
+    genProgRom "programs2" Examples.rom2
   RegressionTests -> do
     Test.run
   GenerateAsmCrib -> do
@@ -89,6 +99,20 @@ enact = \case
     mapM_ runExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
   RunExampleTable -> do
     runExamples Examples.table
+
+
+
+genProgRom :: String -> [(String,[Op])] -> IO ()
+genProgRom name table =
+  genRom2k name (compileProgsTable table)
+
+compileProgsTable :: [(String,[Op])] -> [Word8]
+compileProgsTable table =
+  concat (pad erasedPage 8 [compileOps ops | (_,ops) <- table])
+
+compileOps :: [Op] -> [Word8]
+compileOps ops = pad 0x0 256 (map Emu.encodeOp ops)
+
 
 simulateExamples :: [(String,[Op])] -> IO () -- and save to files
 simulateExamples examples = do
