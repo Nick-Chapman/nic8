@@ -9,8 +9,8 @@ import qualified Asm
 jz :: Byte -> Asm ()
 jz loc = do Asm.jz loc --; lx 99
 
-primes :: Bool -> [Op]
-primes spining = assemble $ mdo
+primes :: [Op]
+primes = assemble $ mdo
 
   -- Variables
   let candidate = 0x81
@@ -19,7 +19,6 @@ primes spining = assemble $ mdo
   -- Primes saved here; zero byte terminates list
   let allPrimes = 0x83
 
-  start <- Here
   outi 2 -- output first prime 2 (special case)
   storeI 3 candidate -- set first candidiate as 3
   la 0; lx allPrimes; sxa -- zero first cell in saved primes
@@ -38,13 +37,6 @@ primes spining = assemble $ mdo
   loadA candidate
   loop_subtract <- Here
   sub
-
-  -- explore moving between B and X... hmm, something seems wrong
-{-
-  tbx
-  --lb 99
-  txb -- This should have no effect following a tbx, but it does
--}
 
   jz divides
   jc loop_subtract
@@ -66,10 +58,7 @@ primes spining = assemble $ mdo
   jump loop_testCandidate -- otherwise test next candidate
 
   done <- Here
-  if spining then spin else pure ()
-  jump start
-
-  pure ()
+  spin
 
 
 ----------------------------------------------------------------------
@@ -86,9 +75,9 @@ primesViaShift = assemble $ mdo
   outi 11
   outi 13
 
-  let i = 0xE1
+  let i = 0xE1 -- we need only a single variable / memory-slot
 
-  la 3 -- start at 3
+  la 3 -- start at 15
   storeA i
 
   again <- Here
@@ -127,21 +116,18 @@ primesViaShift = assemble $ mdo
   divTest (13 `shiftL` 4) incThenAgain dontDivide13
   dontDivide13 <- Here
 
-  --jump doPrint
-
-
-  --doPrint <- Here
+  -- print the new prime
   loadA i
   out
-  jump incThenAgain
 
+  -- setup to test the next candidate
   incThenAgain <- Here
   loadA i
   lb 2 -- step by 2
   add
   storeA i
-  jc spin
+  jc doSpin
   jump again
 
-  spin <- Here
-  jump spin
+  doSpin <- Here
+  spin

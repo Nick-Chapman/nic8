@@ -43,7 +43,7 @@ rom2 :: [(String,[Op])] -- programs which *DO* need memory
 rom2 =
   [
     ("varProg0init",varProg0init)
-  , ("primes",primes False)
+  , ("primes",primes)
   , ("primesViaShift",primesViaShift)
   , ("collatz",collatz)
   , ("multiply16bit",multiply16bit)
