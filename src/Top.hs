@@ -154,8 +154,7 @@ commentedVerilogHexDump _i name ops = do
   let hex = [ intercalate " " [ printf "%02x" (Emu.encodeOp op) | op <- ops ]
             | ops <- chunksOf 16 (Rom2k.pad Op.NOP 256 ops)
             ]
-  -- TODO: better if address is in hex
-  let ass = [ printf "%3d: %08b : (0x%02x) %08b : %s" i i b b (show op) :: String
+  let ass = [ printf "%3d (0x%02x) %08b : (0x%02x) %08b : %s" i i i b b (show op) :: String
             | (i,op) <- zip [0::Byte ..] ops
             , let b = Emu.encodeOp op
             ]
