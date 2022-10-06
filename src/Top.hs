@@ -10,7 +10,7 @@ import Data.Word8 (Word8)
 import System.Environment (getArgs)
 import Text.Printf (printf)
 import qualified Dis76489 as Dis (main)
-import qualified Emu (runCollectOutput,encodeOp,sim,run)
+import qualified Emu (encodeOp,sim,run)
 import qualified Examples (table,rom1,rom2)
 import qualified Op (Op(NOP),allOps)
 import qualified Rom2k (generateAll)
@@ -34,8 +34,6 @@ data Action
   | RegressionTests
   | GenerateAsmCrib
   | AssembleExampleTable
-  | OldPrintAndRunAllExamples
-  | OldPrintAndRun String
   | Simulate String
   | SimulateExampleTable
   | Run String
@@ -55,8 +53,6 @@ parseCommandLine = loop []
       "tests":xs -> loop (RegressionTests : acc) xs
       "crib":xs -> loop (GenerateAsmCrib : acc) xs
       "assemble-examples":xs -> loop (AssembleExampleTable : acc) xs
-      "oldrunall":xs -> loop (OldPrintAndRunAllExamples : acc) xs
-      "oldrun":sel:xs -> loop (OldPrintAndRun sel : acc) xs
       "sim":sel:xs -> loop (Simulate sel : acc) xs
       "simall":xs -> loop (SimulateExampleTable : acc) xs
       "run":sel:xs -> loop (Run sel : acc) xs
@@ -87,10 +83,6 @@ enact = \case
     generateAsmCrib
   AssembleExampleTable -> do
     assembleExamples Examples.table
-  OldPrintAndRunAllExamples -> do
-    oldPrintAndRunExamples Examples.table
-  OldPrintAndRun sel -> do
-    oldPrintAndRunExamples [ ex | ex@(name,_) <- Examples.table, name == sel ]
   Simulate sel -> do
     mapM_ simExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
   SimulateExampleTable -> do
@@ -139,22 +131,6 @@ runExample (name,prog) = do
   printf "%s:\n" name
   mapM_ (printf "%03d\n") $ Emu.run 5000 prog
 
-
-oldPrintAndRunExamples :: [(String,[Op])] -> IO ()
-oldPrintAndRunExamples examples = do
-  forM_ examples $ \(name,prog) -> do
-    printProg name prog
-    print $ Emu.runCollectOutput 500 prog
-    pure ()
-
-printProg :: String -> [Op] -> IO ()
-printProg name prog = do
-  printf "%s:\n" name
-  forM_ (zip [0::Byte ..] prog) $ \(i,op) -> do
-    let b = Emu.encodeOp op
-    printf "%3d: %08b : (0x%02x) %08b : %s\n" i i b b(show op)
-  printf "int program[] = {%s};\n"
-    (intercalate ", "(map (\op -> printf "0x%02x" (Emu.encodeOp op) :: String) prog))
 
 generateAsmCrib :: IO ()
 generateAsmCrib = do
