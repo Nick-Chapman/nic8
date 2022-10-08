@@ -45,6 +45,7 @@ rom2 =
     ("varProg0init",varProg0init)
   , ("primes",primes)
   , ("primesViaShift",primesViaShift)
+  , ("primesSieve",primesSieve)
   , ("collatz",collatz)
   , ("multiply16bit",multiply16bit)
   ]

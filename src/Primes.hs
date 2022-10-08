@@ -1,5 +1,5 @@
 
-module Primes (primes,primesViaShift) where
+module Primes (primes,primesViaShift,primesSieve) where
 
 import Data.Bits (shiftL)
 
@@ -130,4 +130,60 @@ primesViaShift = assemble $ mdo
   jump again
 
   doSpin <- Here
+  spin
+
+
+----------------------------------------------------------------------
+-- Now we have lots of memory!
+-- Let's code the real sieve algorth. Expect it to be quite quick.
+
+primesSieve :: [Op]
+primesSieve = assemble $ mdo
+  lb 1
+  la 0
+  initPass <- Here
+  tax
+  sxa
+  add
+  jc initDone
+  jump initPass
+  initDone <- Here
+
+  let
+    sieveN :: Byte -> Asm ()
+    sieveN n = mdo
+      la n
+      tab
+      sieve2 <- Here
+      add
+      jc sieveDone
+      tax
+      lza
+      sxa
+      txa
+      jump sieve2
+      sieveDone <- Here
+      pure ()
+
+  sieveN 2
+  sieveN 3
+  sieveN 5
+  sieveN 7
+  sieveN 11
+  sieveN 13
+
+  lb 1
+  la 2
+  outputPass <- Here
+  tax
+  lxa
+  jz dontOutput
+  out
+  dontOutput <- Here
+  txa
+  add
+  jc outputDone
+  jump outputPass
+  outputDone <- Here
+
   spin

@@ -141,8 +141,8 @@ run = Testing.run $ do
 
   -- test prime generation programs
   test Primes.primes 103114 primeList
-
   test Primes.primesViaShift 34083 primeList
+  test Primes.primesSieve 7442 primeList
 
   where
     primeList =
