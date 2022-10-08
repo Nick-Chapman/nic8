@@ -30,7 +30,7 @@ run = Testing.run $ do
   test' [IMM 0xff, IMM 0xff] 3 []
   test' [IMM 0xff, IMM 0xff, IMM 0xff] 4 []
 
-  let
+  {-let
     -- 1st example to use the assembler
     asm1 = assemble $ mdo
       Emit [LIX, IMM vars]
@@ -41,9 +41,9 @@ run = Testing.run $ do
       done <- Here
       spin
   test
-    asm1 8 [42]
+    asm1 8 [42]-}
 
-  let
+  {-let
     -- loop PC around memory before running into a spin
     loopAroundPC = assemble $ mdo
       Emit [LIX]
@@ -56,7 +56,7 @@ run = Testing.run $ do
       storeA codeLocationToMod
       pure ()
   test
-    loopAroundPC 258 []
+    loopAroundPC 258 []-}
 
   let
     makeCode i = assemble $ mdo
@@ -78,7 +78,7 @@ run = Testing.run $ do
   test X.fibB 230 [1,1,2,3,5,8,13,21,34,55,89]
   test X.fibC 107 [1,1,2,3,5,8,13,21,34,55,89,144,233]
 
-  let
+  {-let
     -- example which outputs memory sequentially
     dis = assemble $ mdo
       Emit [LIA, IMM array]
@@ -93,7 +93,7 @@ run = Testing.run $ do
       array <- Here
       Emit (map IMM [2,3,5,7,11,13,0])
   test
-    dis 94 [2,3,5,7,11,13]
+    dis 94 [2,3,5,7,11,13]-}
 
   let
     countup = assemble $ mdo

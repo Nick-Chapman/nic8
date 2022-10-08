@@ -339,12 +339,7 @@ cat2control = \case
 
 data State = State
   { rom :: Map Byte Byte
-  -- TODO: enable ram/rom distinction. We *do* have a harvard arch.
-  -- currently examples can store to the mem & corrupt the program
-  -- which we dont want
-  -- and the verilog model aND the real h/w wont do
-
-  -- , ram :: Map Byte Byte -- h/w will have harvard arch. but some tests here have only unified ram
+  , ram :: Map Byte Byte
   , rIR :: Byte
   , rPC :: Byte
   , rA :: Byte
@@ -363,7 +358,7 @@ instance Show State where
 initState :: [Op] -> State
 initState prog = State
   { rom = initMem prog
-  -- , ram = Map.empty
+  , ram = Map.empty
   , rIR = 0
   , rPC = 0
   , rA = 0
@@ -384,7 +379,7 @@ data Output = Output Byte
 
 stepWithControl :: State -> Control -> (State,Maybe Output)
 stepWithControl state control = do
-  let State{rom{-,ram-},rIR=_,rPC,rA,rB,rX,rQ,flagCarry,flagShift} = state
+  let State{rom,ram,rIR=_,rPC,rA,rB,rX,rQ,flagCarry,flagShift} = state
   let Control{assertZero,assertRom,assertRam,assertAlu,assertShiftedA
              ,assertA,assertB,assertX
              ,loadA,loadB,loadX,loadIR,loadPC,storeMem
@@ -407,13 +402,14 @@ stepWithControl state control = do
         (if doShiftIn && flagShift then 128 else 0) + rA `div` 2
   let shiftedOut = rA `mod` 2 == 1
   let romOut = maybe 0 id (Map.lookup rPC rom)
+  let ramOut = maybe 0 id (Map.lookup rX ram)
   let dbus =
         case (assertZero,assertRom,assertRam,assertAlu
              ,assertA,assertB,assertX,assertShiftedA
              ) of
           (True,False,False,False,False,False,False,False) -> 0
           (False,True,False,False,False,False,False,False) -> romOut
-          (False,False,True,False,False,False,False,False) -> maybe 0 id (Map.lookup rX rom)
+          (False,False,True,False,False,False,False,False) -> ramOut
           (False,False,False,True,False,False,False,False) -> alu
           (False,False,False,False,True,False,False,False) -> rA
           (False,False,False,False,False,True,False,False) -> rB
@@ -427,8 +423,8 @@ stepWithControl state control = do
   let denyFetch = assertRom || doJump
 
   let s' = State
-        { rom = if storeMem then Map.insert rX dbus rom else rom
-        -- , ram = if storeMem then Map.insert rX dbus ram else ram
+        { rom = rom
+        , ram = if storeMem then Map.insert rX dbus ram else ram
         , rIR = if denyFetch then 0 else romOut
         , rPC = if doJump then dbus else rPC + 1
         , rA = if loadA then dbus else rA
