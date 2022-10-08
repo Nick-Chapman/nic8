@@ -73,9 +73,9 @@ run = Testing.run $ do
 
   test X.variousInstructions 44 [75,74,111,111,222,77]
   test X.countdown5to0 48 [5,4,3,2,1,0]
-  test X.multiply5by7 117 [35]
-  test X.fibA 319 [1,1,2,3,5,8,13,21,34,55,89]
-  test X.fibB 222 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.multiply5by7 130 [35]
+  test X.fibA 332 [1,1,2,3,5,8,13,21,34,55,89]
+  test X.fibB 230 [1,1,2,3,5,8,13,21,34,55,89]
   test X.fibC 107 [1,1,2,3,5,8,13,21,34,55,89,144,233]
 
   let

@@ -4,7 +4,6 @@ module Asm
   , add, tadd, adc, addb, addx, addout, sub, tsub, tab, tax, tba, tbx, txa, txb, out, outb, outx, nop, outi, outm
   , lza, la, lb, lx, jump, jz, jc, js, jxu, jxc
   , lxa, lxb, lxx
-  , variable
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi, sxz
   , increment
   , lsr, tlsr, asr, lsrb, asrb
@@ -27,7 +26,6 @@ jump,jz,jc,js :: Byte -> Asm () -- jumps
 lsr,tlsr,asr,lsrb,asrb :: Asm ()
 spin :: Asm () -- almost like halt!
 
-variable :: Byte -> Asm Byte -- allocate space for a variable
 loadA,loadB,loadX :: Byte -> Asm () -- load vars into regs
 storeA :: Byte -> Asm () -- store A into var
 storeI :: Byte -> Byte -> Asm () -- store immediate into var
@@ -79,11 +77,6 @@ jump b = Emit [JIU, IMM b]
 jz b = Emit [JIZ, IMM b]
 jc b = Emit [JIC, IMM b]
 js b = Emit [JIS, IMM b]
-
-variable val = do
-  loc <- Here
-  Emit [IMM val]
-  pure loc
 
 loadA loc = Emit [LIX, IMM loc, LXA]
 loadB loc = Emit [LIX, IMM loc, LXB]

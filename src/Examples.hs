@@ -106,16 +106,17 @@ countdown5to0 =
   , JXU
   ]
 
+
+initVar :: Byte -> Byte -> Asm Byte
+initVar var v = do
+  la v; storeA var
+  pure var
+
 multiply5by7 :: [Op]
 multiply5by7 = assemble $ mdo
-  jump mainLoop
-  left <- variable 5
-  right <- variable 7
-  result <- variable 0
-  finish <- Here
-  loadA result
-  out
-  spin
+  left <- initVar 0xff 5
+  right <- initVar 0xfe 7
+  result <- initVar 0xfd 0
   mainLoop <- Here
   loadA left
   jz finish
@@ -127,15 +128,16 @@ multiply5by7 = assemble $ mdo
   add
   sxa
   jump mainLoop
+  finish <- Here
+  loadA result
+  out
+  spin
 
 fibA :: [Op]
 fibA = assemble $ mdo
-  jump loop
-  done <- Here
-  spin
-  v1 <- variable 0
-  v2 <- variable 1
-  v3 <- variable 0
+  v1 <- initVar 0xff 0
+  v2 <- initVar 0xfe 1
+  v3 <- initVar 0xfd 0
   loop <- Here
   loadB v1
   loadA v2; out
@@ -144,14 +146,13 @@ fibA = assemble $ mdo
   loadA v2; storeA v1
   loadA v3; storeA v2
   jump loop
+  done <- Here
+  spin
 
 fibB :: [Op]
 fibB = assemble $ mdo
-  jump loop
-  done <- Here
-  spin
-  p <- variable 0
-  q <- variable 1
+  p <- initVar 0xff 0
+  q <- initVar 0xfe 1
   loop <- Here
   loadA q
   out
@@ -160,6 +161,8 @@ fibB = assemble $ mdo
   storeAdd q
   storeA p
   jump loop
+  done <- Here
+  spin
 
 fibC :: [Op]
 fibC = assemble $ mdo
@@ -208,6 +211,8 @@ fibUnrolled = assemble $ mdo
 
 fib2vars :: [Op] -- program which uses memory for variable storage (2 vars)
 fib2vars = assemble $ mdo
+  p <- initVar 0xff 0
+  q <- initVar 0xfe 0
   start <- Here
   la 1
   storeA q
@@ -223,13 +228,12 @@ fib2vars = assemble $ mdo
   lb 233; sub
   jz start --Emit [TAX, JXZ]
   jump loop
-  pure ()
-  p <- variable 0
-  q <- variable 0
-  pure ()
 
 fib3vars :: [Op] -- program which uses memory for variable storage (3 vars)
 fib3vars = assemble $ mdo
+  p <- initVar 0xff 0
+  q <- initVar 0xfe 0
+  r <- initVar 0xfd 0
   start <- Here
   la 0
   storeA p
@@ -247,13 +251,10 @@ fib3vars = assemble $ mdo
   out
   lb 233; sub; jz start
   jump loop
-  p <- variable 0
-  q <- variable 0
-  r <- variable 0
-  pure ()
 
 varProg1 :: [Op] -- small program which does something useful with memory
 varProg1 = assemble $ mdo
+  v1 <- initVar 0xff 42
   start <- Here
   loadA v1
   out
@@ -263,11 +264,10 @@ varProg1 = assemble $ mdo
   la 0
   out
   jump start
-  v1 <- variable 42
-  pure ()
 
 varProg0 :: [Op] -- even smaller
 varProg0 = assemble $ mdo
+  v1 <- initVar 0xff 17
   lb 1
   loop <- Here
   loadA v1
@@ -276,8 +276,6 @@ varProg0 = assemble $ mdo
   --storeA v1
   sxa
   jump loop
-  v1 <- variable 17
-  pure ()
 
 varProg0init :: [Op] -- dyamic memory initialization, for Harvard
 varProg0init = assemble $ mdo
@@ -293,9 +291,7 @@ varProg0init = assemble $ mdo
   add
   --storeA v1
   sxa
-  jump loop -- or use jump !
-  --v1 <- variable 0x42
-  pure ()
+  jump loop
 
 collatz :: [Op]
 collatz = assemble $ mdo
