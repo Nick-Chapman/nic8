@@ -1,5 +1,5 @@
 
-module Primes (primes,primesViaShift,primesSieve) where
+module Primes (primes,primesViaShift,primesSieve,primesSieve2) where
 
 import Data.Bits (shiftL)
 
@@ -184,6 +184,49 @@ primesSieve = assemble $ mdo
   add
   jc outputDone
   jump outputPass
+  outputDone <- Here
+
+  spin
+
+
+----------------------------------------------------------------------
+-- version of seive which does not have the first 6 primes hardcoded into it
+-- and repicate the sieving code 6 times.
+-- so we trade some speed for less rom
+
+primesSieve2 :: [Op]
+primesSieve2 = assemble $ mdo
+
+  lb 1
+  la 0
+  initPass <- Here
+  tax; sxa --init every mem slot to itself
+  add
+  jc initDone
+  jump initPass
+  initDone <- Here
+
+  la 2 -- from 2
+  again <- Here
+  lzx; sxa -- save a in mem[0]
+  tax; lxa -- look in mem[a], find either a or 0
+  jz sieveDone -- dont output or sieve if zero
+  out -- a
+
+  -- sieve a (zero all mem slots when are a multiple of a)
+  tab
+  sieve <- Here
+  add
+  jc sieveDone
+  tax
+  sxz
+  jump sieve
+  sieveDone <- Here
+
+  lzx; lxa -- restore a
+  lb 1; add -- increment it
+  jc outputDone
+  jump again
   outputDone <- Here
 
   spin

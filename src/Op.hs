@@ -10,6 +10,7 @@ data Op
   = NOP -- IR := M[pc], pc++
   -- laod zero
   | LZA -- A := 0
+  | LZX -- X := 0
   -- load immediate
   | LIA -- A := M[pc], pc++
   | LIB -- B := M[pc], pc++
@@ -75,6 +76,7 @@ allOps :: [Op]
 allOps =
   [ NOP
   , LZA
+  , LZX
   , LIA
   , LIB
   , LIX

@@ -41,13 +41,13 @@ rom1 =
 
 rom2 :: [(String,[Op])] -- programs which *DO* need memory
 rom2 =
-  [
-    ("varProg0init",varProg0init)
-  , ("primes",primes)
+  [ ("primes",primes)
   , ("primesViaShift",primesViaShift)
   , ("primesSieve",primesSieve)
+  , ("primesSieve2",primesSieve2)
   , ("collatz",collatz)
   , ("multiply16bit",multiply16bit)
+  , ("varProg0init",varProg0init)
   ]
 
 

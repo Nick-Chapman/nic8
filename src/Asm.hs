@@ -2,7 +2,7 @@
 module Asm
   ( Byte, Op(..), Asm(..), assemble
   , add, tadd, adc, addb, addx, addout, sub, tsub, tab, tax, tba, tbx, txa, txb, out, outb, outx, nop, outi, outm
-  , lza, la, lb, lx, jump, jz, jc, js, jxu, jxc
+  , lza, lzx, la, lb, lx, jump, jz, jc, js, jxu, jxc
   , lxa, lxb, lxx
   , loadA, loadB, loadX, storeA, storeI, storeAdd, sxa, sxi, sxz
   , increment
@@ -18,7 +18,7 @@ add,tadd,adc,addb,addx,addout,sub,tsub :: Asm () -- arithmetic
 tab,tax,tba,tbx,txa,txb :: Asm () -- register transfers
 out,outb,outx,nop :: Asm ()
 outi,outm :: Byte -> Asm () -- output immediate
-lza :: Asm () -- zero registers
+lza,lzx :: Asm () -- zero registers
 la,lb,lx :: Byte -> Asm () -- load immediate into regs
 lxa,lxb,lxx :: Asm () -- load *x into reg
 jxu,jxc :: Asm () -- jumps
@@ -63,6 +63,7 @@ outm loc = Emit [LIX, IMM loc, OUTM]
 nop = Emit [NOP]
 
 lza = Emit [LZA]
+lzx = Emit [LZX]
 la b = Emit [LIA, IMM b]
 lb b = Emit [LIB, IMM b]
 lx b = Emit [LIX, IMM b]

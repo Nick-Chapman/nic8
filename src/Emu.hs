@@ -146,6 +146,7 @@ op2cat :: Op -> Cat
 op2cat = \case
   NOP -> Cat o o FromZero ToInstructionRegister
   LZA -> Cat o o FromZero ToA
+  LZX -> Cat o o FromZero ToX
   LIA -> Cat o o FromProgRom ToA
   LIB -> Cat o o FromProgRom ToB
   LIX -> Cat o o FromProgRom ToX

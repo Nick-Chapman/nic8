@@ -19,6 +19,7 @@
 37 : LSRB
 3e : SUBB
 3f : ASRB
+40 : LZX
 41 : LIX
 42 : TAX
 43 : TBX

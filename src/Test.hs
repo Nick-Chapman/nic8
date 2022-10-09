@@ -143,6 +143,7 @@ run = Testing.run $ do
   test Primes.primes 103114 primeList
   test Primes.primesViaShift 32688 primeList
   test Primes.primesSieve 7442 primeList
+  test Primes.primesSieve2 8885 primeList
 
   where
     primeList =
