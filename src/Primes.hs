@@ -77,7 +77,7 @@ primesViaShift = assemble $ mdo
 
   let i = 0xE1 -- we need only a single variable / memory-slot
 
-  la 3 -- start at 15
+  la 15 -- start at 15
   storeA i
 
   again <- Here
