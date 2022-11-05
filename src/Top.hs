@@ -16,6 +16,7 @@ import qualified Op (Op(NOP),allOps)
 import qualified Rom2k (generateAll)
 import Rom2k (genRom2k,pad,erasedPage)
 import qualified Test (run)
+import qualified Circuits
 
 main :: IO ()
 main = do
@@ -38,6 +39,7 @@ data Action
   | SimulateExampleTable
   | Run String
   | RunExampleTable
+  | PlayCircuits
 
 parseCommandLine :: [String] -> Config
 parseCommandLine = loop []
@@ -57,6 +59,7 @@ parseCommandLine = loop []
       "simall":xs -> loop (SimulateExampleTable : acc) xs
       "run":sel:xs -> loop (Run sel : acc) xs
       "runall":xs -> loop (RunExampleTable : acc) xs
+      "circuits":xs -> loop (PlayCircuits : acc) xs
       x:_ -> error (show ("parseCommandLine",x))
 
 run :: Config -> IO ()
@@ -91,6 +94,8 @@ enact = \case
     mapM_ runExample [ ex | ex@(name,_) <- Examples.table, name == sel ]
   RunExampleTable -> do
     runExamples Examples.table
+  PlayCircuits -> do
+    Circuits.main
 
 
 
