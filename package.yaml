@@ -4,7 +4,7 @@ description:         Emulator for my take on SAP (Simple as possible 8 bit archi
 license:             BSD3
 author:              Nick Chapman
 maintainer:          nic@amadido.co.uk
-github:              https://github.com/Nick-Chapman/nic8.git
+github:              Nick-Chapman/nic8.git
 
 extra-source-files:
 - README.md
