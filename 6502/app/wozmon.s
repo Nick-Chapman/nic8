@@ -22,8 +22,8 @@ KBDCR           = $D011         ;  PIA.A keyboard control register
 DSP             = $D012         ;  PIA.B display output register
 DSPCR           = $D013         ;  PIA.B display control register
 
-               .org $FF00
-               .export RESET
+                org $8000
+                org $FF00
 
 RESET:          CLD             ; Clear decimal arithmetic mode.
                 CLI
@@ -38,7 +38,7 @@ NOTCR:          CMP #'_'+$80    ; "_"?
                 BEQ ESCAPE      ; Yes.
                 INY             ; Advance text index.
                 BPL NEXTCHAR    ; Auto ESC if > 127.
-ESCAPE:         LDA #'\'+$80    ; "\".
+ESCAPE:         LDA #'\\'+$80   ; "\".
                 JSR ECHO        ; Output it.
 GETLINE:        LDA #$8D        ; CR.
                 JSR ECHO        ; Output it.
@@ -155,6 +155,6 @@ ECHO:           BIT DSP         ; bit (B7) cleared yet?
 
 ; Interrupt Vectors
 
-                .WORD $0F00     ; NMI
-                .WORD RESET     ; RESET
-                .WORD $0000     ; BRK/IRQ
+                WORD $0F00     ; NMI
+                WORD RESET     ; RESET
+                WORD $0000     ; BRK/IRQ
