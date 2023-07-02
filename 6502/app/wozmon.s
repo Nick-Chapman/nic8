@@ -17,21 +17,95 @@ MODE            = $2B           ;  $00=XAM, $7F=STOR, $AE=BLOCK XAM
 ; Other Variables
 
 IN              = $0200         ;  Input buffer to $027F
-KBD             = $D010         ;  PIA.A keyboard input
-KBDCR           = $D011         ;  PIA.A keyboard control register
-DSP             = $D012         ;  PIA.B display output register
-DSPCR           = $D013         ;  PIA.B display control register
+;KBD             = $D010         ;  PIA.A keyboard input
+;KBDCR           = $D011         ;  PIA.A keyboard control register
+;DSP             = $D012         ;  PIA.B display output register
+;DSPCR           = $D013         ;  PIA.B display control register
 
-                org $8000
+
+    org $8000
+
+via_T2CL  = $6008
+via_T2CH  = $6009
+via_IFR   = $600D
+
+MHz = 1000000
+
+cpu_clks_per_sec = 4 * MHz
+
+clks_to_wait = (cpu_clks_per_sec / 1000000) * 518 ; determined by experimentation
+
+start_timer:
+    lda #<clks_to_wait
+    sta via_T2CL
+    lda #>clks_to_wait
+    sta via_T2CH
+    rts
+
+via_timer2_bit_mask = %00100000
+
+wait_timer:
+    pha
+    lda #via_timer2_bit_mask
+.wait_loop:
+    bit via_IFR
+    beq .wait_loop
+    pla
+    rts
+
+acia_data    = $5000
+acia_status  = $5001
+acia_command = $5002
+acia_control = $5003
+
+acia_init:
+    sta acia_status ; program reset
+    lda #%00001011 ; no parity, no echo, no interrupt
+    sta acia_command
+    lda #%00011111 ; 1 stop bit, word length: 8 bits, baud rate: 19200
+    sta acia_control
+    jsr start_timer
+    rts
+
+acia_ready_to_receive_mask = %00001000 ; bit3
+
+my_read:
+    ;; read a char over the serial connection
+.wait:
+    lda acia_status
+    and #acia_ready_to_receive_mask
+    beq .wait ; 0 means not-full (no byte has arrived)
+    lda acia_data
+    rts
+
+my_echo:
+    jsr wait_timer
+    sta acia_data
+    jsr start_timer
+    rts
+
+read_high:
+    jsr my_read
+    ora #$80
+    rts
+
+echo_high:
+    pha
+    and #$7f
+    jsr my_echo
+    pla
+    rts
+
                 org $FF00
 
 RESET:          CLD             ; Clear decimal arithmetic mode.
                 CLI
                 LDY #$7F        ; Mask for DSP data direction register.
-                STY DSP         ; Set it up.
+                ;STY DSP         ; Set it up.
                 LDA #$A7        ; KBD and DSP control register mask.
-                STA KBDCR       ; Enable interrupts, set CA1, CB1, for
-                STA DSPCR       ; positive edge sense/output mode.
+                ;STA KBDCR       ; Enable interrupts, set CA1, CB1, for
+                ;STA DSPCR       ; positive edge sense/output mode.
+                jsr acia_init
 NOTCR:          CMP #'_'+$80    ; "_"?
                 BEQ BACKSPACE   ; Yes.
                 CMP #$9B        ; ESC?
@@ -45,9 +119,10 @@ GETLINE:        LDA #$8D        ; CR.
                 LDY #$01        ; Initialize text index.
 BACKSPACE:      DEY             ; Back up text index.
                 BMI GETLINE     ; Beyond start of line, reinitialize.
-NEXTCHAR:       LDA KBDCR       ; Key ready?
-                BPL NEXTCHAR    ; Loop until ready.
-                LDA KBD         ; Load character. B7 should be ‘1’.
+NEXTCHAR:       ;LDA KBDCR       ; Key ready?
+                ;BPL NEXTCHAR    ; Loop until ready.
+                ;LDA KBD         ; Load character. B7 should be ‘1’.
+                jsr read_high
                 STA IN,Y        ; Add to text buffer.
                 JSR ECHO        ; Display character.
                 CMP #$8D        ; CR?
@@ -100,7 +175,9 @@ NOTHEX:         CPY YSAV        ; Check if L, H empty (no hex digits).
                 BNE NEXTITEM    ; Get next item. (no carry).
                 INC STH         ; Add carry to ‘store index’ high order.
 TONEXTITEM:     JMP NEXTITEM    ; Get next command item.
-RUN:            JMP (XAML)      ; Run at current XAM index.
+RUN:            jsr RUN1
+                jmp ESCAPE
+RUN1:           JMP (XAML)      ; Run at current XAM index.
 NOTSTOR:        BMI XAMNEXT     ; B7=0 for XAM, 1 for BLOCK XAM.
                 LDX #$02        ; Byte count.
 SETADR:         LDA L-1,X       ; Copy hex data to
@@ -145,15 +222,18 @@ PRHEX:          AND #$0F        ; Mask LSD for hex print.
                 CMP #$BA        ; Digit?
                 BCC ECHO        ; Yes, output it.
                 ADC #$06        ; Add offset for letter.
-ECHO:           BIT DSP         ; bit (B7) cleared yet?
-                BMI ECHO        ; No, wait for display.
-                STA DSP         ; Output character. Sets DA.
+ECHO:           ;BIT DSP         ; bit (B7) cleared yet?
+                ;BMI ECHO        ; No, wait for display.
+                ;STA DSP         ; Output character. Sets DA.
+                jsr echo_high
                 RTS             ; Return.
 
                 BRK             ; unused
                 BRK             ; unused
 
 ; Interrupt Vectors
+
+    org $fffa
 
                 WORD $0F00     ; NMI
                 WORD RESET     ; RESET
