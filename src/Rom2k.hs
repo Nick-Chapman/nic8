@@ -44,6 +44,8 @@ genRom2k name bytes = do
 ----------------------------------------------------------------------
 -- LED roms
 
+-- this corresponds to the wiring of current 8-bit data monitor
+-- no idea why I called it this!
 hex5621AH :: [Word8]
 hex5621AH = concat
   [ concat (map (replicate 16) (hdigs order)) -- high nibble
